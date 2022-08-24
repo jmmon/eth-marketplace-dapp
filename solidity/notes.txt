@@ -1,0 +1,6 @@
+Marketplace?
+	Visitors, buyers, Sellers
+	Visitors: view items, view seller, register as buyer
+	buyers: should have a wallet (metamask, etc), can buy items
+	Sellers: register item for sale (JSOn document + images, stored in IPFS), in a smart contract holds list of IPFS hashes of the items for sale, should have ETH address but do not need a wallet
+	

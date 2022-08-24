@@ -1,0 +1,10 @@
+Requirements:
+	Smart contract (deployed to ropsten)
+	client-side app (trying Qwik again)
+	decentralized storage
+	unit tests (85%+ coverage)
+
+Optional:
+	use oracles to pass data
+	use built-in wallet (client wallet)
+	use server-side logic
