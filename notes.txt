@@ -8,3 +8,20 @@ Optional:
 	use oracles to pass data
 	use built-in wallet (client wallet)
 	use server-side logic
+
+===========================
+
+Marketplace App
+	3 types of users:
+		Visitors can:
+			view sellers
+			view items
+			(view items by seller)
+		Buyers can:
+			(All above, and)
+			buy items using metamask
+		Sellers can:
+			(all the above, and)
+			register item for sale
+
+Frontend:
