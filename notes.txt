@@ -25,3 +25,6 @@ Marketplace App
 			register item for sale
 
 Frontend:
+	Visitors are people without Metamask linked
+	Buyers are people with metamask linked
+	Sellers only need an address, so they could be visitors that choose to sell

@@ -38,17 +38,18 @@ function toString(uint256 value) pure returns (string memory) {
 contract Marketplace {
 	address payable private contractOwner;
 
+	mapping(address => bytes32[]) itemIdsFromSeller; // for getting IDs from a seller
+	mapping(bytes32 => Item) itemFromId;	// for getting item from ID
+	bytes32[] public itemIdList; // for getting all item IDS
+
 	struct Item {
 		address owner;
-		string ipfsHash;
+		string ipfsHash; // holds name, image hash, details
 		uint256 price; // in wei
 		bytes32 id;
 	}
 
-	mapping(address => bytes32[]) sellerItemIds;
-	mapping(bytes32 => Item) stockOfItemIds;
-	bytes32[] public itemIdList;
-	
+	// events
 	event eventRegisterItem(
 		Item _item,
 		uint256 _itemsForSaleCount,
@@ -62,32 +63,38 @@ contract Marketplace {
 	event eventItemRemoved(bytes32 _removedItemId);
 	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
 	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
+		event eventDeleteItem(
+		bytes32 _itemId,
+		address _owner,
+		uint256 _newItemListLength
+	);
 
 	constructor() {
 		contractOwner = payable(msg.sender);
 	}
 
-	function getForSaleItemIds() external view returns (bytes32[] memory) {
+	// getters
+	function getForSaleItemIds() public view returns (bytes32[] memory) {
 		return itemIdList;
 	}
 
-	function getForSaleItemIdsCount() external view returns (uint256) {
+	function getForSaleItemIdsCount() public view returns (uint256) {
 		return itemIdList.length;
 	}
 
-	function getItemById(bytes32 _id) external view returns (Item memory) {
-		return stockOfItemIds[_id];
+	function getItemById(bytes32 _id) public view returns (Item memory) {
+		return itemFromId[_id];
 	}
 
 	function getForSaleItemIdsFromSeller(address _sellerAddress)
-	  view external
+	  view public
 		returns (bytes32[] memory)
 	{
-		return sellerItemIds[_sellerAddress];
+		return itemIdsFromSeller[_sellerAddress];
 	}
 
 	// register item to the sender/seller's address:
-	function registerItemForSale(string memory _dataHash, uint256 _price) external {
+	function registerItemForSale(string memory _dataHash, uint256 _price) public returns (bool success) {
 		// making an id for the item: hash the IPFS data hash, price, and sender address
 		string memory itemData = string.concat(
 			_dataHash,
@@ -105,10 +112,10 @@ contract Marketplace {
 		});
 
 		// push the itemHashId to our seller's list of items
-		sellerItemIds[msg.sender].push(itemHashId);
+		itemIdsFromSeller[msg.sender].push(itemHashId);
 
-		// add {itemHashId: item} to our stockOfItemIds (list of all items for sale)
-		stockOfItemIds[itemHashId] = item;
+		// add {itemHashId: item} to our itemFromId (list of all items for sale)
+		itemFromId[itemHashId] = item;
 
 		//push to itemIdList, our list of all items
 		itemIdList.push(itemHashId);
@@ -116,13 +123,15 @@ contract Marketplace {
 		emit eventRegisterItem(
 			item,
 			itemIdList.length,
-			sellerItemIds[msg.sender].length
+			itemIdsFromSeller[msg.sender].length
 		);
+
+		return true;
 	}
 
 
-	function sellItem(bytes32 _itemId) external payable {
-		Item memory foundItem = stockOfItemIds[_itemId];
+	function sellItem(bytes32 _itemId) public payable {
+		Item memory foundItem = itemFromId[_itemId];
 		require(foundItem.owner != msg.sender, "Owner cannot buy their own items!");
 		require(
 			msg.value >= foundItem.price,
@@ -167,77 +176,175 @@ contract Marketplace {
 		);
 	}
 
+	function ownerDeleteItem(bytes32 _itemId) public {
+		Item memory foundItem = itemFromId[_itemId];
+		require(foundItem.owner == msg.sender, "Only owner can delete their item!");
 
-	function removeItemFromItemsList(bytes32 _itemId) public returns (bool) {
-		// find our item by id
-		uint256 itemIdListLength = itemIdList.length;
-		for (uint256 i = 0; i < itemIdListLength; i++) {
-			if (itemIdList[i] == _itemId) {
-				uint256 itemIdLocation = i;
+		// remove id from seller's items list
+		bool successRemoveFromSellerList = removeItemFromSellerItemIds(
+			foundItem.owner,
+			_itemId
+		);
 
-				// once found, shuffle our item list forward
-				for (i; i < itemIdListLength - 1; i++) {
-					itemIdList[i] = itemIdList[i + 1];
-				}
-				// remove the last item to reduce the length
-				itemIdList.pop();
+		// remove item from our mapping
+		bool successRemoveFromStockMap = removeItemFromStockList(_itemId);
 
-				emit eventItemRemovedFromIdList(
-					itemIdLocation,
-					_itemId
-				);
-				return true;
+		// remove item from our itemIdList
+		bool successRemoveFromItemIdList = removeItemFromItemsList(_itemId);
 
-			}
-		}
-		return false;
+		require(
+			successRemoveFromSellerList,
+			"Error removing item from seller's list"
+		);
+		require(
+			successRemoveFromStockMap,
+			"Error removing item from stock items"
+		);
+		require(
+			successRemoveFromItemIdList,
+			"Error removing item from item id list"
+		);
+
+
+		emit eventDeleteItem(
+			_itemId,
+			foundItem.owner,
+			itemIdList.length
+		);
 	}
 
-	function removeItemFromStockList(bytes32 _itemId) private returns (bool) {
+
+
+	function removeItemFromStockList(bytes32 _itemId) internal returns (bool) {
 		// delete struct from our itemsForSale mapping
-		delete stockOfItemIds[_itemId];
+		delete itemFromId[_itemId];
 
 		emit eventItemRemoved(_itemId);
 		return true;
 	}
 
-
-	function removeItemFromSellerItemIds(address _owner, bytes32 _itemId)
-		private
-		returns (bool)
-	{
-		// find our item in our seller's list
-		uint256 sellerItemsLength = sellerItemIds[_owner].length;
-		for (uint256 i = 0; i < sellerItemsLength; i++) {
-			if (sellerItemIds[_owner][i] == _itemId) {
-				uint256 itemIdLocation = i;
-				bytes32 itemId = sellerItemIds[_owner][i];
-
-				// reshuffle our seller's item list so we remove the item
-				for (i; i < sellerItemsLength - 1; i++) {
-					sellerItemIds[_owner][i] = sellerItemIds[_owner][i + 1];
-				}
-				// remove the last item to reduce the length
-				sellerItemIds[_owner].pop();
-
-				emit eventItemRemovedFromSeller(itemIdLocation, itemId);
-
-				return true;
+	function getItemIndex(bytes32 _itemId, uint256 _length) internal view returns (uint256) {
+		uint256 i = 0;
+		for (i; i < _length; i++) {
+			if (itemIdList[i] == _itemId) {
+				break; // saves the state of i for our return (skips increment)
 			}
 		}
-
-		// return if not found;
-		return false;
+		return i; //1 more than last index since that's what broke the loop 
 	}
 
+
+	function removeItemFromItemsList(bytes32 _itemId) internal returns (bool) {
+		uint256 length = itemIdList.length;
+		uint256 index = getItemIndex(_itemId, length);
+
+		if (index == length) {
+			return false;
+		}
+
+		// once found, shuffle our item list forward
+		for (uint256 i = index; i < length - 1; i++) {
+			itemIdList[i] = itemIdList[i + 1];
+		}
+		// remove the last item to reduce the length
+		itemIdList.pop();
+
+		emit eventItemRemovedFromIdList(
+			index,
+			_itemId
+		);
+		return true;
+
+
+		// // find our item by id
+		// uint256 itemIdListLength = itemIdList.length;
+		// for (uint256 i = 0; i < itemIdListLength; i++) {
+		// 	if (itemIdList[i] == _itemId) {
+		// 		uint256 itemIdLocation = i;
+
+		// 		// once found, shuffle our item list forward
+		// 		for (i; i < itemIdListLength - 1; i++) {
+		// 			itemIdList[i] = itemIdList[i + 1];
+		// 		}
+		// 		// remove the last item to reduce the length
+		// 		itemIdList.pop();
+
+		// 		emit eventItemRemovedFromIdList(
+		// 			itemIdLocation,
+		// 			_itemId
+		// 		);
+		// 		return true;
+
+		// 	}
+		// }
+		// return false;
+	}
+
+
+	function getSellerItemIndex(bytes32 _itemId, address _owner, uint256 _length) internal view returns (uint256) {
+		uint256 i = 0;
+		for (i; i < _length; i++) {
+			if (itemIdsFromSeller[_owner][i] == _itemId) {
+				break; // saves the state of i for our return
+			}
+		}
+		return i; //1 more than last index since that's what broke the loop 
+	}
+
+	function removeItemFromSellerItemIds(address _owner, bytes32 _itemId)
+		internal
+		returns (bool)
+	{
+		uint256 length = itemIdsFromSeller[_owner].length;
+		uint256 index = getSellerItemIndex(_itemId, _owner, length);
+
+		if (index == length) {
+			return false;
+		}
+
+		// reshuffle our seller's item list so we remove the item
+		for (uint256 i = index; i < length - 1; i++) {
+			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
+		}
+		// remove the last item to reduce the length
+		itemIdsFromSeller[_owner].pop();
+
+		emit eventItemRemovedFromSeller(index, _itemId);
+
+		if (itemIdsFromSeller[_owner].length == 0) {
+			// no longer need seller stored
+			delete itemIdsFromSeller[_owner];
+		}
+
+		return true;
+
+
+
+		// // find our item in our seller's list
+		// uint256 sellerItemsLength = itemIdsFromSeller[_owner].length;
+		// for (uint256 i = 0; i < sellerItemsLength; i++) {
+		// 	if (itemIdsFromSeller[_owner][i] == _itemId) {
+		// 		uint256 itemIdLocation = i;
+
+		// 		// reshuffle our seller's item list so we remove the item
+		// 		for (i; i < sellerItemsLength - 1; i++) {
+		// 			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
+		// 		}
+		// 		// remove the last item to reduce the length
+		// 		itemIdsFromSeller[_owner].pop();
+
+		// 		emit eventItemRemovedFromSeller(itemIdLocation, _itemId);
+
+		// 		return true;
+		// 	}
+		// }
+
+		// // return if not found;
+		// return false;
+	}
 }
 
 /* NOTES:
-	Item ids are currently changing (or rather the index to find the item is changing)
-		Instead, we need the ids to purchase the item to stay the same
-
-	Payments seem to work! Contract receives coins, then send soff 95% of them to the seller.
-
 
 
 */

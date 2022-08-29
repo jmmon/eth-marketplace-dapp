@@ -66,9 +66,19 @@ module.exports = {
     //
     // development: {
     //  host: "127.0.0.1",     // Localhost (default: none)
-    //  port: 8545,            // Standard Ethereum port (default: none)
+    //  port: 9545,            // Standard Ethereum port (default: none)
     //  network_id: "*",       // Any network (default: none)
     // },
+
+    // coverage: {
+		// 	host: "localhost",
+		// 	network_id: "*",
+		// 	port: 8555,
+		// 	gas: 0xfffffffffff,
+		// 	gasPrice: 0x01
+		// },
+
+    
     //
     // An additional network, but with some advanced options…
     // advanced: {
@@ -97,6 +107,8 @@ module.exports = {
     //   production: true    // Treats this network as if it was a public net. (default: false)
     // }
   },
+
+  // plugins: ['solidity-coverage'],
 
   // Set default mocha options here, use special reporters, etc.
   mocha: {
