@@ -107,7 +107,7 @@ contract Marketplace {
 		Item memory item = Item({
 			owner: msg.sender,
 			ipfsHash: _dataHash,
-			price: _price,
+			price: _price, // not needed? saved in the ipfs upload so comes with the rest of the data
 			id: itemHashId
 		});
 
