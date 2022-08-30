@@ -36,6 +36,21 @@
     "vite": "3.0.9",
     "vite-tsconfig-paths": "3.5.0"
   },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "*.tsx",
+        "options": {
+          "printWidth": 80,
+          "tabWidth": 2,
+          "useTabs": true,
+          "singleQuote": false,
+          "bracketSpacing": false,
+          "explicitTypes": "always"
+        }
+      }
+    ]
+  },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
@@ -44,6 +59,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@metamask/detect-provider": "^1.2.0"
+    "@metamask/detect-provider": "^1.2.0",
+    "ipfs-core": "^0.15.4"
   }
 }
