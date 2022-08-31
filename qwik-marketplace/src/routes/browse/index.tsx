@@ -22,25 +22,26 @@ export default component$(() => {
 		margin: 1.5rem;
 	}`);
 
-	// const arrayOfItemShells = useEndpoint<IItem[]>();
+	const arrayOfItemShells = useEndpoint<IItem[]>();
 	// console.log('arrayOfItemShells:', arrayOfItemShells);
 
-	const trpcResource = useResource$<IItem[]>(async () => {
-		// const items = await trpc().query("dummyItems:list");
-		const items = await trpc(fetch.bind(window)).query("dummyItems:list");
-		console.log("dummyItems:list --->", items);
-		return items;
-	});
+	// const trpcResource = useResource$<IItem[]>(async () => {
+	// 	const items = await trpc().query("dummyItems:list");
+	// 	console.log('window useResource', typeof window === 'undefined');
+	// 	// const items = await trpc(fetch.bind(window)).query("dummyItems:list");
+	// 	console.log("dummyItems:list --->", items);
+	// 	return items;
+	// });
 
 	return (
 		<div class="w-full p-4">
 			<h1 class="text-center text-6xl text-blue-800">Browse Marketplace</h1>
 			<div className="itemsContainer">
 				<Resource
-					value={trpcResource}
+					value={arrayOfItemShells}
 					onPending={() => <div class="text-5xl bg-red-400">Loading...</div>}
 					onRejected={(error) => (
-						<div class="text-red-400 text-5xl">Error: {error.messagge}</div>
+						<div class="text-red-400 text-5xl w-full">Error: {error.message}</div>
 					)}
 					onResolved={(items) =>
 						items.map((item) => (
@@ -54,16 +55,16 @@ export default component$(() => {
 	);
 });
 
-// export const onGet: RequestHandler<IItem[]> = async () => {
-// 	//temporary fetch from my own api endpoint instead of smart contract
-// 	const fetchedItems = await fetch(
-// 		`http://127.0.0.1:5174/api/marketplace/dummyItems`
-// 	);
-// 	const array: IItem[] = await fetchedItems.json();
-// 	console.log(`browse request handler runs`);
-// 	console.log("array", array);
-// 	return array;
-// };
+export const onGet: RequestHandler<IItem[]> = async () => {
+	//temporary fetch from my own api endpoint instead of smart contract
+	const fetchedItems = await fetch(
+		`http://127.0.0.1:5174/api/marketplace/dummyItems`
+	);
+	const array: IItem[] = await fetchedItems.json();
+	// console.log(`browse request handler runs`);
+	// console.log("array", array);
+	return array;
+};
 
 export const ItemPreview = component$((props: {item: IItem}) => {
 	const resource = useResource$<IItemData>(async ({track}) => {
@@ -74,7 +75,7 @@ export const ItemPreview = component$((props: {item: IItem}) => {
 		const response = await fetch(url);
 		// can render img from localhost gateway?
 		const itemData = await response.json();
-		console.log("item useResource itemData:", {itemData});
+		// console.log("item useResource itemData:", {itemData});
 		return itemData;
 	});
 
@@ -82,7 +83,7 @@ export const ItemPreview = component$((props: {item: IItem}) => {
 		<Resource
 			value={resource}
 			onResolved={(itemData: IItemData) => {
-				console.log(" this item:", {itemData});
+				// console.log(" this item:", {itemData});
 				const imgUrl = `http://localhost:8080/ipfs/${itemData.imgHash}`;
 				return (
 					<div class="item p-2 m-2 flex flex-wrap flex-col flex-1 items-center text-lg text-white text-left bg-blue-400 gap-1 w-4/12">

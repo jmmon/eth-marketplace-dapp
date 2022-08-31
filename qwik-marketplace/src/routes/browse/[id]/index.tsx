@@ -1,11 +1,6 @@
 import { component$, Resource, useResource$ } from "@builder.io/qwik";
 import { RequestHandler, useEndpoint } from "@builder.io/qwik-city";
 
-export function delay(time: number) {
-	return new Promise<void>((resolve) => {
-		setTimeout(resolve, time);
-	});
-}
 
 export default component$(() => {
 
@@ -29,11 +24,11 @@ export default component$(() => {
 
 
 export const onGet: RequestHandler<IItem> = async ({params}) => {
-	console.log({params});
+	// console.log({params});
 	//temporary fetch from my own api endpoint instead of smart contract
 	const fetchedItems = await fetch(`http://127.0.0.1:5174/api/marketplace/dummyItems/${params.id}`)
 	const item: IItem = await fetchedItems.json();
-	console.log('parent onGet, received:', item);
+	// console.log('parent onGet, received:', item);
 	return item;
 }
 
@@ -43,7 +38,7 @@ export const ItemDetails = component$((props: {item: IItem}) => {
 	const itemData = useResource$<IItemData>(async ({ track, cleanup }) => {
 		track(props, "item");
 
-		console.log('itemDetails props.item', props.item);
+		// console.log('itemDetails props.item', props.item);
 		const controller = new AbortController();
 		cleanup(() => controller.abort());
 
@@ -69,6 +64,13 @@ export const ItemDetails = component$((props: {item: IItem}) => {
 		/>
 	);
 })
+
+
+export function delay(time: number) {
+	return new Promise<void>((resolve) => {
+		setTimeout(resolve, time);
+	});
+}
 
 export const getItemData = async (hash: string, controller?: AbortController): Promise<IItemData> => {
 	//gotta fetch the item data from IPFS...

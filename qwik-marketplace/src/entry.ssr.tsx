@@ -11,5 +11,13 @@ export default function (opts: RenderToStreamOptions) {
   return renderToStream(<Root />, {
     manifest,
     ...opts,
+    streaming: {
+      inOrder: {
+        // strategy: 'disabled', // prevents streaming; forces server to get all resources before showing any html 
+        strategy: 'auto',
+        // minimumChunkSize: 0,
+        // initialChunkSize: 0,
+      }
+    }
   });
 }
