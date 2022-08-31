@@ -39,7 +39,7 @@ contract Marketplace {
 	address payable private contractOwner;
 
 	mapping(address => bytes32[]) itemIdsFromSeller; // for getting IDs from a seller
-	mapping(bytes32 => Item) itemFromId;	// for getting item from ID
+	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
 	bytes32[] public itemIdList; // for getting all item IDS
 
 	struct Item {
@@ -73,7 +73,7 @@ contract Marketplace {
 		contractOwner = payable(msg.sender);
 	}
 
-	// getters
+	// getters?? needed for public vars?
 	function getForSaleItemIds() public view returns (bytes32[] memory) {
 		return itemIdList;
 	}
@@ -107,7 +107,7 @@ contract Marketplace {
 		Item memory item = Item({
 			owner: msg.sender,
 			ipfsHash: _dataHash,
-			price: _price, // not needed? saved in the ipfs upload so comes with the rest of the data
+			price: _price, // needed, smart contract must know the "price" of the item for sale
 			id: itemHashId
 		});
 

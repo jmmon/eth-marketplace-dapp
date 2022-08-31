@@ -20,5 +20,5 @@
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", "unused/about-us", "unused/blog"]
+  "include": ["src", "unused/about-us", "unused/blog", "unused/browse", "unused/browse"]
 }

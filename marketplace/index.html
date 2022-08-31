@@ -1,53 +1,139 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>JavaScript file upload</title>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <!-- <script src="https://wzrd.in/standalone/buffer" cross-origin='anonymous'></script> -->
+	<head>
+		<title>JavaScript file upload</title>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+		<!-- <script src="https://wzrd.in/standalone/buffer" cross-origin='anonymous'></script> -->
 		<script src="./libs/wzrdin_buffer_polyfill.js"></script>
-    <script src="https://unpkg.com/ipfs-api@9.0.0/dist/index.js"
-    integrity="sha384-5bXRcW9kyxxnSMbOoHzraqa7Z0PQWIao+cgeg327zit1hz5LZCEbIMx/LWKPReuB"
-    crossorigin="anonymous"></script>
-  </head>
-  <script type="text/javascript">
+		<script
+			src="https://unpkg.com/ipfs-api@9.0.0/dist/index.js"
+			integrity="sha384-5bXRcW9kyxxnSMbOoHzraqa7Z0PQWIao+cgeg327zit1hz5LZCEbIMx/LWKPReuB"
+			crossorigin="anonymous"
+		></script>
+	</head>
+	<script type="text/javascript">
 		// IPFS upload works!!!
-    function upload() {
-      const reader = new FileReader();
+		function uploadImage() {
+			const reader = new FileReader();
 
-      reader.onloadend = function() { // after photo is read...
-        const ipfs = window.IpfsApi('localhost', 5001) // Connect to IPFS
-        const buf = buffer.Buffer(reader.result) // Convert data into buffer
-				// buffer is undefined??
-        ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
-          if(err) {
-            console.error(err)
-            return
-          }
-          let url = `https://ipfs.io/ipfs/${result[0].hash}`
-          console.log(`Url --> ${url}`)
-          document.getElementById("url").innerHTML= url
-          document.getElementById("url").href= url
-          document.getElementById("output").src = url
-        })
-      }
+			reader.onloadend = function () {
+				// after photo is read...
+				const ipfs = window.IpfsApi("localhost", 5001); // Connect to IPFS
+				const buf = buffer.Buffer(reader.result); // Convert data into buffer using polyfill
+				ipfs.files.add(buf, (err, result) => {
+					// Upload buffer to IPFS
+					if (err) {
+						console.error(err);
+						return;
+					}
 
-      const photo = document.getElementById("photo"); // get our photo
-      reader.readAsArrayBuffer(photo.files[0]); // Read Provided photo
-    }
-  </script>
-  <body>
-    <form action="/">
-      <fieldset>
-        <legend>Upload photo</legend>
-        <input type="file" name="photo" id="photo">
-        <button type="button" onclick="upload()">Upload</button>
-      </fieldset>
-    </form>
-    </br>
-    </br>
-    <a id="url"></a>
-    </br>
-    </br>
-    <img id="output">
-  </body>
+					let url = `http://localhost:8080/ipfs/${result[0].hash}`;
+					// let url = `https://ipfs.io/ipfs/${result[0].hash}`
+					console.log(`Image Url --> ${url}`);
+					document.getElementById("url").innerHTML = url;
+					document.getElementById("url").href = url;
+					document.getElementById("output").src = url;
+					document.getElementById("imgHash").value = result[0].hash;
+				});
+			};
+
+			const photo = document.getElementById("photo"); // get our photo
+			reader.readAsArrayBuffer(photo.files[0]); // Read Provided photo
+		}
+
+		function submitForm() {
+			const form = document.getElementById("mainForm");
+			const formData = new FormData(form);
+
+			let formDataObject = {};
+			[...formData.entries()].forEach(
+				([key, value]) => (formDataObject[key] = value)
+			);
+			console.log({ formDataObject });
+
+			const formDataJson = JSON.stringify(formDataObject);
+			console.log(formDataJson);
+
+			const ipfs = window.IpfsApi("localhost", 5001); // Connect to IPFS
+			const buf = buffer.Buffer(formDataJson); // Convert data into buffer using polyfill
+			ipfs.files.add(buf, (err, result) => {
+				// Upload buffer to IPFS
+				if (err) {
+					console.error(err);
+					return;
+				}
+
+				let url = `http://localhost:8080/ipfs/${result[0].hash}`;
+				// let url = `https://ipfs.io/ipfs/${result[0].hash}`
+				console.log(`complete form url --> ${url}`);
+				// display results
+				document.getElementById("formUrl").innerHTML = url;
+				document.getElementById("formUrl").href = url;
+				document.getElementById("formHash").innerText = result[0].hash;
+			});
+		}
+	</script>
+	<body>
+		<form action="/">
+			<fieldset>
+				<legend>Upload photo</legend>
+				<input type="file" name="photo" id="photo" />
+				<button type="button" onclick="uploadImage()">Upload</button>
+				<span>Uploaded image:</span>
+				<a id="url"></a>
+				<img id="output" />
+				<!-- http://localhost:8080/ipfs/QmeRX6fPZJePGFTt4mx8WzytuLzBqhuVL9M4FdbVvr5ZcK -->
+			</fieldset>
+		</form>
+		<form id="mainForm">
+			<fieldset>
+				<label for="price">
+					Price
+					<input
+						name="price"
+						class="block"
+						type="text"
+						placeholder="In wei..."
+						id="price"
+					/>
+				</label>
+			</fieldset>
+			<fieldset>
+				<label for="name">
+					Name
+					<input
+						name="name"
+						class="block"
+						type="text"
+						placeholder="Name"
+						id="name"
+					/>
+				</label>
+			</fieldset>
+			<fieldset>
+				<label for="description">
+					Description
+					<textarea
+						name="description"
+						rows="5"
+						cols="40"
+						type="text"
+						placeholder="Description"
+						id="description"
+					></textarea>
+					<input id="imgHash" name="imgHash" style="display: none" />
+				</label>
+			</fieldset>
+			<button type="button" onclick="submitForm()">
+				Upload All to IPFS
+			</button>
+		</form>
+		<br />
+		<br />
+		<a id="formUrl"></a>
+		<span id="formHash"></span>
+		<!-- http://localhost:8080/ipfs/QmbJWAESqCsf4RFCqEY7jecCashj8usXiyDNfKtZCwwzGb -->
+		<br />
+		<br />
+	</body>
 </html>

@@ -1,5 +1,6 @@
 import { $, component$, useClientEffect$, useStore, useWatch$ } from "@builder.io/qwik";
 import { RequestHandler } from "@builder.io/qwik-city";
+import { read } from "fs";
 import * as IPFS from 'ipfs-core';
 
 
@@ -75,28 +76,34 @@ export default component$(() => {
 	})
 	
 	const uploadImage = $((e) => {
-		const ipfs = await IPFS.create();
-		const fileList = Array.from(e.target.files);
-		const formData = new FormData();
-		formData.append(0, fileList[0]);
+		// const ipfs = await IPFS.create();
+		// const fileList = Array.from(e.target.files);
+		// const formData = new FormData();
+		// formData.append(0, fileList[0]);
 
 
-		const reader = new FileReader();
-		reader.onloadend = function() {
-			reader.readAsBinaryString(fileList);
-			const ipfs = ipfsAPI('localhost', 5001);
-			const buf = buffer.Buffer(reader.result);
+		// const reader = new FileReader();
+		// reader.onloadend = function() {
+		// 	reader.readAsBinaryString(fileList);
+		// 	const ipfs = ipfsAPI('localhost', 5001);
+		// 	const buf = buffer.Buffer(reader.result);
 
-			IPFS.
-		}
+		// 	// IPFS.
+		// }
 
 		//run ipfs upload
 	})
 
+	const upload = $(() => {
+		// const reader = new FileReader();
+
+		// reader.onloadend = () => {}
+	});
+
 
 
 	return (
-		<form method="post" action="/register" class="flex flex-col w-full align-center">
+		<form action="/register" class="flex flex-col w-full align-center">
 			<h1 class="mx-auto text-lg">Add Item to Marketplace</h1>
 			<label class="border rounded w-1/2 mx-auto my-4 p-4" for="price">
 				Price
@@ -148,33 +155,34 @@ export default component$(() => {
 			type="submit" 
 			class="border rounded  mx-auto p-4 my-4" 
 			// onClick$={(e) => form.submit = true}
+			onClick$={upload}
 			>Add Item To Marketplace
 			</button>
 		</form>
 	);
 });
 
-//{url, params, request, response}
-// on the server, need to upload the photo and the data to IPFS and return the hash
-export const onPost: RequestHandler = async (body) => {
-	console.log({ body });
-	// console.log(params.skuId);
-	// console.log(request.method);
-	// console.log(url.pathname);
+// //{url, params, request, response}
+// // on the server, need to upload the photo and the data to IPFS and return the hash
+// export const onPost: RequestHandler = async (body) => {
+// 	console.log({ body });
+// 	// console.log(params.skuId);
+// 	// console.log(request.method);
+// 	// console.log(url.pathname);
 
-	//post a new image, record the location hash (maybe do this client-side first? Then submit the item to the server)
+// 	//post a new image, record the location hash (maybe do this client-side first? Then submit the item to the server)
 
-	/*post a new file 
-	{
-		imageLocationHash,
+// 	/*post a new file 
+// 	{
+// 		imageLocationHash,
 
-	}
-	 */
+// 	}
+// 	 */
 
-	// set response headers
-	// response.headers.append('Cache-Control', ' public, max-age=86400');
+// 	// set response headers
+// 	// response.headers.append('Cache-Control', ' public, max-age=86400');
 
-	return {};
-};
+// 	return {};
+// };
 
 
