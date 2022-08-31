@@ -5,17 +5,6 @@ import * as IPFS from 'ipfs-core';
 
 
 
-
-
-
-interface IFormStore {
-	photo: object;
-	price: number;
-	name: string;
-	description: string;
-	submit: boolean;
-}
-
 export default component$(() => {
 	const form = useStore<IFormStore>({
 		photo: undefined,

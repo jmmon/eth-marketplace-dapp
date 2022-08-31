@@ -21,7 +21,6 @@ export const onGet: RequestHandler<IItem[]> = ({ request, params }) => {
 			id: `3`
 		},
 	]
-	console.log('get marketplace/dummyItems');
   return Promise.resolve(dummyItems);
 };
 
