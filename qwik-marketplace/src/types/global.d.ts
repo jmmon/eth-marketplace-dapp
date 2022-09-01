@@ -12,10 +12,3 @@ declare interface IItemData {
 	imgHash: string;
 }
 
-declare interface IFormStore {
-	photo: object;
-	price: number;
-	name: string;
-	description: string;
-	submit: boolean;
-}

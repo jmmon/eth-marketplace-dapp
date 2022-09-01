@@ -6,8 +6,6 @@ import {
 	useStyles$,
 } from "@builder.io/qwik";
 import {useEndpoint} from "@builder.io/qwik-city";
-// ~ means "home directory", src in this case I guess?
-import trpc from "~/client/trpc";
 
 export default component$(() => {
 	// check for account info
@@ -43,7 +41,7 @@ export default component$(() => {
 					onRejected={(error) => (
 						<div class="text-red-400 text-5xl w-full">Error: {error.message}</div>
 					)}
-					onResolved={(items) =>
+					onResolved={(items: IItem[]) =>
 						items.map((item) => (
 							// display array of item components
 							<ItemPreview item={item} />

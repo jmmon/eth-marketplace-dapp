@@ -4,6 +4,7 @@ import {
 	useClientEffect$,
 	useContext,
 	useContextProvider,
+	useResource$,
 	useStore,
 } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
@@ -11,7 +12,7 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 interface IMetamaskStore {
 	hasMetamask: boolean;
 	error: undefined | string;
-	accounts: string[];
+	account: string;
 	blockNumber: number;
 	provider: undefined | object;
 }
@@ -22,7 +23,7 @@ export default component$(() => {
 	const metamask = useStore<IMetamaskStore>({
 		hasMetamask: true, // will check and switch to false if needed
 		error: undefined,
-		accounts: "",
+		account: "",
 		blockNumber: -1,
 		provider: undefined,
 	});
@@ -60,6 +61,7 @@ export default component$(() => {
 		// if not, try showing the log in button.
 
 		// Successfully logged in, do stuff!
+		const ethereum = window.ethereum;
 		const accounts = await ethereum.request({
 			method: "eth_requestAccounts",
 		});
@@ -71,6 +73,23 @@ export default component$(() => {
 		console.log({ chainId });
 	});
 
+	const handleConnect = $(async () => {
+		// log in with ethereum
+		const ethereum = window.ethereum;
+		try {
+			// check if unlocked
+			const accounts = await ethereum.request({
+				method: "eth_requestAccounts",
+			});
+			//save accounts to our store
+			metamask.account = accounts[0];
+			console.log('account:', metamask.account);
+			
+		} catch (error) {
+			metamask.error = error.message;
+		}
+	});
+
 	return (
 		<div>
 			<h1 class="pb-2 text-lg">Welcome to Qwik City</h1>
@@ -78,21 +97,7 @@ export default component$(() => {
 			{!metamask.account && (
 				<button
 					class="bg-gray-200 hover:bg-sky-100 rounded p-2"
-					onClick$={async () => {
-						// log in with ethereum
-						const ethereum = window.ethereum;
-						try {
-							// check if unlocked
-							const accounts = await ethereum.request({
-								method: "eth_requestAccounts",
-							});
-							//save accounts to our store
-							metamask.account = accounts[0];
-							console.log('account:', metamask.account);
-						} catch (e) {
-							metamask.error = e.message;
-						}
-					}}
+					onClick$={handleConnect}
 				>
 					Connect Metamask
 				</button>
@@ -138,7 +143,7 @@ export const Marketplace = component$((props) => {
 			<h1>The marketplace</h1>
 			<div>Some products</div>
 			{Object.keys(context).map((key) => {
-        return (<div>{key}: {context.key}</div>);
+        return (<div>{key}: {context[key]}</div>);
       })}
 		</div>
 	);
@@ -147,7 +152,7 @@ export const Marketplace = component$((props) => {
 export const Item = component$((props) => {
 	const context = useContext(MyContext);
 
-	const itemResource = useResource(({track, cleanup}) => {
+	const itemResource = useResource$(({track, cleanup}) => {
 
 	});
 	return (
