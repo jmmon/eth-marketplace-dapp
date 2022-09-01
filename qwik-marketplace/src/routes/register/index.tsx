@@ -10,11 +10,9 @@ import {RequestHandler} from "@builder.io/qwik-city";
 import {read} from "fs";
 import {create} from "ipfs-http-client";
 // import { CID } from 'multiformats/cid';
-import { CID } from 'ipfs-http-client';
-import { Notification } from '../../components/notification/notification';
-
-
-
+import {CID} from "ipfs-http-client";
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from "~/libs/ethUtils";
+import {Notification} from "../../components/notification/notification";
 
 interface INewNotificationEach {
 	message: string;
@@ -26,10 +24,6 @@ interface INewNotification {
 	each: INewNotification[];
 }
 
-
-
-
-
 interface INotification {
 	message: string;
 	string: string;
@@ -40,7 +34,7 @@ interface IState {
 	notification: INotification;
 	cost: number | undefined;
 	imageString: string;
-  dataString: string;
+	dataString: string;
 }
 
 declare interface IFormStore {
@@ -52,40 +46,34 @@ declare interface IFormStore {
 }
 
 export function toHexString(byteArray: Uint8Array): string {
-  return Array.prototype.map.call(byteArray, function(byte) {
-    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-  }).join('');
+	return Array.prototype.map
+		.call(byteArray, function (byte) {
+			return ("0" + (byte & 0xff).toString(16)).slice(-2);
+		})
+		.join("");
 }
 
 export default component$(() => {
-	// const form = useStore<IFormStore>({
-	// 	photo: undefined,
-	// 	price: 0,
-	// 	name: "",
-	// 	description: "",
-	// 	submit: false,
-	// });
 	const notifications = useStore<INewNotification>({
 		each: [],
 	});
 	useClientEffect$(({track}) => {
-		track(notifications, 'each');
-		console.log('WATCH (PARENT): new notifications store:', notifications);
+		track(notifications, "each");
+		console.log("WATCH (PARENT): new notifications store:", notifications);
 	});
 
 	const state = useStore<IState>({
 		isBrowser: false,
 		notification: {
-			message: '',
-			string: '',
-			error: '',
+			message: "",
+			string: "",
+			error: "",
 		},
 		cost: undefined,
-		imageString: '',
-		dataString: '',
+		imageString: "",
+		dataString: "",
 	});
 	const photoInputRef = useRef();
-	const formRef = useRef();
 
 	// Client/Server check
 	useClientEffect$(() => {
@@ -99,10 +87,10 @@ export default component$(() => {
 			type,
 			index: notifications.each.length, // 1 more than last index is the new index for this notification
 			timeout,
-		} 
+		};
 		// add it to our list, the rest should be handled by the notification?
 		notifications.each.push(newNotification);
-	})
+	});
 
 	// simple form validation (not used yet)
 	// const validate = $((form) => {
@@ -137,14 +125,6 @@ export default component$(() => {
 	// 	await attemptTransaction(hash);
 	// 	form.submit = false;
 	// });
-	
-
-	
-
-	useClientEffect$((track) => {
-
-	})
-
 
 	const handleSubmit = $(async (e) => {
 		const formData = new FormData(e.target);
@@ -158,112 +138,111 @@ export default component$(() => {
 		// upload file
 		const reader = new FileReader();
 
-		
-		
 		reader.onloadend = async () => {
-			const bufPhoto = (state.isBrowser)
-			? window.buffer.Buffer(reader.result)
-			: Buffer.from(reader.result);
-		
+			const bufPhoto = state.isBrowser
+				? window.buffer.Buffer(reader.result)
+				: Buffer.from(reader.result);
 
 			try {
-				const { cid } = await ipfs.add(bufPhoto);
-				state.imageString = cid.toString();				
-				console.log('cid.toString()', cid.toString());
-				
-				state.notification = {
-					message: "Image upload successful!", 
-					string: state.imageString,
-					error: '',
-				};
+				const {cid} = await ipfs.add(bufPhoto);
+				state.imageString = cid.toString();
+				console.log("cid.toString()", cid.toString());
 
+				state.notification = {
+					message: "Image upload successful!",
+					string: state.imageString,
+					error: "",
+				};
 				addNotification(
 					`Image upload successful! ${state.imageString}`,
-					'success',
-					5000,
+					"success",
+					5000
 				);
-
 
 				// continue to upload the whole data
 				uploadItemData();
-
 			} catch (err) {
 				console.error("Image IPFS error:", err.message);
-				//old notification
 				state.notification = {
 					message: "Image upload failed",
-					string: '',
+					string: "",
 					error: err.message,
 				};
-
-				addNotification(
-					'Image upload failed',
-					'error',
-					5000,
-				);
+				addNotification("Image upload failed", "error", 5000);
 			}
 		};
 
-		const uploadItemData = async () => {	
+		const uploadItemData = async () => {
 			let formDataObject = {};
-			[...formData.entries()].filter(([key, value]) => key !== 'photo').forEach(
-				([key, value]) => (formDataObject[key] = value)
-			);
+			[...formData.entries()]
+				.filter(([key, value]) => key !== "photo")
+				.forEach(([key, value]) => (formDataObject[key] = value));
 			console.log({formDataObject});
-	
+
 			formDataObject["imgHash"] = state.imageString;
-			console.log('final formDataObject:', formDataObject);
-		
+			console.log("final formDataObject:", formDataObject);
+
 			const formDataJson = JSON.stringify(formDataObject);
-			console.log('json version:', formDataJson);
-	
-	
-			const bufData = (state.isBrowser)
+			console.log("json version:", formDataJson);
+
+			const bufData = state.isBrowser
 				? window.buffer.Buffer(formDataJson)
 				: Buffer.from(formDataJson);
-			
+
 			try {
-				const { cid } = await ipfs.add(bufData);
-				console.log('cid.toString()', cid.toString());
+				const {cid} = await ipfs.add(bufData);
+				console.log("cid.toString()", cid.toString());
 				// some sort of error: set property of textarea#description: cannot set property because it only has a getter
-				
+
 				state.dataString = cid.toString();
 				state.notification = {
 					message: "ItemData upload successful!",
 					string: state.dataString,
-					error: '',
+					error: "",
 				};
-	
 				addNotification(
 					`ItemData upload successful! ${state.dataString}`,
-					'success',
-					5000,
-				);	
-	
-				try {
-					const accounts = await window.ethereum.request({
-						method: "eth_requestAccounts",
-					});
-				} catch (e) {
-					alert("Access Denied.");
-				} finally {
-					console.log("after enable");
-				}
+					"success",
+					5000
+				);
 
-				// TODO: Prepare Eth transaction!
-	
+				if (state.isBrowser) {
+					// check for metamask
+					try {
+						const accounts = await window.ethereum.request({
+							method: "eth_requestAccounts",
+						});
+						// TODO: Prepare Eth transaction!
+						const web3 = new Web3(window.ethereum);
+						// const contract = require('web3-eth-contract');
+						const myContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+						web3.eth.defaultAccount = accounts[0];
+
+						myContract.add(state.dataString, formDataObject.price).then((txHash) => {
+							console.log('added! txHash:', txHash);
+							addNotification(`Item added! hash: ${txHash}`, "", 10000);
+						}).catch((err) => {
+							console.log('Error adding item:', err);
+							addNotification(`Error adding item: ${err}`, "error", 10000);
+							return;
+						})
+
+
+					} catch (e) {
+						addNotification("Can't get metamask accounts!", "warning", 5000);
+					}
+				}
+				
+
+
 			} catch (err) {
 				state.notification = {
 					message: "ItemData upload failed",
-					string: '',
+					string: "",
 					error: err.message,
 				};
-	
-				addNotification(
-					'ItemData upload failed',
-					'error',
-					5000,
-				);	
+				addNotification("ItemData upload failed", "error", 5000);
 			}
 		};
 
@@ -272,48 +251,36 @@ export default component$(() => {
 		//alternately, could try pulling file from formData
 	});
 
-
-
-	 
 	// Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur dolores molestiae, laborum dicta soluta perferendis eaque error iusto ullam sint eos doloremque excepturi quia. Corporis ratione reprehenderit ipsum distinctio placeat explicabo provident odio quasi necessitatibus. Saepe quis, quasi doloribus ducimus enim minus, odit assumenda nisi, repellat rem aliquam blanditiis quae?
 
 	// notification resetter functions
 	useWatch$(({track}) => {
-		const { message } = track(state, "notification");
-		console.log('running watch notification.message:', {message});
+		const {message} = track(state, "notification");
+		console.log("running watch notification.message:", {message});
 		if (message === "") return;
-	
+
 		const timer = setTimeout(() => (state.notification.message = ""), 5000);
 		return () => clearTimeout(timer);
 	});
 
 	useWatch$(({track}) => {
-		const { error } = track(state, "notification");
-		console.log('running watch notification.error:', {error});
+		const {error} = track(state, "notification");
+		console.log("running watch notification.error:", {error});
 		if (error === "") return;
-		
+
 		const timer = setTimeout(() => (state.notification.error = ""), 5000);
 		return () => clearTimeout(timer);
 	});
-
-	// const testSubmit = $((e) => {
-	// 	console.log('test submit');
-	// 	console.log(e.target);
-	// });
 
 	return (
 		<>
 			<form
 				class="flex flex-col w-full align-center"
-				ref={formRef}
 				preventdefault:submit
 				onSubmit$={(e) => handleSubmit(e)}
 			>
 				<h1 class="mx-auto text-lg">Add Item to Marketplace</h1>
-				<label 
-				class="border rounded w-1/2 mx-auto my-4 p-4" 
-				for="price"
-				>
+				<label class="border rounded w-1/2 mx-auto my-4 p-4" for="price">
 					Price
 					<input
 						name="price"
@@ -348,7 +315,7 @@ export default component$(() => {
 					Upload a Photo
 					<input
 						name="photo"
-						class="block" 
+						class="block"
 						type="file"
 						id="photo"
 						ref={photoInputRef}
@@ -356,45 +323,48 @@ export default component$(() => {
 						Choose A File
 					</input>
 				</label>
-				<button
-					class="border rounded  mx-auto p-4 my-4"
-				>
+				<button class="border rounded  mx-auto p-4 my-4">
 					Add Item To Blockchain Marketplace
 				</button>
 			</form>
 			<div class="flex flex-col align-center">
-				
-				{state.notification.message !== '' && <p class="w-[600px] rounded bg-green-200 p-3">{state.notification.message}</p>}
-					
-				{state.notification.error !== '' && <p class="w-[600px] rounded bg-red-200 p-3">{state.notification.error}</p>}
+				{state.notification.message !== "" && (
+					<p class="w-[600px] rounded bg-green-200 p-3">
+						{state.notification.message}
+					</p>
+				)}
 
+				{state.notification.error !== "" && (
+					<p class="w-[600px] rounded bg-red-200 p-3">
+						{state.notification.error}
+					</p>
+				)}
 
-				{state.dataString !== '' && <p class="w-[600px] rounded bg-blue-200 p-3">Data file uploaded! Reference string: {state.dataString}</p>}
+				{state.dataString !== "" && (
+					<p class="w-[600px] rounded bg-blue-200 p-3">
+						Data file uploaded! Reference string: {state.dataString}
+					</p>
+				)}
 
-				{state.imageString !== '' && <p class="w-[600px] rounded bg-blue-200 p-3">Image file uploaded! Reference string: {state.imageString}</p>}
-		<br />
-		<br />
-		<h2>New notifications!:</h2>
+				{state.imageString !== "" && (
+					<p class="w-[600px] rounded bg-blue-200 p-3">
+						Image file uploaded! Reference string: {state.imageString}
+					</p>
+				)}
+				<br />
+				<br />
+				<h2>New notifications!:</h2>
 
-				{notifications.each.map((thisNotification) => <Notification store={notifications} thisNotification={thisNotification} />)}
-
+				{notifications.each.map((thisNotification) => (
+					<Notification
+						store={notifications}
+						thisNotification={thisNotification}
+					/>
+				))}
 			</div>
 		</>
 	);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // //{url, params, request, response}
 // // on the server, need to upload the photo and the data to IPFS and return the hash
