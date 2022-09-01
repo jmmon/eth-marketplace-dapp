@@ -76,7 +76,7 @@ export const ItemPreview = component$((props: {item: IItem}) => {
 		// // console.log("item useResource itemData:", {itemData});
 		// return itemData;
 
-		return fetchItemFromIPFS(itemData)
+		return fetchItemFromIPFS(item);
 	});
 
 	return (

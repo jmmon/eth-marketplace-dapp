@@ -11,6 +11,23 @@ import {read} from "fs";
 import {create} from "ipfs-http-client";
 // import { CID } from 'multiformats/cid';
 import { CID } from 'ipfs-http-client';
+import { Notification } from '../../components/notification/notification';
+
+
+
+
+interface INewNotificationEach {
+	message: string;
+	type: string;
+	index: number;
+	timeout: number;
+}
+interface INewNotification {
+	each: INewNotification[];
+}
+
+
+
 
 
 interface INotification {
@@ -18,8 +35,6 @@ interface INotification {
 	string: string;
 	error: string;
 }
-
-
 interface IState {
 	isBrowser: boolean;
 	notification: INotification;
@@ -49,6 +64,14 @@ export default component$(() => {
 	// 	description: "",
 	// 	submit: false,
 	// });
+	const notifications = useStore<INewNotification>({
+		each: [],
+	});
+	useClientEffect$(({track}) => {
+		track(notifications, 'each');
+		console.log('WATCH (PARENT): new notifications store:', notifications);
+	});
+
 	const state = useStore<IState>({
 		isBrowser: false,
 		notification: {
@@ -63,10 +86,21 @@ export default component$(() => {
 	// const formRef = useRef();
 
 	// Client/Server check
-	useClientEffect$(({track}) => {
+	useClientEffect$(() => {
 		state.isBrowser = typeof window !== "undefined";
 		console.log({isBrowser: state.isBrowser});
 	});
+
+	const addNotification = $((message, type, timeout = 0) => {
+		const newNotification: INewNotificationEach = {
+			message,
+			type,
+			index: notifications.each.length, // 1 more than last index is the new index for this notification
+			timeout,
+		} 
+		// add it to our list, the rest should be handled by the notification?
+		notifications.each.push(newNotification);
+	})
 
 	// simple form validation (not used yet)
 	// const validate = $((form) => {
@@ -151,6 +185,17 @@ export default component$(() => {
 				error: '',
 			};
 
+			addNotification(
+				`ItemData upload successful! ${state.dataString}`,
+				'success',
+				5000,
+			);
+			addNotification(
+				`ItemData upload successful! ${state.dataString} - DUPLICATE - zero timeout`,
+				'success',
+			);
+			
+
 
 			// console.log('Got CID string from file result (state):', state.dataString);
 			// console.log('Got CID string from file result (calc):', cid.toString());
@@ -162,6 +207,17 @@ export default component$(() => {
 				string: '',
 				error: err.message,
 			};
+
+			addNotification(
+				'ItemData upload failed',
+				'error',
+				5000,
+			);
+			addNotification(
+				'ItemData upload failed - DUPLICATE - zero timeout',
+				'error',
+			);
+
 		}
 	});
 
@@ -201,6 +257,16 @@ export default component$(() => {
 					error: '',
 				};
 
+				addNotification(
+					`Image upload successful! ${state.imageString}`,
+					'success',
+					5000,
+				);
+				addNotification(
+					`Image upload successful! ${state.imageString} - DUPLICATE - zero timeout`,
+					'success',
+				);
+
 
 
 
@@ -214,12 +280,32 @@ export default component$(() => {
 					string: '',
 					error: err.message,
 				};
+
+				addNotification(
+					'Image upload failed',
+					'error',
+					5000,
+				);
+				addNotification(
+					'Image upload failed - DUPLICATE - zero timeout',
+					'error',
+				);
+				// const newNotification: INewNotificationEach = {
+				// 	message: "Image upload failed",
+				// 	type: "error",
+				// 	index: state.notifications.length, // 1 more than last index is the new index for this notification
+				// 	timeout: 5000,
+				// } 
+				// // add it to our list, the rest should be handled by the notification?
+				// notifications.each.push(newNotification);
 			}
 		};
 
 		reader.readAsArrayBuffer(photoInputRef.current.files[0]);
 		//alternately, could try pulling file from formData
 	});
+
+
 
 	 
 	// Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur dolores molestiae, laborum dicta soluta perferendis eaque error iusto ullam sint eos doloremque excepturi quia. Corporis ratione reprehenderit ipsum distinctio placeat explicabo provident odio quasi necessitatibus. Saepe quis, quasi doloribus ducimus enim minus, odit assumenda nisi, repellat rem aliquam blanditiis quae?
@@ -310,23 +396,38 @@ export default component$(() => {
 				</button>
 			</form>
 			<div class="flex flex-col align-center">
+				
+				{state.notification.message !== '' && <p class="w-[600px] rounded bg-green-200 p-3">{state.notification.message}</p>}
+					
+				{state.notification.error !== '' && <p class="w-[600px] rounded bg-red-200 p-3">{state.notification.error}</p>}
 
-				{state.notification.message !== '' && (
-					<p class="w-[600px] rounded bg-green-200 ">{state.notification.message}</p>
-				)}
-
-				{state.notification.error !== '' && (
-					<p class="w-[600px] rounded bg-red-200 ">{state.notification.message}</p>
-				)}
 
 				{state.dataString !== '' && <p class="w-[600px] rounded bg-blue-200 p-3">Data file uploaded! Reference string: {state.dataString}</p>}
 
 				{state.imageString !== '' && <p class="w-[600px] rounded bg-blue-200 p-3">Image file uploaded! Reference string: {state.imageString}</p>}
+		<br />
+		<br />
+		<h2>New notifications!:</h2>
+
+				{notifications.each.map((thisNotification) => <Notification store={notifications} thisNotification={thisNotification} />)}
 
 			</div>
 		</>
 	);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // //{url, params, request, response}
 // // on the server, need to upload the photo and the data to IPFS and return the hash
