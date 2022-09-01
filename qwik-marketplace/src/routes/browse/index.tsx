@@ -58,7 +58,7 @@ export default component$(() => {
 export const onGet: RequestHandler<IItem[]> = async () => {
 	//temporary fetch from my own api endpoint instead of smart contract
 	const fetchedItems = await fetch(
-		`http://127.0.0.1:5174/api/marketplace/dummyItems`
+		`http://127.0.0.1:5173/api/marketplace/dummyItems`
 	);
 	const array: IItem[] = await fetchedItems.json();
 	// console.log(`browse request handler runs`);
@@ -70,13 +70,15 @@ export const ItemPreview = component$((props: {item: IItem}) => {
 	const resource = useResource$<IItemData>(async ({track}) => {
 		track(props, "item");
 
-		//gotta fetch the item data from IPFS... then
-		const url = `http://localhost:8080/ipfs/${props.item.ipfsHash}`;
-		const response = await fetch(url);
-		// can render img from localhost gateway?
-		const itemData = await response.json();
-		// console.log("item useResource itemData:", {itemData});
-		return itemData;
+		// //gotta fetch the item data from IPFS... then
+		// const url = `http://localhost:8080/ipfs/${props.item.ipfsHash}`;
+		// const response = await fetch(url);
+		// // can render img from localhost gateway?
+		// const itemData = await response.json();
+		// // console.log("item useResource itemData:", {itemData});
+		// return itemData;
+
+		return fetchItemFromIPFS(itemData)
 	});
 
 	return (
@@ -116,3 +118,23 @@ export const ItemPreview = component$((props: {item: IItem}) => {
 		/>
 	);
 });
+
+
+
+export const fetchItemDataFromIPFS = async (
+	item: IItem,
+	controller?: AbortController
+): Promise<any> => {
+	//gotta fetch the item data from IPFS... then
+		console.log('before before the url fetching itemData');
+	const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
+	const response = await fetch(url, {
+		signal: controller?.signal,
+	});
+
+	const itemData = await response.json();
+	console.log("item useResource itemData:", itemData);
+
+	if (itemData && typeof itemData === 'object') return itemData;
+	return Promise.reject(itemData);
+}

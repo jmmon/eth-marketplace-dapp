@@ -59,6 +59,9 @@
   "type": "module",
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
-    "ipfs-core": "^0.15.4"
+    "express-session": "^1.17.3",
+    "ipfs-core": "^0.15.4",
+    "ipfs-http-client": "^57.0.3",
+    "multiformats": "^9.7.1"
   }
 }

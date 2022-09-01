@@ -1,8 +1,10 @@
 import { component$, Resource, useResource$ } from "@builder.io/qwik";
-import { RequestHandler, useEndpoint } from "@builder.io/qwik-city";
+import { RequestHandler, useEndpoint, useLocation } from "@builder.io/qwik-city";
 
 
 export default component$(() => {
+	const location = useLocation();
+
 
 	const itemShell = useEndpoint<IItem>();
 	// console.log('itemShell:', itemShell);
@@ -26,7 +28,7 @@ export default component$(() => {
 export const onGet: RequestHandler<IItem> = async ({params}) => {
 	// console.log({params});
 	//temporary fetch from my own api endpoint instead of smart contract
-	const fetchedItems = await fetch(`http://127.0.0.1:5174/api/marketplace/dummyItems/${params.id}`)
+	const fetchedItems = await fetch(`http://127.0.0.1:5173/api/marketplace/dummyItems/${params.id}`)
 	const item: IItem = await fetchedItems.json();
 	// console.log('parent onGet, received:', item);
 	return item;

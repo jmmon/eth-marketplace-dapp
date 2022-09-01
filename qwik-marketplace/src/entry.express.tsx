@@ -3,7 +3,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
 import render from './entry.ssr';
-
+const session = require('express-session');
 // directories where the static assets are located
 const distDir = join(fileURLToPath(import.meta.url), '..', '..', 'dist');
 const buildDir = join(distDir, 'build');
@@ -13,10 +13,20 @@ const { router, notFound } = qwikCity(render);
 
 // create the express server
 const app = express();
+// app.use(session({
+//   secret: 'keyboard cat',
+//   cookie: { maxAge: 60000 },
+// }))
+// app.use('/', (req, res, next) => {
+//   req.session.views = 1 + (req.session.views) ? req.session.views : 0;
+//   console.log('session views:', req.session.views);
+//   next();
+// })
 
 // static asset handlers
 app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: '1y' }));
 app.use(express.static(distDir, { redirect: false }));
+
 
 // use Qwik City's page and endpoint handler
 app.use(router);
