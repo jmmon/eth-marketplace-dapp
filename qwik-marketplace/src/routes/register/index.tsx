@@ -38,6 +38,7 @@ interface INotification {
 interface IState {
 	isBrowser: boolean;
 	notification: INotification;
+	cost: number | undefined;
 	imageString: string;
   dataString: string;
 }
@@ -79,11 +80,12 @@ export default component$(() => {
 			string: '',
 			error: '',
 		},
+		cost: undefined,
 		imageString: '',
 		dataString: '',
 	});
 	const photoInputRef = useRef();
-	// const formRef = useRef();
+	const formRef = useRef();
 
 	// Client/Server check
 	useClientEffect$(() => {
@@ -137,120 +139,38 @@ export default component$(() => {
 	// });
 	
 
-	const uploadItemData = $(async (e) => {
-		const formData = new FormData(e.target);
+	
 
-		let formDataObject = {};
-		[...formData.entries()].filter(([key, value]) => key !== 'photo').forEach(
-			([key, value]) => (formDataObject[key] = value)
-		);
-		console.log({formDataObject});
+	useClientEffect$((track) => {
 
-		formDataObject["imgHash"] = state.imageString;
-
-		console.log('final formDataObject:', formDataObject);
-
-
-		const formDataJson = JSON.stringify(formDataObject);
-		console.log('json version:', formDataJson);
-
-		const ipfsOptions = {url: "http://127.0.0.1:5001"};
-		// const ipfsOptions = {port: 5001, host: '127.0.0.1', protocol: 'http'};
-		const ipfs = create(ipfsOptions);
-
-		let bufData;
-
-		console.log(`attempting ${state.isBrowser ? 'client polyfill' : 'server Buffer'}`);
-
-		if (state.isBrowser) {
-			bufData = window.buffer.Buffer(formDataJson);
-		} else {
-			bufData = Buffer.from(formDataJson);
-		}
-
-		try {
-			const result = await ipfs.add(bufData);
-			const { path, cid, size } = result;
-
-			console.log('full file object:', result);
-			console.log('split:', {path, cid, size});
-			console.log('cid.toString()', cid.toString());
-			// works up to here!!!!!!
-			// some sort of error: set property of textarea#description: cannot set property because it only has a getter
-			
-			state.dataString = cid.toString();
-			state.notification = {
-				message: "ItemData upload successful!",
-				string: state.dataString,
-				error: '',
-			};
-
-			addNotification(
-				`ItemData upload successful! ${state.dataString}`,
-				'success',
-				5000,
-			);
-			addNotification(
-				`ItemData upload successful! ${state.dataString} - DUPLICATE - zero timeout`,
-				'success',
-			);
-			
-
-
-			// console.log('Got CID string from file result (state):', state.dataString);
-			// console.log('Got CID string from file result (calc):', cid.toString());
-
-		} catch (err) {
-			console.log("data IPFS error:", err.message);
-			state.notification = {
-				message: "ItemData upload failed",
-				string: '',
-				error: err.message,
-			};
-
-			addNotification(
-				'ItemData upload failed',
-				'error',
-				5000,
-			);
-			addNotification(
-				'ItemData upload failed - DUPLICATE - zero timeout',
-				'error',
-			);
-
-		}
-	});
+	})
 
 
 	const handleSubmit = $(async (e) => {
+		const formData = new FormData(e.target);
+		console.log([...formData.entries()]);
+		const ipfsOptions = {url: "http://127.0.0.1:5001"};
+		const ipfs = create(ipfsOptions);
+
+		//import buffer polyfill
+		if (state.isBrowser) await import("~/libs/wzrdin_buffer_polyfill.js");
+
+		// upload file
 		const reader = new FileReader();
 
+		
+		
 		reader.onloadend = async () => {
-			const ipfsOptions = {url: "http://127.0.0.1:5001"};
-			// const ipfsOptions = {port: 5001, host: '127.0.0.1', protocol: 'http'};
-			const ipfs = create(ipfsOptions);
-			// const ipfs = create(new URL("http://127.0.0.1:5001")); //ipfs client
-			let bufPhoto;
-
-			if (state.isBrowser) {
-				// const buffer = await import("~/libs/wzrdin_buffer_polyfill.js");
-				await import("~/libs/wzrdin_buffer_polyfill.js");
-				console.log("attempting client polyfill");
-				bufPhoto = window.buffer.Buffer(reader.result);
-			} else {
-				console.log("attempting server Buffer");
-				bufPhoto = Buffer.from(reader.result);
-			}
+			const bufPhoto = (state.isBrowser)
+			? window.buffer.Buffer(reader.result)
+			: Buffer.from(reader.result);
+		
 
 			try {
-				const result = await ipfs.add(bufPhoto);
-				const { path, cid, size } = result;
-				
-				console.log('full file object:', result);
-				console.log('split:', {path, cid, size});
+				const { cid } = await ipfs.add(bufPhoto);
+				state.imageString = cid.toString();				
 				console.log('cid.toString()', cid.toString());
 				
-				state.imageString = cid.toString();
 				state.notification = {
 					message: "Image upload successful!", 
 					string: state.imageString,
@@ -262,19 +182,14 @@ export default component$(() => {
 					'success',
 					5000,
 				);
-				addNotification(
-					`Image upload successful! ${state.imageString} - DUPLICATE - zero timeout`,
-					'success',
-				);
-
-
 
 
 				// continue to upload the whole data
-				uploadItemData(e);
+				uploadItemData();
 
 			} catch (err) {
 				console.error("Image IPFS error:", err.message);
+				//old notification
 				state.notification = {
 					message: "Image upload failed",
 					string: '',
@@ -286,21 +201,73 @@ export default component$(() => {
 					'error',
 					5000,
 				);
-				addNotification(
-					'Image upload failed - DUPLICATE - zero timeout',
-					'error',
-				);
-				// const newNotification: INewNotificationEach = {
-				// 	message: "Image upload failed",
-				// 	type: "error",
-				// 	index: state.notifications.length, // 1 more than last index is the new index for this notification
-				// 	timeout: 5000,
-				// } 
-				// // add it to our list, the rest should be handled by the notification?
-				// notifications.each.push(newNotification);
 			}
 		};
 
+		const uploadItemData = async () => {	
+			let formDataObject = {};
+			[...formData.entries()].filter(([key, value]) => key !== 'photo').forEach(
+				([key, value]) => (formDataObject[key] = value)
+			);
+			console.log({formDataObject});
+	
+			formDataObject["imgHash"] = state.imageString;
+			console.log('final formDataObject:', formDataObject);
+		
+			const formDataJson = JSON.stringify(formDataObject);
+			console.log('json version:', formDataJson);
+	
+	
+			const bufData = (state.isBrowser)
+				? window.buffer.Buffer(formDataJson)
+				: Buffer.from(formDataJson);
+			
+			try {
+				const { cid } = await ipfs.add(bufData);
+				console.log('cid.toString()', cid.toString());
+				// some sort of error: set property of textarea#description: cannot set property because it only has a getter
+				
+				state.dataString = cid.toString();
+				state.notification = {
+					message: "ItemData upload successful!",
+					string: state.dataString,
+					error: '',
+				};
+	
+				addNotification(
+					`ItemData upload successful! ${state.dataString}`,
+					'success',
+					5000,
+				);	
+	
+				try {
+					const accounts = await window.ethereum.request({
+						method: "eth_requestAccounts",
+					});
+				} catch (e) {
+					alert("Access Denied.");
+				} finally {
+					console.log("after enable");
+				}
+
+				// TODO: Prepare Eth transaction!
+	
+			} catch (err) {
+				state.notification = {
+					message: "ItemData upload failed",
+					string: '',
+					error: err.message,
+				};
+	
+				addNotification(
+					'ItemData upload failed',
+					'error',
+					5000,
+				);	
+			}
+		};
+
+		// start file read
 		reader.readAsArrayBuffer(photoInputRef.current.files[0]);
 		//alternately, could try pulling file from formData
 	});
@@ -338,7 +305,7 @@ export default component$(() => {
 		<>
 			<form
 				class="flex flex-col w-full align-center"
-				// ref={formRef}
+				ref={formRef}
 				preventdefault:submit
 				onSubmit$={(e) => handleSubmit(e)}
 			>
@@ -381,7 +348,7 @@ export default component$(() => {
 					Upload a Photo
 					<input
 						name="photo"
-						class="block"
+						class="block" 
 						type="file"
 						id="photo"
 						ref={photoInputRef}
