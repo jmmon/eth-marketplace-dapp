@@ -1,6 +1,7 @@
 import {
 	$,
 	component$,
+	mutable,
 	useClientEffect$,
 	useRef,
 	useStore,
@@ -11,38 +12,26 @@ import {read} from "fs";
 import {create} from "ipfs-http-client";
 // import { CID } from 'multiformats/cid';
 import {CID} from "ipfs-http-client";
-import { CONTRACT_ABI, CONTRACT_ADDRESS } from "~/libs/ethUtils";
+import {CONTRACT_ABI, CONTRACT_ADDRESS} from "~/libs/ethUtils";
 import {Notification} from "../../components/notification/notification";
 
-interface INewNotificationEach {
+interface INotificationEach {
 	message: string;
 	type: string;
-	index: number;
+	id: number;
 	timeout: number;
 }
-interface INewNotification {
-	each: INewNotification[];
+interface INotifications {
+	each: INotificationEach[];
+	currentIndex: number;
 }
 
-interface INotification {
-	message: string;
-	string: string;
-	error: string;
-}
+
 interface IState {
 	isBrowser: boolean;
-	notification: INotification;
-	cost: number | undefined;
+	price: number | undefined;
 	imageString: string;
 	dataString: string;
-}
-
-declare interface IFormStore {
-	photo: object | undefined;
-	price: number;
-	name: string;
-	description: string;
-	submit: boolean;
 }
 
 export function toHexString(byteArray: Uint8Array): string {
@@ -54,25 +43,26 @@ export function toHexString(byteArray: Uint8Array): string {
 }
 
 export default component$(() => {
-	const notifications = useStore<INewNotification>({
-		each: [],
-	});
-	useClientEffect$(({track}) => {
-		track(notifications, "each");
-		console.log("WATCH (PARENT): new notifications store:", notifications);
+	const notifications = useStore<INotifications>(
+		{
+			each: {},
+			currentIndex: 0,
+		},
+		{recursive: true}
+	);
+	useWatch$(({track}) => {
+		track(notifications);
+		console.log("WATCH:", notifications);
 	});
 
-	const state = useStore<IState>({
-		isBrowser: false,
-		notification: {
-			message: "",
-			string: "",
-			error: "",
-		},
-		cost: undefined,
-		imageString: "",
-		dataString: "",
-	});
+	const state = useStore<IState>(
+		{
+			isBrowser: false,
+			price: undefined,
+			imageString: "",
+			dataString: "",
+		}
+	);
 	const photoInputRef = useRef();
 
 	// Client/Server check
@@ -81,15 +71,44 @@ export default component$(() => {
 		console.log({isBrowser: state.isBrowser});
 	});
 
-	const addNotification = $((message, type, timeout = 0) => {
-		const newNotification: INewNotificationEach = {
-			message,
-			type,
-			index: notifications.each.length, // 1 more than last index is the new index for this notification
-			timeout,
-		};
-		// add it to our list, the rest should be handled by the notification?
-		notifications.each.push(newNotification);
+	const addNotification = $(
+		(message: string, type?: string, timeout?: number) => {
+			const index = notifications.currentIndex;
+			const thisNotification: INotificationEach = {
+				message,
+				type: type ?? "",
+				id: index, // 1 more than last index is the new index for this notification
+				timeout: timeout ?? 0,
+			};
+			// add it to our list, the rest should be handled by the notification?
+			notifications.each[index] = thisNotification;
+			notifications.currentIndex++;
+		}
+	);
+
+	const removeNotification$ = $((id: number) => {
+		// console.log("new remove notification $$$$, id:", id);
+		// remaining notifications as [key, value] array
+		const remainingAsMatrix = Object.entries(notifications.each).filter(
+			([key, value]) => +key !== id
+		);
+		// console.log({remainingAsMatrix});
+
+		if (remainingAsMatrix.length === 0) {
+			// reset our store and currentIndex
+			notifications.each = {};
+			notifications.currentIndex = 0;
+			return;
+		}
+
+		// build our new notifications object
+		const newNotificationsObj = {};
+		remainingAsMatrix.forEach(
+			([key, value]) => (newNotificationsObj[+key] = value)
+		);
+		// console.log({newNotificationsObj});
+
+		notifications.each = newNotificationsObj;
 	});
 
 	// simple form validation (not used yet)
@@ -146,29 +165,17 @@ export default component$(() => {
 			try {
 				const {cid} = await ipfs.add(bufPhoto);
 				state.imageString = cid.toString();
-				console.log("cid.toString()", cid.toString());
+				// console.log("cid.toString()", cid.toString());
 
-				state.notification = {
-					message: "Image upload successful!",
-					string: state.imageString,
-					error: "",
-				};
+				addNotification(`Image upload successful!`, "success", 5000);
 				addNotification(
-					`Image upload successful! ${state.imageString}`,
-					"success",
-					5000
+					`Image file uploaded! Reference string: ${state.imageString}`
 				);
 
 				// continue to upload the whole data
 				uploadItemData();
 			} catch (err) {
-				console.error("Image IPFS error:", err.message);
-				state.notification = {
-					message: "Image upload failed",
-					string: "",
-					error: err.message,
-				};
-				addNotification("Image upload failed", "error", 5000);
+				addNotification(`Image upload failed: ${err.message}`, "error");
 			}
 		};
 
@@ -191,20 +198,12 @@ export default component$(() => {
 
 			try {
 				const {cid} = await ipfs.add(bufData);
-				console.log("cid.toString()", cid.toString());
+				// console.log("cid.toString()", cid.toString());
 				// some sort of error: set property of textarea#description: cannot set property because it only has a getter
 
 				state.dataString = cid.toString();
-				state.notification = {
-					message: "ItemData upload successful!",
-					string: state.dataString,
-					error: "",
-				};
-				addNotification(
-					`ItemData upload successful! ${state.dataString}`,
-					"success",
-					5000
-				);
+				addNotification(`ItemData upload successful!`, "success", 5000);
+				addNotification(`ItemData file reference string: ${state.dataString}`);
 
 				if (state.isBrowser) {
 					// check for metamask
@@ -215,61 +214,36 @@ export default component$(() => {
 						// TODO: Prepare Eth transaction!
 						const web3 = new Web3(window.ethereum);
 						// const contract = require('web3-eth-contract');
-						const myContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+						const myContract = new web3.eth.Contract(
+							CONTRACT_ABI,
+							CONTRACT_ADDRESS
+						);
 
 						web3.eth.defaultAccount = accounts[0];
 
-						myContract.add(state.dataString, formDataObject.price).then((txHash) => {
-							console.log('added! txHash:', txHash);
-							addNotification(`Item added! hash: ${txHash}`, "", 10000);
-						}).catch((err) => {
-							console.log('Error adding item:', err);
-							addNotification(`Error adding item: ${err}`, "error", 10000);
-							return;
-						})
-
-
+						myContract
+							.add(state.dataString, formDataObject.price)
+							.then((txHash) => {
+								console.log("added! txHash:", txHash);
+								addNotification(`Item added! hash: ${txHash}`, "", 10000);
+							})
+							.catch((err) => {
+								console.log("Error adding item:", err);
+								addNotification(`Error adding item: ${err}`, "error", 10000);
+								return;
+							});
 					} catch (e) {
-						addNotification("Can't get metamask accounts!", "warning", 5000);
+						addNotification("Can't get metamask accounts!", "warning");
 					}
 				}
-				
-
-
 			} catch (err) {
-				state.notification = {
-					message: "ItemData upload failed",
-					string: "",
-					error: err.message,
-				};
-				addNotification("ItemData upload failed", "error", 5000);
+				addNotification(`ItemData upload failed: ${err.message}`, "error");
 			}
 		};
 
 		// start file read
 		reader.readAsArrayBuffer(photoInputRef.current.files[0]);
 		//alternately, could try pulling file from formData
-	});
-
-	// Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur dolores molestiae, laborum dicta soluta perferendis eaque error iusto ullam sint eos doloremque excepturi quia. Corporis ratione reprehenderit ipsum distinctio placeat explicabo provident odio quasi necessitatibus. Saepe quis, quasi doloribus ducimus enim minus, odit assumenda nisi, repellat rem aliquam blanditiis quae?
-
-	// notification resetter functions
-	useWatch$(({track}) => {
-		const {message} = track(state, "notification");
-		console.log("running watch notification.message:", {message});
-		if (message === "") return;
-
-		const timer = setTimeout(() => (state.notification.message = ""), 5000);
-		return () => clearTimeout(timer);
-	});
-
-	useWatch$(({track}) => {
-		const {error} = track(state, "notification");
-		console.log("running watch notification.error:", {error});
-		if (error === "") return;
-
-		const timer = setTimeout(() => (state.notification.error = ""), 5000);
-		return () => clearTimeout(timer);
 	});
 
 	return (
@@ -327,64 +301,15 @@ export default component$(() => {
 					Add Item To Blockchain Marketplace
 				</button>
 			</form>
-			<div class="flex flex-col align-center">
-				{state.notification.message !== "" && (
-					<p class="w-[600px] rounded bg-green-200 p-3">
-						{state.notification.message}
-					</p>
-				)}
-
-				{state.notification.error !== "" && (
-					<p class="w-[600px] rounded bg-red-200 p-3">
-						{state.notification.error}
-					</p>
-				)}
-
-				{state.dataString !== "" && (
-					<p class="w-[600px] rounded bg-blue-200 p-3">
-						Data file uploaded! Reference string: {state.dataString}
-					</p>
-				)}
-
-				{state.imageString !== "" && (
-					<p class="w-[600px] rounded bg-blue-200 p-3">
-						Image file uploaded! Reference string: {state.imageString}
-					</p>
-				)}
-				<br />
-				<br />
-				<h2>New notifications!:</h2>
-
-				{notifications.each.map((thisNotification) => (
+			<div class="grid grid-cols-1 gap-2">
+				{Object.values(notifications.each).map((thisNotification) => (
 					<Notification
-						store={notifications}
+						key={thisNotification.id}
 						thisNotification={thisNotification}
+						remove$={() => removeNotification$(thisNotification.id)}
 					/>
 				))}
 			</div>
 		</>
 	);
 });
-
-// //{url, params, request, response}
-// // on the server, need to upload the photo and the data to IPFS and return the hash
-// export const onPost: RequestHandler = async (body) => {
-// 	console.log({ body });
-// 	// console.log(params.skuId);
-// 	// console.log(request.method);
-// 	// console.log(url.pathname);
-
-// 	//post a new image, record the location hash (maybe do this client-side first? Then submit the item to the server)
-
-// 	/*post a new file
-// 	{
-// 		imageLocationHash,
-
-// 	}
-// 	 */
-
-// 	// set response headers
-// 	// response.headers.append('Cache-Control', ' public, max-age=86400');
-
-// 	return {};
-// };

@@ -21,49 +21,42 @@ import {$, component$, useClientEffect$, useStore} from "@builder.io/qwik";
 
 */
 
-export const Notification = component$(({store, thisNotification}) => {
+
+
+export const Notification = component$(({ thisNotification, remove$ }) => {
 	const notification = useStore({
-		...thisNotification,
-		bgColor:
-			notification.type === "error"
-				? "bg-red-200"
-				: notification.type === "warning"
-				? "bg-orange-200"
-				: notification.type === "success"
-				? "bg-green-200"
-				: "bg-blue-200",
+		// ...thisNotification,
+		message: thisNotification.message,
+		timeout: thisNotification.timeout,
+		id: thisNotification.id,
+		bgColor: thisNotification.type === "error"
+		? "bg-red-200"
+		: thisNotification.type === "warning"
+		? "bg-orange-200"
+		: thisNotification.type === "success"
+		? "bg-green-200"
+		: "bg-blue-200",			
 	});
-	console.log("NOTIFICATION: rendering:", {notification});
 
-	const remove = $(() => {
-		// splice out our notification from the parent list
-		console.log("~~NOTIFICATION: parent store before remove:", store);
-
-		const adjustedNotifications = store.each.splice(notification.index, 1);
-		store.each = adjustedNotifications;
-
-		console.log("~~NOTIFICATION: parent store after remove:", store);
-		
-	});
 
 	useClientEffect$(() => {
+		// console.log("NOTIFICATION: rendering:", {notification});
 		if (notification.timeout === 0 || !notification.timeout) return;
 
 		const timer = setTimeout(() => {
-			console.log("~~~~NOTIFICATION: timeout, running remove");
-			remove();
-		}, notification.timeoutMs);
+			// console.log("~~~~NOTIFICATION: timeout, running remove");
+			remove$();
+		}, notification.timeout);
 
-		return () => clearInterval(timer);
+		return () => clearTimeout(timer);
 	});
 
-	return notification.message !== "" ? (
-		<div>
-			<h3>NEW NOTIFICATION</h3>
-			<p class={`w-[600px] rounded ${notification.bgColor}`}>
+	return(
+		<div class={`w-[600px] rounded ${notification.bgColor} flex content-between`}>
+			<p class="flex-grow">
 				{notification.message}
 			</p>
-			<button onClick$={() => remove()}>X</button>
+			<button onClick$={() => remove$()} class="text-red-600 hover:text-black">X</button>
 		</div>
-	) : null;
+	);
 });
