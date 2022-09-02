@@ -38,70 +38,31 @@ function toString(uint256 value) pure returns (string memory) {
 contract Marketplace {
 	address payable private contractOwner;
 
-	mapping(address => bytes32[]) itemIdsFromSeller; // for getting IDs from a seller
-	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
-	bytes32[] public itemIdList; // for getting all item IDS
-
-	struct Item {
+    struct Item {
 		address owner;
 		string ipfsHash; // holds name, image hash, details
 		uint256 price; // in wei
 		bytes32 id;
 	}
 
-	// events
-	event eventRegisterItem(
-		Item _item,
-		uint256 _itemsForSaleCount,
-		uint256 _sellersItemsLength
-	);
-	event eventSellItem(
-		uint256 _contractBalance,
-		uint256 _sellerProceeds,
-		uint256 _remainingItemsForSale
-	);
-	event eventItemRemoved(bytes32 _removedItemId);
-	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
-	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
-		event eventDeleteItem(
-		bytes32 _itemId,
-		address _owner,
-		uint256 _newItemListLength
-	);
+	mapping(address => bytes32[]) public itemIdsFromSeller; // for getting IDs from a seller
+	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
+	bytes32[] public itemIdList; // for getting all item IDS
+        // can get individual itemId from itemIdList with built-in getter
+
 
 	constructor() {
 		contractOwner = payable(msg.sender);
 	}
 
-	// getters?? needed for public vars?
-	function getForSaleItemIds() public view returns (bytes32[] memory) {
-		return itemIdList;
-	}
-
-	function getForSaleItemIdsCount() public view returns (uint256) {
-		return itemIdList.length;
-	}
-
-	function getItemById(bytes32 _id) public view returns (Item memory) {
-		return itemFromId[_id];
-	}
-
-	function getForSaleItemIdsFromSeller(address _sellerAddress)
-	  view public
-		returns (bytes32[] memory)
-	{
-		return itemIdsFromSeller[_sellerAddress];
-	}
 
 	// register item to the sender/seller's address:
-	function registerItemForSale(string memory _dataHash, uint256 _price) public returns (bool success) {
+	function addItem(string memory _dataHash, uint256 _price) external returns (bool success) {
 		// making an id for the item: hash the IPFS data hash, price, and sender address
-		string memory itemData = string.concat(
-			_dataHash,
-			toString(_price),
-			toString(uint256(uint160(msg.sender)))
-		);
-		bytes32 itemHashId = keccak256(abi.encodePacked(itemData));
+        string memory price = toString(_price);
+        string memory addr = toString(uint256(uint160(msg.sender)));
+
+		bytes32 itemHashId = keccak256(abi.encodePacked(_dataHash, price, addr));
 
 		// create a new item
 		Item memory item = Item({
@@ -120,7 +81,7 @@ contract Marketplace {
 		//push to itemIdList, our list of all items
 		itemIdList.push(itemHashId);
 
-		emit eventRegisterItem(
+		emit eventAddItem(
 			item,
 			itemIdList.length,
 			itemIdsFromSeller[msg.sender].length
@@ -130,7 +91,7 @@ contract Marketplace {
 	}
 
 
-	function sellItem(bytes32 _itemId) public payable {
+	function sell(bytes32 _itemId) external payable {
 		Item memory foundItem = itemFromId[_itemId];
 		require(foundItem.owner != msg.sender, "Owner cannot buy their own items!");
 		require(
@@ -139,16 +100,16 @@ contract Marketplace {
 		);
 
 		// remove id from seller's items list
-		bool successRemoveFromSellerList = removeItemFromSellerItemIds(
+		bool successRemoveFromSellerList = removeFromSeller(
 			foundItem.owner,
 			_itemId
 		);
 
 		// remove item from our mapping
-		bool successRemoveFromStockMap = removeItemFromStockList(_itemId);
+		bool successRemoveFromStockMap = removeFromStock(_itemId);
 
 		// remove item from our itemIdList
-		bool successRemoveFromItemIdList = removeItemFromItemsList(_itemId);
+		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
 
 		require(
 			successRemoveFromSellerList,
@@ -169,28 +130,28 @@ contract Marketplace {
 		require(success, "failed to send ether"); // what happens if this fails?? item still gets removed, but seller does not get proceeds I guess?? Or maybe it cancels the whole function, don't remember
 
 
-		emit eventSellItem(
+		emit eventSell(
 			address(this).balance,
 			sellerProceeds,
 			itemIdList.length
 		);
 	}
 
-	function ownerDeleteItem(bytes32 _itemId) public {
+	function deleteItem(bytes32 _itemId) external {
 		Item memory foundItem = itemFromId[_itemId];
 		require(foundItem.owner == msg.sender, "Only owner can delete their item!");
 
 		// remove id from seller's items list
-		bool successRemoveFromSellerList = removeItemFromSellerItemIds(
+		bool successRemoveFromSellerList = removeFromSeller(
 			foundItem.owner,
 			_itemId
 		);
 
 		// remove item from our mapping
-		bool successRemoveFromStockMap = removeItemFromStockList(_itemId);
+		bool successRemoveFromStockMap = removeFromStock(_itemId);
 
 		// remove item from our itemIdList
-		bool successRemoveFromItemIdList = removeItemFromItemsList(_itemId);
+		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
 
 		require(
 			successRemoveFromSellerList,
@@ -215,7 +176,7 @@ contract Marketplace {
 
 
 
-	function removeItemFromStockList(bytes32 _itemId) internal returns (bool) {
+	function removeFromStock(bytes32 _itemId) internal returns (bool) {
 		// delete struct from our itemsForSale mapping
 		delete itemFromId[_itemId];
 
@@ -234,7 +195,7 @@ contract Marketplace {
 	}
 
 
-	function removeItemFromItemsList(bytes32 _itemId) internal returns (bool) {
+	function removeFromItemIds(bytes32 _itemId) internal returns (bool) {
 		uint256 length = itemIdList.length;
 		uint256 index = getItemIndex(_itemId, length);
 
@@ -255,29 +216,6 @@ contract Marketplace {
 		);
 		return true;
 
-
-		// // find our item by id
-		// uint256 itemIdListLength = itemIdList.length;
-		// for (uint256 i = 0; i < itemIdListLength; i++) {
-		// 	if (itemIdList[i] == _itemId) {
-		// 		uint256 itemIdLocation = i;
-
-		// 		// once found, shuffle our item list forward
-		// 		for (i; i < itemIdListLength - 1; i++) {
-		// 			itemIdList[i] = itemIdList[i + 1];
-		// 		}
-		// 		// remove the last item to reduce the length
-		// 		itemIdList.pop();
-
-		// 		emit eventItemRemovedFromIdList(
-		// 			itemIdLocation,
-		// 			_itemId
-		// 		);
-		// 		return true;
-
-		// 	}
-		// }
-		// return false;
 	}
 
 
@@ -291,7 +229,7 @@ contract Marketplace {
 		return i; //1 more than last index since that's what broke the loop 
 	}
 
-	function removeItemFromSellerItemIds(address _owner, bytes32 _itemId)
+	function removeFromSeller(address _owner, bytes32 _itemId)
 		internal
 		returns (bool)
 	{
@@ -318,30 +256,49 @@ contract Marketplace {
 
 		return true;
 
-
-
-		// // find our item in our seller's list
-		// uint256 sellerItemsLength = itemIdsFromSeller[_owner].length;
-		// for (uint256 i = 0; i < sellerItemsLength; i++) {
-		// 	if (itemIdsFromSeller[_owner][i] == _itemId) {
-		// 		uint256 itemIdLocation = i;
-
-		// 		// reshuffle our seller's item list so we remove the item
-		// 		for (i; i < sellerItemsLength - 1; i++) {
-		// 			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
-		// 		}
-		// 		// remove the last item to reduce the length
-		// 		itemIdsFromSeller[_owner].pop();
-
-		// 		emit eventItemRemovedFromSeller(itemIdLocation, _itemId);
-
-		// 		return true;
-		// 	}
-		// }
-
-		// // return if not found;
-		// return false;
 	}
+
+
+
+
+    
+	// getters?? needed for public vars?
+
+	function getItemIdsCount() external view returns (uint256) {
+		return itemIdList.length;
+	}
+
+	function getItemFromId(bytes32 _id) external view returns (Item memory) {
+		return itemFromId[_id];
+	}
+
+	function getSellerItemIdsArrayFromAddress(address _sellerAddress)
+	  view external
+		returns (bytes32[] memory)
+	{
+		return itemIdsFromSeller[_sellerAddress];
+	}
+    
+
+	// events
+	event eventAddItem(
+		Item _item,
+		uint256 _itemsForSaleCount,
+		uint256 _sellersItemsLength
+	);
+	event eventSell(
+		uint256 _contractBalance,
+		uint256 _sellerProceeds,
+		uint256 _remainingItemsForSale
+	);
+	event eventItemRemoved(bytes32 _removedItemId);
+	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
+	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
+		event eventDeleteItem(
+		bytes32 _itemId,
+		address _owner,
+		uint256 _newItemListLength
+	);
 }
 
 /* NOTES:
