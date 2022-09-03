@@ -49,6 +49,7 @@ contract Marketplace {
 	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
 	bytes32[] public itemIdList; // for getting all item IDS
         // can get individual itemId from itemIdList with built-in getter
+    // Item[] public itemList;
 
 
 	constructor() {
@@ -259,7 +260,12 @@ contract Marketplace {
 	}
 
 
-
+	function getAllItems() external view returns (Item[] memory items) {
+			uint length = itemIdList.length;
+			for (uint i = 0; i < length; i++) {
+					items[i] = (itemFromId[itemIdList[i]]);
+			}
+	}
 
     
 	// getters?? needed for public vars?
