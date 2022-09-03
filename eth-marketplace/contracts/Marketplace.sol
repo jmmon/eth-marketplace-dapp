@@ -260,11 +260,15 @@ contract Marketplace {
 	}
 
 
-	function getAllItems() external view returns (Item[] memory items) {
-			uint length = itemIdList.length;
-			for (uint i = 0; i < length; i++) {
-					items[i] = (itemFromId[itemIdList[i]]);
-			}
+	function getAllItems() view external returns (Item[] memory) {
+        uint length = itemIdList.length;
+		Item[] memory items = new Item[](length);
+        for (uint i = 0; i < length; i++) {
+			bytes32 itemId = itemIdList[i];
+			Item memory foundItem = itemFromId[itemId];
+			items[i] = foundItem;
+        }
+        return items;
 	}
 
     
