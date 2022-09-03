@@ -17,6 +17,7 @@ interface IStore {
 export default component$(() => {
 	const store = useStore<IStore>({
 		items: [],
+		isBrowser: false,
 	});
 
 	useStyles$(`.itemsContainer {
@@ -28,41 +29,55 @@ export default component$(() => {
 		margin: 1.5rem;
 	}`);
 
-	useClientEffect$(async () => {
-		try {
-			console.log('test try async useClientEffect');
-		// 	const arrayOfItemShells = await getItems();
-		// 	console.log("use Effect", {arrayOfItemShells});
-		// // store.items = arrayOfItemShells;
-		// 	store.items = Promise.resolve(arrayOfItemShells);
-
-			store.items = getItemsPromise();
-
-		} catch( error ) {
-			console.log(error.message);
-		}
+	useClientEffect$(() => {
+		store.isBrowser = true;
 	});
+
+
+	const blockchainItems = useResource$<IItem[]>(async ({track, cleanup}) => {
+		const isBrowser = track(store, 'isBrowser');
+		console.log('creating useResource on', isBrowser ? 'client' : 'server');
+
+		// if (!isBrowser) return Promise.reject(new Error('Instance is running on server, not client'));
+		if (!isBrowser) return Promise.resolve([]);
+		// if (!isBrowser) return [];
+		// if (!isBrowser) return new Promise();
+		
+		const controller = new AbortController();
+		cleanup(() => controller.abort());
+
+		return getItems(controller);
+	});
+
 
 	return (
 		<div class="w-full p-4">
 			<h1 class="text-center text-6xl text-blue-800">Browse Marketplace</h1>
 			<div className="itemsContainer">
-				<div>Test resource</div>
 				<Resource
-					value={store.items}
-					onPending={() => <div class="text-5xl bg-red-400">Loading...</div>}
+					value={blockchainItems}
 					onRejected={(error) => (
 						<div class="text-red-400 text-5xl w-full">
 							Error: {error.message}
 						</div>
 					)}
-					onResolved={(items: IItem[]) =>
-						(items.length > 0) ? items.map((item) => (
+					// onPending={(pendingTest) => {
+					// 	console.log('onPending:', {pendingTest}); 
+					// 	return <div class="text-5xl bg-yellow-400">Loading...</div>
+					// }}
+					onPending={()=><div id="loading" class="text-5xl bg-yellow-400" dir="rtl">Loading...</div>}
+					// onResolved={()=><div onClick$={() => console.log('hello finished')}>Finished...<div class="bg-blue-200"><a href="#">Finished</a></div></div>}
+					// onResolved={() => <div class id dir>Finished...</div>}
+
+					onResolved={(items: IItem[]) =>{
+						console.log(`onResolved:`, {items});
+						return (items?.length > 0) ? items.map((item) => (
 							// display array of item components
-							<div>Test</div>
+							<div class>Test</div>
 							// <ItemPreview item={item} />
 						))
-						: <div>No items were found on the blockchain. Try <a href="/register">adding an item!</a></div>
+						: 
+						<div class>No items were found on the blockchain. Try <a href="/register">adding an item!</a></div>}
 					}
 				/>
 			</div>
@@ -70,23 +85,21 @@ export default component$(() => {
 	);
 });
 
-export const getItemsPromise = new Promise(async (resolve, reject) => {
-	// run code to get the items
 
-	//after got the items,
-	// if successful, call resolve(value)
-	// else, call reject(error);
-// })
+export const getItems = async (
+	controller?: AbortController
+): Promise<IItem[]> => {
+	let provider;
 
-// export const getItems = async () => {
 	try {
-		console.log('test try getItems');
 		// choose metamask injection as provider
-		const provider = new ethers.providers.Web3Provider(window.ethereum);
-		console.log({provider});
+		provider = new ethers.providers.Web3Provider(window.ethereum);
+		// console.log({provider});
 
 		// check for accounts
 		const accounts = await provider.send("eth_requestAccounts", []);
+
+		// display balance for testing
 		const balance = ethers.utils.formatEther(
 			await provider.getBalance(accounts[0])
 		);
@@ -95,30 +108,30 @@ export const getItemsPromise = new Promise(async (resolve, reject) => {
 			"success"
 		);
 
-		// signer needed to sign txns / change state in contracts ?
-		const signer = provider.getSigner();
+	} catch (error) {
+		console.log("error getting items:", error.message);
+		return Promise.reject(error);
+	}
 
-		// connect to contract
+	try {
+		// connect to contract through provider
 		const marketplaceContract_ReadOnly = new ethers.Contract(
 			CONTRACT.address,
 			CONTRACT.abi,
 			provider
 		);
 
-		const marketplaceContract_Signer =
-			marketplaceContract_ReadOnly.connect(signer);
-
+		// get items from the contract
 		const items = marketplaceContract_ReadOnly.getAllItems();
-
 		console.log("items from the smart contract!:", {items});
 
-		return resolve(items);
+		return items;
 
 	} catch (error) {
 		console.log("error getting items:", error.message);
-		return reject(error);
+		return Promise.reject(error);
 	}
-});
+};
 
 // export const ItemPreview = component$((props: {item: IItem}) => {
 // 	const resource = useResource$<IItemData>(async ({track, cleanup}) => {
@@ -170,7 +183,7 @@ export const getItemsPromise = new Promise(async (resolve, reject) => {
 // export const fetchItemDataFromIPFS = async (
 // 	item: IItem,
 // 	controller?: AbortController
-// ): Promise<any> => {
+// ): Promise<IItemData> => {
 // 	//gotta fetch the item data from IPFS... then
 // 	// console.log('before before the url fetching itemData');
 // 	const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
