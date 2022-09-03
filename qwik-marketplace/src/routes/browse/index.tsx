@@ -31,10 +31,13 @@ export default component$(() => {
 	useClientEffect$(async () => {
 		try {
 			console.log('test try async useClientEffect');
-			const arrayOfItemShells = await getItems();
-			console.log("use Effect", {arrayOfItemShells});
-		// store.items = arrayOfItemShells;
-			store.items = Promise.resolve(arrayOfItemShells);
+		// 	const arrayOfItemShells = await getItems();
+		// 	console.log("use Effect", {arrayOfItemShells});
+		// // store.items = arrayOfItemShells;
+		// 	store.items = Promise.resolve(arrayOfItemShells);
+
+			store.items = getItemsPromise();
+
 		} catch( error ) {
 			console.log(error.message);
 		}
@@ -45,7 +48,7 @@ export default component$(() => {
 			<h1 class="text-center text-6xl text-blue-800">Browse Marketplace</h1>
 			<div className="itemsContainer">
 				<div>Test resource</div>
-				{/* <Resource
+				<Resource
 					value={store.items}
 					onPending={() => <div class="text-5xl bg-red-400">Loading...</div>}
 					onRejected={(error) => (
@@ -54,19 +57,28 @@ export default component$(() => {
 						</div>
 					)}
 					onResolved={(items: IItem[]) =>
-						items.map((item) => (
+						(items.length > 0) ? items.map((item) => (
 							// display array of item components
 							<div>Test</div>
 							// <ItemPreview item={item} />
 						))
+						: <div>No items were found on the blockchain. Try <a href="/register">adding an item!</a></div>
 					}
-				/> */}
+				/>
 			</div>
 		</div>
 	);
 });
 
-export const getItems = async () => {
+export const getItemsPromise = new Promise(async (resolve, reject) => {
+	// run code to get the items
+
+	//after got the items,
+	// if successful, call resolve(value)
+	// else, call reject(error);
+// })
+
+// export const getItems = async () => {
 	try {
 		console.log('test try getItems');
 		// choose metamask injection as provider
@@ -96,22 +108,17 @@ export const getItems = async () => {
 		const marketplaceContract_Signer =
 			marketplaceContract_ReadOnly.connect(signer);
 
-		console.log("about to fetch the items");
-
-		const items = marketplaceContract_Signer.getAllItems();
+		const items = marketplaceContract_ReadOnly.getAllItems();
 
 		console.log("items from the smart contract!:", {items});
 
-		// return items;
+		return resolve(items);
 
-		// // console.log('response from addItem:', {tx});
-
-		return true;
 	} catch (error) {
 		console.log("error getting items:", error.message);
-		return Promise.reject(error);
+		return reject(error);
 	}
-};
+});
 
 // export const ItemPreview = component$((props: {item: IItem}) => {
 // 	const resource = useResource$<IItemData>(async ({track, cleanup}) => {
