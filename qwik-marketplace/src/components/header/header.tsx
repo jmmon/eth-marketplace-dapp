@@ -11,23 +11,17 @@ export default component$(() => {
     <header>
       <div class="header-inner">
         <section class="logo">
-          <a href="/">Qwik City 🏙</a>
+          <a href="/">Marketplace 🏙</a>
         </section>
         <nav>
-          <a href="/blog" class={{ active: pathname.startsWith('/blog') }}>
-            Blog
+          <a href="/register" class={{ active: pathname.startsWith('/register') }}>
+            Register
           </a>
-          <a href="/docs" class={{ active: pathname.startsWith('/docs') }}>
-            Docs
+          <a href="/browse" class={{ active: pathname.startsWith('/browse') }}>
+            Browse
           </a>
           <a href="/api" class={{ active: pathname.startsWith('/api') }}>
             API
-          </a>
-          <a href="/products/hat" class={{ active: pathname.startsWith('/products') }}>
-            Products
-          </a>
-          <a href="/about-us" class={{ active: pathname.startsWith('/about-us') }}>
-            About Us
           </a>
         </nav>
       </div>
