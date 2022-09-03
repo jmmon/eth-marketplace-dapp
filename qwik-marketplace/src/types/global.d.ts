@@ -12,3 +12,16 @@ declare interface IItemData {
 	imgHash: string;
 }
 
+declare interface INotifications {
+	each: object;
+	nextIndex: number;
+}
+
+
+// // maybe try swapping "each" back to an array?? later...
+declare interface INotificationEach {
+	message: string;
+	type: string;
+	id: number;
+	timeout: number;
+}
