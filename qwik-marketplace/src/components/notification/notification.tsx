@@ -1,34 +1,12 @@
 import {$, component$, useClientEffect$, useStore} from "@builder.io/qwik";
 
-// interface IPropTypes {
-// 	notifications: store;
-// 	index: number;
-// 	timeoutMs?: number;
-// 	bgColor: string
-// }
 
-/* props: 
-	store: notifications store,
-	index: index of this notification
-	thisNotification: {
-			message,
-			type,
-			index,
-			timeout
-	}
-
-
-
-*/
-
-
-
-export const Notification = component$(({ thisNotification, remove$ }) => {
+export const Notification = component$(({ thisNotification, remove$ }: {thisNotification: INotificationEach; remove$: () => void; }) => {
 	const notification = useStore({
-		// ...thisNotification,
-		message: thisNotification.message,
-		timeout: thisNotification.timeout,
-		id: thisNotification.id,
+		...thisNotification,
+		// message: thisNotification.message,
+		// timeout: thisNotification.timeout,
+		// id: thisNotification.id,
 		bgColor: thisNotification.type === "error"
 		? "bg-red-200"
 		: thisNotification.type === "warning"
@@ -52,11 +30,11 @@ export const Notification = component$(({ thisNotification, remove$ }) => {
 	});
 
 	return(
-		<div class={`w-[600px] rounded ${notification.bgColor} flex content-between`}>
-			<p class="flex-grow">
+		<div class={`w-[600px] rounded ${notification.bgColor} flex flex-col`}>
+			<button onClick$={() => remove$()} class="self-end text-red-600 hover:text-black">X</button>
+			<p class="break-all self-start">
 				{notification.message}
 			</p>
-			<button onClick$={() => remove$()} class="text-red-600 hover:text-black">X</button>
 		</div>
 	);
 });
