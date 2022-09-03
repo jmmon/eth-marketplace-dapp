@@ -7,24 +7,22 @@ import {
 	useStore,
 	useWatch$,
 } from "@builder.io/qwik";
-import {RequestHandler} from "@builder.io/qwik-city";
-import {read} from "fs";
-import {create} from "ipfs-http-client";
-// import { CID } from 'multiformats/cid';
-import {CID} from "ipfs-http-client";
-import {CONTRACT_ABI, CONTRACT_ADDRESS} from "~/libs/ethUtils";
-import {Notification} from "../../components/notification/notification";
+import { RequestHandler } from "@builder.io/qwik-city";
+import { read } from "fs";
+import { create } from "ipfs-http-client";
+import { CID } from "ipfs-http-client";
 
-interface INotificationEach {
-	message: string;
-	type: string;
-	id: number;
-	timeout: number;
-}
-interface INotifications {
-	each: INotificationEach[];
-	currentIndex: number;
-}
+import Web3 from "web3";
+import { ethers } from "ethers";
+
+
+import { CONTRACT } from "~/libs/ethUtils";
+import { Notification } from "../../components/notification/notification";
+
+
+// generating notifications
+export const types = ["error", "warning", "success", ""];
+export const loremSplit = "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Labore voluptatum, magni, eius error accusantium aliquid voluptatibus commodi at adipisci culpa consectetur vel perferendis cupiditate ullam! Id debitis sint voluptate a repellendus nihil, consectetur quas unde accusantium perspiciatis explicabo ratione reprehenderit dolores blanditiis dignissimos totam, enim praesentium quos obcaecati aliquam aliquid labore laudantium illum! Autem porro impedit cum, laborum qui quibusdam aliquid, praesentium vel at velit molestiae officiis vero quos debitis. Ducimus cum voluptatum similique quasi quia. Aliquid dignissimos vel, corporis ullam distinctio adipisci? Temporibus aut maiores, ea placeat voluptatibus laboriosam quos neque asperiores illum vel laborum dolor perferendis corrupti atque!".split(' ');
 
 
 interface IState {
@@ -46,7 +44,7 @@ export default component$(() => {
 	const notifications = useStore<INotifications>(
 		{
 			each: {},
-			currentIndex: 0,
+			nextIndex: 0, // == "length" of "each" object
 		},
 		{recursive: true}
 	);
@@ -73,7 +71,7 @@ export default component$(() => {
 
 	const addNotification = $(
 		(message: string, type?: string, timeout?: number) => {
-			const index = notifications.currentIndex;
+			const index = notifications.nextIndex;
 			const thisNotification: INotificationEach = {
 				message,
 				type: type ?? "",
@@ -82,7 +80,7 @@ export default component$(() => {
 			};
 			// add it to our list, the rest should be handled by the notification?
 			notifications.each[index] = thisNotification;
-			notifications.currentIndex++;
+			notifications.nextIndex++;
 		}
 	);
 
@@ -97,7 +95,7 @@ export default component$(() => {
 		if (remainingAsMatrix.length === 0) {
 			// reset our store and currentIndex
 			notifications.each = {};
-			notifications.currentIndex = 0;
+			notifications.nextIndex = 0;
 			return;
 		}
 
@@ -207,33 +205,55 @@ export default component$(() => {
 
 				if (state.isBrowser) {
 					// check for metamask
+
 					try {
-						const accounts = await window.ethereum.request({
-							method: "eth_requestAccounts",
-						});
-						// TODO: Prepare Eth transaction!
-						const web3 = new Web3(window.ethereum);
-						// const contract = require('web3-eth-contract');
-						const myContract = new web3.eth.Contract(
-							CONTRACT_ABI,
-							CONTRACT_ADDRESS
-						);
 
-						web3.eth.defaultAccount = accounts[0];
 
-						myContract
-							.add(state.dataString, formDataObject.price)
-							.then((txHash) => {
-								console.log("added! txHash:", txHash);
-								addNotification(`Item added! hash: ${txHash}`, "", 10000);
-							})
-							.catch((err) => {
-								console.log("Error adding item:", err);
-								addNotification(`Error adding item: ${err}`, "error", 10000);
-								return;
-							});
+						// choose metamask injection as provider
+						const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+						// check for accounts
+						const accounts = await provider.send('eth_requestAccounts', []);
+						const balance = ethers.utils.formatEther(await provider.getBalance(accounts[0]));
+
+						addNotification(`Accounts connected: [0]:{${accounts[0]}: ${balance}eth}`, "success");
+
+						// signer needed to sign txns / change state in contracts ?
+						const signer = provider.getSigner();
+
+						// connect to contract
+						const marketplaceContract_ReadOnly = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
+
+						const marketplaceContract_Signer = marketplaceContract_ReadOnly.connect(signer);
+
+						const tx = await marketplaceContract_Signer.addItem(state.dataString, formDataObject.price);
+
+						console.log('response from addItem:', {tx});
+						const jsonTx = JSON.stringify(tx);
+						// const formattedJson = jsonTx
+						// 	.replace(/,\"/g, `,\n"`)
+						// 	.replace(/{/g, `{\n`)
+						// 	.replace(/}/g, `\n}`);
+						// console.log(formattedJson);
+						addNotification(`Add item successful!?:\n ${jsonTx}`, "success");
+
+						
+
+						
+						// web3.eth.defaultAccount = accounts[0];
+						// myContract
+						// 	.addItem(state.dataString, formDataObject.price)
+						// 	.then((txHash) => {
+						// 		console.log("added! txHash:", txHash);
+						// 		addNotification(`Item added! hash: ${txHash}`);
+						// 	})
+						// 	.catch((err) => {
+						// 		console.log("Error adding item:", err);
+						// 		addNotification(`Error adding item: ${err}`, "error", 10000);
+						// 		return;
+						// 	});
 					} catch (e) {
-						addNotification("Can't get metamask accounts!", "warning");
+						addNotification(`Error: ${e.message}`, "warning");
 					}
 				}
 			} catch (err) {
@@ -244,6 +264,19 @@ export default component$(() => {
 		// start file read
 		reader.readAsArrayBuffer(photoInputRef.current.files[0]);
 		//alternately, could try pulling file from formData
+	});
+
+	const generateNotification = $(() => {
+
+		const typeNum = Math.floor(Math.random() * 3);
+		const loremNum = Math.floor(Math.random() * 99);
+		const durationNum = Math.floor(Math.random() * 10) * 1000;
+
+
+		const type = types[typeNum];
+		console.log(`{dur: ${durationNum}, type: ${type}, lorem: ${ loremNum}}`);
+
+		addNotification(loremSplit.slice(0, loremNum).join(' '), type, durationNum);		
 	});
 
 	return (
@@ -302,6 +335,7 @@ export default component$(() => {
 				</button>
 			</form>
 			<div class="grid grid-cols-1 gap-2">
+				<button onClick$={generateNotification}>Create notification</button>
 				{Object.values(notifications.each).map((thisNotification) => (
 					<Notification
 						key={thisNotification.id}
