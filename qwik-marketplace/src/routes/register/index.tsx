@@ -16,7 +16,7 @@ import Web3 from "web3";
 import { ethers } from "ethers";
 
 
-import { CONTRACT } from "~/libs/ethUtils";
+import { CONTRACT, connect } from "~/libs/ethUtils";
 import { Notification } from "../../components/notification/notification";
 
 
@@ -207,26 +207,16 @@ export default component$(() => {
 					// check for metamask
 
 					try {
+						//get accounts, balance of 0, and contract with signer
 
-
-						// choose metamask injection as provider
-						const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-						// check for accounts
-						const accounts = await provider.send('eth_requestAccounts', []);
-						const balance = ethers.utils.formatEther(await provider.getBalance(accounts[0]));
+						const { accounts, balance, contract } = await connect({signer: true});
 
 						addNotification(`Accounts connected: [0]:{${accounts[0]}: ${balance}eth}`, "success");
 
-						// signer needed to sign txns / change state in contracts ?
-						const signer = provider.getSigner();
+						const tx = await contract.addItem(state.dataString, formDataObject.price);
 
-						// connect to contract
-						const marketplaceContract_ReadOnly = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
 
-						const marketplaceContract_Signer = marketplaceContract_ReadOnly.connect(signer);
 
-						const tx = await marketplaceContract_Signer.addItem(state.dataString, formDataObject.price);
 
 						console.log('response from addItem:', {tx});
 						const jsonTx = JSON.stringify(tx);
@@ -237,21 +227,6 @@ export default component$(() => {
 						// console.log(formattedJson);
 						addNotification(`Add item successful!?:\n ${jsonTx}`, "success");
 
-						
-
-						
-						// web3.eth.defaultAccount = accounts[0];
-						// myContract
-						// 	.addItem(state.dataString, formDataObject.price)
-						// 	.then((txHash) => {
-						// 		console.log("added! txHash:", txHash);
-						// 		addNotification(`Item added! hash: ${txHash}`);
-						// 	})
-						// 	.catch((err) => {
-						// 		console.log("Error adding item:", err);
-						// 		addNotification(`Error adding item: ${err}`, "error", 10000);
-						// 		return;
-						// 	});
 					} catch (e) {
 						addNotification(`Error: ${e.message}`, "warning");
 					}

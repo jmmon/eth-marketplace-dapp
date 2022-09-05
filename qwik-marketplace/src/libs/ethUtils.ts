@@ -1,4 +1,6 @@
-export const CONTRACT_ADDRESS = "0x9995B103f54C57fD137cD1cb77EAD299Aaea04a0";
+import { ethers } from "ethers";
+
+export const CONTRACT_ADDRESS = "0x6d2aECB3BB19F17F331253Ac009aF92e63672417";
 
 export const CONTRACT_ABI = [
   {
@@ -313,7 +315,7 @@ export const CONTRACT_ABI = [
           },
         ],
         internalType: "struct Marketplace.Item[]",
-        name: "items",
+        name: "",
         type: "tuple[]",
       },
     ],
@@ -403,3 +405,91 @@ export const CONTRACT = {
   address: CONTRACT_ADDRESS,
   abi: CONTRACT_ABI,
 };
+
+export const connect = async ({signer}: {signer: boolean}) => {
+  let provider;
+  let balance;
+  let accounts;
+
+  try {
+    // choose metamask injection as provider
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    // console.log({provider});
+
+    // check for accounts
+    accounts = await provider.send("eth_requestAccounts", []);
+
+    // display balance for testing
+    balance = ethers.utils.formatEther(await provider.getBalance(accounts[0]));
+
+  } catch (error) {
+    console.log("error getting items:", error.message);
+    return Promise.reject(error);
+  }
+
+  let contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
+
+  if (signer) {
+    const signer = provider.getSigner();
+    contract = contract.connect(signer);
+  }
+
+  return { accounts, balance, contract };
+};
+
+
+
+// export const ethUtils = {
+//   provider: null,
+//   accounts: null,
+//   balance: null,
+//   contract: null,
+//   connect() {
+//     try {
+//       this.provider = new ethers.providers.Web3Provider(window.ethereum);
+//     } catch(e) {
+//       console.log('connect error:', e.message);
+//     }
+//     return this;
+//   },
+//   async accounts() {
+//     this.accounts = new Promise(async (resolve, reject) => {
+//       const accounts = await this.provider.send('eth_requestAccounts', []);
+//       if (accounts.length === 0) reject(accounts); 
+//       console.log('accounts', accounts);
+//       resolve(accounts);
+//     });
+//     return this;
+//   },
+//   async balance() {
+//     this.balance = new Promise(async (resolve, reject) => {
+//       const balance = ethers.utils.formatEther(await this.provider.getBalance(accounts[0]));
+//       console.log('balance', balance);
+//       if (!!balance) resolve(balance);
+//       reject(balance);
+//     });
+//     return this;
+//   },
+//   contract(signer: boolean) {
+//     let contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, this.provider);
+
+//     if (signer) {
+//       const signer = this.provider.getSigner();
+//       contract = contract.connect(signer);
+//     }
+//     this.contract = contract;
+//     return this;
+//   }
+// }
+
+
+/* 
+register
+						let obj = await ethUtils.connect().accounts()
+						obj = await obj.balance();
+						obj = obj.contract(true);
+
+						addNotification(`Accounts connected: [0]:{${obj.accounts[0]}: ${obj.balance}eth}`, "success");
+
+						const tx = await obj.contract.addItem(state.dataString, formDataObject.price);
+*/

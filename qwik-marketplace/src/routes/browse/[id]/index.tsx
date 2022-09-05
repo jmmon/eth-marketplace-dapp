@@ -1,92 +1,128 @@
-import { component$, Resource, useResource$ } from "@builder.io/qwik";
-import { RequestHandler, useEndpoint, useLocation } from "@builder.io/qwik-city";
+import {
+	$,
+	component$,
+	Resource,
+	useClientEffect$,
+	useResource$,
+	useStore,
+} from "@builder.io/qwik";
+import {RequestHandler, useEndpoint, useLocation} from "@builder.io/qwik-city";
 
+import {ethers} from "ethers";
+import {connect, CONTRACT} from "~/libs/ethUtils";
+
+interface IItemDataPlus extends IItemData {
+	imgUrl: string;
+}
 
 export default component$(() => {
-	const location = useLocation();
+	const {params} = useLocation();
+	console.log(params.id);
 
+	const store = useStore({isBrowser: false});
 
-	const itemShell = useEndpoint<IItem>();
-	// console.log('itemShell:', itemShell);
+	useClientEffect$(() => {
+		store.isBrowser = true;
+	});
+
+	const itemShell = useResource$<IItemDataPlus>(async ({track, cleanup}) => {
+		track(store, "isBrowser");
+		if (!store.isBrowser) return Promise.resolve({});
+		
+		const controller = new AbortController();
+		cleanup(() => controller.abort());
+
+		return getItemShell(params.id, controller);
+	});
 
 	return (
 		<div>
 			<h1>Check out this item!</h1>
-			<Resource 
+			<Resource
 				value={itemShell}
-				onPending= {() => <div>Loading...</div>}
-				onRejected={() => <div>Error</div>}
-				onResolved={(item) => {
-					// console.log('parent component passing to ItemDetails:', item)
-					return (<ItemDetails item={item}/>)}}
+				onPending={() => <div>Loading...</div>}
+				onRejected={(error) => <div>Error: {error.message}</div>}
+				onResolved={(itemData) => {
+					console.log("parent resolve", {itemData});
+					return (Object.keys(itemData).length > 0) 
+						? <ItemDetails itemData={itemData} />
+						: <div>Loading...</div>;
+				}}
 			/>
 		</div>
 	);
 });
 
+export const getItemShell = async (id: string): Promise<IItemDataPlus> => {
+	try {
+		const { accounts, balance, contract } = await connect({signer: false});
+		
+		const item = await contract.getItemFromId(id);
+		console.log("item from the smart contract!:", {item});
 
-export const onGet: RequestHandler<IItem> = async ({params}) => {
-	// console.log({params});
-	//temporary fetch from my own api endpoint instead of smart contract
-	const fetchedItems = await fetch(`http://127.0.0.1:5173/api/dummyItems/${params.id}`)
-	const item: IItem = await fetchedItems.json();
-	// console.log('parent onGet, received:', item);
-	return item;
-}
+		const bigNum = item[2];
 
+		const newItem = {
+			owner: item[0],
+			ipfsHash: item[1],
+			price: bigNum["_hex"], // this line has the issue
+			id: item[3],
+		};
+		console.log({newItem});
 
-export const ItemDetails = component$((props: {item: IItem}) => {
-
-	const itemData = useResource$<IItemData>(async ({ track, cleanup }) => {
-		track(props, "item");
-
-		// console.log('itemDetails props.item', props.item);
-		const controller = new AbortController();
-		cleanup(() => controller.abort());
-
-		return getItemData(props.item.ipfsHash, controller);
-	});
-
-	return(
-		<Resource 
-			value={itemData}
-			onPending={() => <div class="text-5xl">Loading...</div>}
-			onRejected={(error) => <div>Error: {error.message}</div>}
-			onResolved={(itemData) => {
-				// can render img from localhost gateway
-				const imgUrl = `http://localhost:8080/ipfs/${itemData.imgHash}`;
-				return (
-					<div class="w-full p-4 h-[800px] bg-slate-300">
-						<div style={`background: url(${imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 50%; width: 100%;`}></div>
-						<h1>{itemData.name}</h1>
-						<p>{itemData.price}</p>
-						<p>{itemData.description}</p>
-					</div>
-			)}}
-		/>
-	);
-})
+		return getItemData(newItem);
 
 
-export function delay(time: number) {
-	return new Promise<void>((resolve) => {
-		setTimeout(resolve, time);
-	});
-}
 
-export const getItemData = async (hash: string, controller?: AbortController): Promise<IItemData> => {
+	} catch (error) {
+		console.log("error getting items:", error.message);
+		return Promise.reject(error);
+	}
+};
+
+export const getItemData = async (item: IItem): Promise<IItemDataPlus> => {
 	//gotta fetch the item data from IPFS...
-	const url = `http://localhost:8080/ipfs/${hash}`;
-	console.log('fetching url:', url);
-	const response = await fetch(url, {
-		signal: controller?.signal,
-	});
-	// console.log({response})
+	const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
+	console.log("fetching url:", url);
 
+	const response = await fetch(url);
 	const itemData = await response.json();
-
-	await delay(4000);
+	const imgUrl = `http://localhost:8080/ipfs/${itemData.imgHash}`;
+	itemData.imgUrl = imgUrl;
 
 	if (!itemData) return Promise.reject(itemData);
 	return itemData;
-}
+};
+
+export const ItemDetails = component$(({itemData} : {itemData: IItemDataPlus}) => {
+	const {params} = useLocation();
+
+	const onPurchase = $(async (price) => {
+		const { accounts, balance, contract } = await connect({signer: true});
+		
+		const options = {value: `${price}`}
+		const tx = await contract.sell(params.id, options);
+		console.log('response from purchase:', {tx});
+	})
+
+
+
+	return (
+		<div class="w-full p-4 h-[800px] bg-slate-300">
+			<div
+				style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 50%; width: 100%;`}
+			></div>
+			<h1>{itemData.name}</h1>
+			<p>{itemData.price}</p>
+			<p>{itemData.description}</p>
+			<button
+				onClick$={async () => {
+					console.log("TODO: Purchase", params.id);
+					await onPurchase(itemData.price);
+				}}
+			>
+				Purchase
+			</button>
+		</div>
+	);
+});

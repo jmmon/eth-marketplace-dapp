@@ -59,6 +59,7 @@
   "type": "module",
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
+    "cookie": "^0.5.0",
     "dotenv": "^16.0.2",
     "ethers": "^5.7.0",
     "express-session": "^1.17.3",

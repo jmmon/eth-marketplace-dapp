@@ -8,7 +8,10 @@ import {
 	useResource$,
 	useStore,
 } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import type {DocumentHead} from "@builder.io/qwik-city";
+import {useEndpoint} from "@builder.io/qwik-city";
+import {useLocation} from "@builder.io/qwik-city";
+import {getSession} from "~/libs/getSession";
 
 interface IMetamaskStore {
 	hasMetamask: boolean;
@@ -18,9 +21,49 @@ interface IMetamaskStore {
 	provider: undefined | object;
 }
 
+export interface EndpointData {
+	// articles: components["schemas"]["Article"][];
+	// pages: number;
+	// tags: string[];
+	// user?: components["schemas"]["User"];
+}
+
+export const onGet: RequestHandler<EndpointData> = async ({url, request}) => {
+	const {user} = getSession(request.headers.get("cookie"));
+	const isAuthenticated = !!user;
+	if (!isAuthenticated) {
+		return {};
+	}
+	return async () => {
+		// // example fetching articles, pages, tags
+		// const [{articles, pages}, {tags}] = await Promise.all([
+		// 	fetchArticles(url.search, user?.token),
+		// 	fetch(`${url.origin}/api/tags.json`).then((r) => {
+		// 		return r.text().then((t) => {
+		// 			try {
+		// 				return JSON.parse(t);
+		// 			} catch (e) {
+		// 				return {};
+		// 			}
+		// 		});
+		// 	}),
+		// ]);
+
+		return {
+			user,
+			// articles,
+			// pages,
+			// tags,
+		};
+	};
+};
+
 export const MyContext = createContext("my-context");
 
 export default component$(() => {
+	const resource = useEndpoint<typeof onGet>();
+	const location = useLocation();
+
 	const metamask = useStore<IMetamaskStore>({
 		hasMetamask: true, // will check and switch to false if needed
 		error: undefined,
@@ -34,9 +77,7 @@ export default component$(() => {
 	useContextProvider(MyContext, metamask);
 
 	useClientEffect$(async () => {
-		const { default: detectProvider } = await import(
-			"@metamask/detect-provider"
-		);
+		const {default: detectProvider} = await import("@metamask/detect-provider");
 
 		//check for web3 provider
 		const provider = await detectProvider();
@@ -65,13 +106,13 @@ export default component$(() => {
 		const ethereum = window.ethereum;
 		const accounts = await ethereum.request({
 			method: "eth_requestAccounts",
-		});
+		}); 
 		metamask.account = accounts[0];
 
-		const chainId = await ethereum.request({
-			method: "eth_chainId",
-		});
-		console.log({ chainId });
+		// const chainId = await ethereum.request({
+		// 	method: "eth_chainId",
+		// });
+		// console.log({chainId});
 	});
 
 	const handleConnect = $(async () => {
@@ -84,8 +125,7 @@ export default component$(() => {
 			});
 			//save accounts to our store
 			metamask.account = accounts[0];
-			console.log('account:', metamask.account);
-			
+			console.log("account:", metamask.account);
 		} catch (error) {
 			metamask.error = error.message;
 		}
@@ -116,9 +156,7 @@ export default component$(() => {
 			{metamask.error && (
 				<div class="bg-red-200 p-2 rounded">
 					<p>{metamask.error}</p>
-					<button onCLick$={() => (metamask.error = undefined)}>
-						X
-					</button>
+					<button onCLick$={() => (metamask.error = undefined)}>X</button>
 				</div>
 			)}
 
@@ -127,9 +165,9 @@ export default component$(() => {
 			)}
 
 			<p>The meta-framework for Qwik.</p>
-      <br/>
-      <br/>
-      <Marketplace />
+			<br />
+			<br />
+			<Marketplace />
 		</div>
 	);
 });
@@ -144,8 +182,12 @@ export const Marketplace = component$((props) => {
 			<h1>The marketplace</h1>
 			<div>Some products</div>
 			{Object.keys(context).map((key) => {
-        return (<div>{key}: {context[key]}</div>);
-      })}
+				return (
+					<div>
+						{key}: {context[key]}
+					</div>
+				);
+			})}
 		</div>
 	);
 });
@@ -153,23 +195,14 @@ export const Marketplace = component$((props) => {
 export const Item = component$((props) => {
 	const context = useContext(MyContext);
 
-	const itemResource = useResource$(({track, cleanup}) => {
-
-	});
+	const itemResource = useResource$(({track, cleanup}) => {});
 	return (
 		<div>
 			<div>Image</div>
 			<div></div>
 		</div>
 	);
-})
-
-
-
-
-
-
-
+});
 
 export const head: DocumentHead = {
 	title: "Marketplace",
