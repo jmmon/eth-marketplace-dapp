@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts\Marketplace.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> Marketplace.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">98.73% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>78/79</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">62.5% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>15/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>14/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">98.8% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>82/83</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">282×</span>
+<span class="cline-any cline-yes">282×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">282×</span>
+<span class="cline-any cline-yes">282×</span>
+<span class="cline-any cline-yes">282×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.3;
+&nbsp;
+// convert number to string
+function toString(uint256 value) pure returns (string memory) {
+	// Inspired by OraclizeAPI's implementation - MIT licence
+	// https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
+&nbsp;
+	<span class="missing-if-branch" title="if path not taken" >I</span>if (value == 0) {
+<span class="cstat-no" title="statement not covered" >		return "0";</span>
+	}
+	uint256 temp = value;
+	uint256 digits;
+	while (temp != 0) {
+		digits++;
+		temp /= 10;
+	}
+	bytes memory buffer = new bytes(digits);
+	while (value != 0) {
+		digits -= 1;
+		buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+		value /= 10;
+	}
+	return string(buffer);
+}
+&nbsp;
+contract Marketplace {
+	address payable private contractOwner;
+&nbsp;
+	struct Item {
+		address owner;
+		string ipfsHash; // holds name, image hash, details
+		uint256 price; // in wei
+		bytes32 id;
+	}
+&nbsp;
+	mapping(address =&gt; bytes32[]) public itemIdsFromSeller; // for getting IDs from a seller
+	mapping(bytes32 =&gt; Item) public itemFromId;	// for getting item from ID
+	bytes32[] public arrOfItemIds; // for getting all item IDS
+&nbsp;
+	constructor() {
+		contractOwner = payable(msg.sender);
+	}
+&nbsp;
+	// register item to the sender/seller's address:
+	function addItem(string memory _dataHash, uint256 _price) external returns (bool success) {
+		// making an id for the item: hash the IPFS data hash, price, and sender address
+        string memory price = toString(_price);
+        string memory addr = toString(uint256(uint160(msg.sender)));
+&nbsp;
+		bytes32 itemHashId = keccak256(abi.encodePacked(_dataHash, price, addr));
+&nbsp;
+		// create a new item
+		Item memory item = Item({
+			owner: msg.sender,
+			ipfsHash: _dataHash,
+			price: _price,
+			id: itemHashId
+		});
+&nbsp;
+		// update our store variables
+		itemIdsFromSeller[msg.sender].push(itemHashId);
+		itemFromId[itemHashId] = item;
+		arrOfItemIds.push(itemHashId);
+&nbsp;
+		emit eventAddItem(
+			item,
+			arrOfItemIds.length,
+			itemIdsFromSeller[msg.sender].length
+		);
+&nbsp;
+		return true;
+	}
+&nbsp;
+&nbsp;
+	function sell(bytes32 _itemId) external payable {
+		Item memory foundItem = itemFromId[_itemId];
+		address itemOwner = foundItem.owner;
+		uint256 itemPrice = foundItem.price;
+&nbsp;
+		require(itemOwner != msg.sender, "Owner cannot buy their own items!");
+		require(
+			// msg.value &gt;= foundItem.price,
+			msg.value &gt;= 0 &amp;&amp; itemPrice &lt;= msg.value,
+			"Not sent enough money to buy the item"
+		);
+&nbsp;
+		// remove ids or items from our variables
+		bool removeSuccess = removeFromAll(
+			itemOwner,
+			_itemId
+		);
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(
+			removeSuccess,
+			"Error removing item from seller's list"
+		);
+&nbsp;
+		// handle money transaction // not yet tsested because sale is not workingggg
+		uint256 sellerProceeds = itemPrice * 95 / 100;
+		address payable sellerAddr = payable(itemOwner);
+		(bool success, ) = sellerAddr.call{value: sellerProceeds}("");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(success, "failed to send ether");
+&nbsp;
+		emit eventSell(
+			msg.value,
+			itemPrice,
+			address(this).balance,
+			sellerProceeds,
+			arrOfItemIds.length
+		);
+	}
+&nbsp;
+	function deleteItem(bytes32 _itemId) external {
+		Item memory foundItem = itemFromId[_itemId];
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(foundItem.owner == msg.sender, "Only owner can delete their item!");
+&nbsp;
+		// remove ids or items from our variables
+		bool removeSuccess = removeFromAll(
+			foundItem.owner,
+			_itemId
+		);
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(
+			removeSuccess,
+			"Error removing item from seller's list"
+		);
+&nbsp;
+		emit eventDeleteItem(
+			_itemId,
+			foundItem.owner,
+			arrOfItemIds.length
+		);
+	}
+&nbsp;
+	function removeFromAll(address _owner, bytes32 _itemId) internal returns (bool) {
+		// remove ids or items from our variables
+		bool successRemoveFromSellerList = removeFromSeller(
+			_owner,
+			_itemId
+		);
+		bool successRemoveFromStockMap = removeFromStock(_itemId);
+		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
+&nbsp;
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(
+			successRemoveFromSellerList,
+			"Error removing item from seller's list"
+		);
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(
+			successRemoveFromStockMap,
+			"Error removing item from stock items"
+		);
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(
+			successRemoveFromItemIdList,
+			"Error removing item from item id list"
+		);
+&nbsp;
+		return true;
+	}
+&nbsp;
+&nbsp;
+&nbsp;
+	function removeFromStock(bytes32 _itemId) internal returns (bool) {
+		// delete struct from our itemsForSale mapping
+		delete itemFromId[_itemId];
+&nbsp;
+		emit eventItemRemoved(_itemId);
+		return true;
+	}
+&nbsp;
+	function getItemIndex(bytes32 _itemId, uint256 _length) internal view returns (uint256) {
+		uint256 i = 0;
+		for (i; i &lt; _length; i++) {
+			if (arrOfItemIds[i] == _itemId) {
+				break; // saves the state of i for our return (skips increment)
+			}
+		}
+		return i; //1 more than last index since that's what broke the loop 
+	}
+&nbsp;
+&nbsp;
+	function removeFromItemIds(bytes32 _itemId) internal returns (bool) {
+		uint256 length = arrOfItemIds.length;
+		uint256 index = getItemIndex(_itemId, length);
+&nbsp;
+		// // should never run; this would happen if item had already been removed...
+		// if (index == length) {
+		// 	return false; // not yet tested
+		// }
+&nbsp;
+		// once found, shuffle our item list forward
+		for (uint256 i = index; i &lt; length - 1; i++) {
+			arrOfItemIds[i] = arrOfItemIds[i + 1];
+		}
+		// remove the last item to reduce the length
+		arrOfItemIds.pop();
+&nbsp;
+		emit eventItemRemovedFromIdList(
+			index,
+			_itemId
+		);
+		return true;
+&nbsp;
+	}
+&nbsp;
+	function removeFromSeller(address _owner, bytes32 _itemId)
+		internal
+		returns (bool)
+	{
+		uint256 length = itemIdsFromSeller[_owner].length;
+		uint256 index = getSellerItemIndex(_itemId, _owner, length);
+&nbsp;
+		// // in case it's already removed for some reason? should never happen
+		// if (index == length) {
+		// 	return false; // not yet tested
+		// }
+&nbsp;
+		// reshuffle our seller's item list so we remove the item
+		for (uint256 i = index; i &lt; length - 1; i++) {
+			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
+		}
+		// remove the last item to reduce the length - maybe just replaces the value with default value??
+		itemIdsFromSeller[_owner].pop();
+&nbsp;
+		emit eventItemRemovedFromSeller(index, _itemId);
+&nbsp;
+		// if (itemIdsFromSeller[_owner].length == 0) {
+		// 	// no longer need seller stored
+		// 	delete itemIdsFromSeller[_owner]; // not yet tested
+		// }
+&nbsp;
+		return true;
+	}
+&nbsp;
+	// use item ID to get item's index from the owner
+	function getSellerItemIndex(bytes32 _itemId, address _owner, uint256 _length) internal view returns (uint256) {
+		uint256 i = 0;
+		for (i; i &lt; _length; i++) {
+			<span class="missing-if-branch" title="else path not taken" >E</span>if (itemIdsFromSeller[_owner][i] == _itemId) {
+				break; // saves the state of i for our return
+			}
+		}
+		return i; //1 more than last index since that's what broke the loop 
+	}
+	
+	// getters (not needed for public vars)
+	function getAllItems() view external returns (Item[] memory) {
+		uint length = arrOfItemIds.length;
+		Item[] memory items = new Item[](length);
+		for (uint i = 0; i &lt; length; i++) {
+			bytes32 itemId = arrOfItemIds[i];
+			Item memory foundItem = itemFromId[itemId];
+			items[i] = foundItem;
+		}
+		return items;
+	}
+    
+	function getItemIdsLength() external view returns (uint256) {
+		return arrOfItemIds.length;
+	}
+&nbsp;
+	function getItemIdsFromSeller(address _sellerAddress)
+	  view external
+		returns (bytes32[] memory)
+	{
+		return itemIdsFromSeller[_sellerAddress];
+	}
+&nbsp;
+	// events
+	event eventAddItem(
+		Item _item,
+		uint256 _itemsForSaleCount,
+		uint256 _sellersItemsLength
+	);
+	event eventSell(
+		uint256 _valueSent,
+		uint256 _itemPrice,
+		uint256 _contractBalance,
+		uint256 _sellerProceeds,
+		uint256 _remainingItemsForSale
+	);
+	event eventItemRemoved(bytes32 _removedItemId);
+	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
+	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
+		event eventDeleteItem(
+		bytes32 _itemId,
+		address _owner,
+		uint256 _newItemListLength
+	);
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Sep 06 2022 11:16:25 GMT-0400 (Eastern Daylight Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

@@ -24,21 +24,10 @@ function toString(uint256 value) pure returns (string memory) {
 	return string(buffer);
 }
 
-// sellers register/list items for sale in the ethereum blockchain
-// item == hash of IPFS JSON Object
-// smart contract has a collection of sellers, and each seller has a collection of items
-
-// visitors DO NOT see sellers' address/contacts
-// visitors can register as buyers if they have a wallet (metamask)
-// Buyers can buy; payment goes to smart contract, then 95% goes to the seller ?
-
-// "buyers" registration can be app logic; smart contract does not need to keep
-//      a list of registered buyers
-
 contract Marketplace {
 	address payable private contractOwner;
 
-    struct Item {
+	struct Item {
 		address owner;
 		string ipfsHash; // holds name, image hash, details
 		uint256 price; // in wei
@@ -47,15 +36,11 @@ contract Marketplace {
 
 	mapping(address => bytes32[]) public itemIdsFromSeller; // for getting IDs from a seller
 	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
-	bytes32[] public itemIdList; // for getting all item IDS
-        // can get individual itemId from itemIdList with built-in getter
-    // Item[] public itemList;
-
+	bytes32[] public arrOfItemIds; // for getting all item IDS
 
 	constructor() {
 		contractOwner = payable(msg.sender);
 	}
-
 
 	// register item to the sender/seller's address:
 	function addItem(string memory _dataHash, uint256 _price) external returns (bool success) {
@@ -69,22 +54,18 @@ contract Marketplace {
 		Item memory item = Item({
 			owner: msg.sender,
 			ipfsHash: _dataHash,
-			price: _price, // needed, smart contract must know the "price" of the item for sale
+			price: _price,
 			id: itemHashId
 		});
 
-		// push the itemHashId to our seller's list of items
+		// update our store variables
 		itemIdsFromSeller[msg.sender].push(itemHashId);
-
-		// add {itemHashId: item} to our itemFromId (list of all items for sale)
 		itemFromId[itemHashId] = item;
-
-		//push to itemIdList, our list of all items
-		itemIdList.push(itemHashId);
+		arrOfItemIds.push(itemHashId);
 
 		emit eventAddItem(
 			item,
-			itemIdList.length,
+			arrOfItemIds.length,
 			itemIdsFromSeller[msg.sender].length
 		);
 
@@ -94,47 +75,38 @@ contract Marketplace {
 
 	function sell(bytes32 _itemId) external payable {
 		Item memory foundItem = itemFromId[_itemId];
-		require(foundItem.owner != msg.sender, "Owner cannot buy their own items!");
+		address itemOwner = foundItem.owner;
+		uint256 itemPrice = foundItem.price;
+
+		require(itemOwner != msg.sender, "Owner cannot buy their own items!");
 		require(
-			msg.value >= foundItem.price,
+			// msg.value >= foundItem.price,
+			msg.value >= 0 && itemPrice <= msg.value,
 			"Not sent enough money to buy the item"
 		);
 
-		// remove id from seller's items list
-		bool successRemoveFromSellerList = removeFromSeller(
-			foundItem.owner,
+		// remove ids or items from our variables
+		bool removeSuccess = removeFromAll(
+			itemOwner,
 			_itemId
 		);
-
-		// remove item from our mapping
-		bool successRemoveFromStockMap = removeFromStock(_itemId);
-
-		// remove item from our itemIdList
-		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
-
 		require(
-			successRemoveFromSellerList,
+			removeSuccess,
 			"Error removing item from seller's list"
 		);
-		require(
-			successRemoveFromStockMap,
-			"Error removing item from stock items"
-		);
-		require(
-			successRemoveFromItemIdList,
-			"Error removing item from item id list"
-		);
 
-		uint256 sellerProceeds = (foundItem.price * 95) / 100;
-
-		(bool success, ) = foundItem.owner.call{value: sellerProceeds}("");
-		require(success, "failed to send ether"); // what happens if this fails?? item still gets removed, but seller does not get proceeds I guess?? Or maybe it cancels the whole function, don't remember
-
+		// handle money transaction // not yet tsested because sale is not workingggg
+		uint256 sellerProceeds = itemPrice * 95 / 100;
+		address payable sellerAddr = payable(itemOwner);
+		(bool success, ) = sellerAddr.call{value: sellerProceeds}("");
+		require(success, "failed to send ether");
 
 		emit eventSell(
+			msg.value,
+			itemPrice,
 			address(this).balance,
 			sellerProceeds,
-			itemIdList.length
+			arrOfItemIds.length
 		);
 	}
 
@@ -142,16 +114,30 @@ contract Marketplace {
 		Item memory foundItem = itemFromId[_itemId];
 		require(foundItem.owner == msg.sender, "Only owner can delete their item!");
 
-		// remove id from seller's items list
-		bool successRemoveFromSellerList = removeFromSeller(
+		// remove ids or items from our variables
+		bool removeSuccess = removeFromAll(
 			foundItem.owner,
 			_itemId
 		);
+		require(
+			removeSuccess,
+			"Error removing item from seller's list"
+		);
 
-		// remove item from our mapping
+		emit eventDeleteItem(
+			_itemId,
+			foundItem.owner,
+			arrOfItemIds.length
+		);
+	}
+
+	function removeFromAll(address _owner, bytes32 _itemId) internal returns (bool) {
+		// remove ids or items from our variables
+		bool successRemoveFromSellerList = removeFromSeller(
+			_owner,
+			_itemId
+		);
 		bool successRemoveFromStockMap = removeFromStock(_itemId);
-
-		// remove item from our itemIdList
 		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
 
 		require(
@@ -167,12 +153,7 @@ contract Marketplace {
 			"Error removing item from item id list"
 		);
 
-
-		emit eventDeleteItem(
-			_itemId,
-			foundItem.owner,
-			itemIdList.length
-		);
+		return true;
 	}
 
 
@@ -188,7 +169,7 @@ contract Marketplace {
 	function getItemIndex(bytes32 _itemId, uint256 _length) internal view returns (uint256) {
 		uint256 i = 0;
 		for (i; i < _length; i++) {
-			if (itemIdList[i] == _itemId) {
+			if (arrOfItemIds[i] == _itemId) {
 				break; // saves the state of i for our return (skips increment)
 			}
 		}
@@ -197,19 +178,20 @@ contract Marketplace {
 
 
 	function removeFromItemIds(bytes32 _itemId) internal returns (bool) {
-		uint256 length = itemIdList.length;
+		uint256 length = arrOfItemIds.length;
 		uint256 index = getItemIndex(_itemId, length);
 
-		if (index == length) {
-			return false;
-		}
+		// // should never run; this would happen if item had already been removed...
+		// if (index == length) {
+		// 	return false; // not yet tested
+		// }
 
 		// once found, shuffle our item list forward
 		for (uint256 i = index; i < length - 1; i++) {
-			itemIdList[i] = itemIdList[i + 1];
+			arrOfItemIds[i] = arrOfItemIds[i + 1];
 		}
 		// remove the last item to reduce the length
-		itemIdList.pop();
+		arrOfItemIds.pop();
 
 		emit eventItemRemovedFromIdList(
 			index,
@@ -219,7 +201,36 @@ contract Marketplace {
 
 	}
 
+	function removeFromSeller(address _owner, bytes32 _itemId)
+		internal
+		returns (bool)
+	{
+		uint256 length = itemIdsFromSeller[_owner].length;
+		uint256 index = getSellerItemIndex(_itemId, _owner, length);
 
+		// // in case it's already removed for some reason? should never happen
+		// if (index == length) {
+		// 	return false; // not yet tested
+		// }
+
+		// reshuffle our seller's item list so we remove the item
+		for (uint256 i = index; i < length - 1; i++) {
+			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
+		}
+		// remove the last item to reduce the length - maybe just replaces the value with default value??
+		itemIdsFromSeller[_owner].pop();
+
+		emit eventItemRemovedFromSeller(index, _itemId);
+
+		// if (itemIdsFromSeller[_owner].length == 0) {
+		// 	// no longer need seller stored
+		// 	delete itemIdsFromSeller[_owner]; // not yet tested
+		// }
+
+		return true;
+	}
+
+	// use item ID to get item's index from the owner
 	function getSellerItemIndex(bytes32 _itemId, address _owner, uint256 _length) internal view returns (uint256) {
 		uint256 i = 0;
 		for (i; i < _length; i++) {
@@ -229,66 +240,29 @@ contract Marketplace {
 		}
 		return i; //1 more than last index since that's what broke the loop 
 	}
-
-	function removeFromSeller(address _owner, bytes32 _itemId)
-		internal
-		returns (bool)
-	{
-		uint256 length = itemIdsFromSeller[_owner].length;
-		uint256 index = getSellerItemIndex(_itemId, _owner, length);
-
-		if (index == length) {
-			return false;
-		}
-
-		// reshuffle our seller's item list so we remove the item
-		for (uint256 i = index; i < length - 1; i++) {
-			itemIdsFromSeller[_owner][i] = itemIdsFromSeller[_owner][i + 1];
-		}
-		// remove the last item to reduce the length
-		itemIdsFromSeller[_owner].pop();
-
-		emit eventItemRemovedFromSeller(index, _itemId);
-
-		if (itemIdsFromSeller[_owner].length == 0) {
-			// no longer need seller stored
-			delete itemIdsFromSeller[_owner];
-		}
-
-		return true;
-
-	}
-
-
+	
+	// getters (not needed for public vars)
 	function getAllItems() view external returns (Item[] memory) {
-        uint length = itemIdList.length;
+		uint length = arrOfItemIds.length;
 		Item[] memory items = new Item[](length);
-        for (uint i = 0; i < length; i++) {
-			bytes32 itemId = itemIdList[i];
+		for (uint i = 0; i < length; i++) {
+			bytes32 itemId = arrOfItemIds[i];
 			Item memory foundItem = itemFromId[itemId];
 			items[i] = foundItem;
-        }
-        return items;
+		}
+		return items;
 	}
-
     
-	// getters?? needed for public vars?
-
-	function getItemIdsCount() external view returns (uint256) {
-		return itemIdList.length;
+	function getItemIdsLength() external view returns (uint256) {
+		return arrOfItemIds.length;
 	}
 
-	function getItemFromId(bytes32 _id) external view returns (Item memory) {
-		return itemFromId[_id];
-	}
-
-	function getSellerItemIdsArrayFromAddress(address _sellerAddress)
+	function getItemIdsFromSeller(address _sellerAddress)
 	  view external
 		returns (bytes32[] memory)
 	{
 		return itemIdsFromSeller[_sellerAddress];
 	}
-    
 
 	// events
 	event eventAddItem(
@@ -297,6 +271,8 @@ contract Marketplace {
 		uint256 _sellersItemsLength
 	);
 	event eventSell(
+		uint256 _valueSent,
+		uint256 _itemPrice,
 		uint256 _contractBalance,
 		uint256 _sellerProceeds,
 		uint256 _remainingItemsForSale
@@ -310,8 +286,3 @@ contract Marketplace {
 		uint256 _newItemListLength
 	);
 }
-
-/* NOTES:
-
-
-*/

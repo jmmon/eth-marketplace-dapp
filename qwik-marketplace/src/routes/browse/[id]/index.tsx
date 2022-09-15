@@ -89,6 +89,8 @@ export const getItemData = async (item: IItem): Promise<IItemDataPlus> => {
 	const itemData = await response.json();
 	const imgUrl = `http://localhost:8080/ipfs/${itemData.imgHash}`;
 	itemData.imgUrl = imgUrl;
+	itemData.owner = item.owner;
+	console.log('final', {itemData});
 
 	if (!itemData) return Promise.reject(itemData);
 	return itemData;
@@ -112,10 +114,12 @@ export const ItemDetails = component$(({itemData} : {itemData: IItemDataPlus}) =
 			<div
 				style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 50%; width: 100%;`}
 			></div>
-			<h1>{itemData.name}</h1>
-			<p>{itemData.price}</p>
-			<p>{itemData.description}</p>
+			<h1>Item Name: {itemData.name}</h1>
+			<p>Price (in wei): {itemData.price}</p>
+			<p>Description: {itemData.description}</p>
+			{window.ethereum && <p>Owner: {itemData.owner}</p>}
 			<button
+				class="border-solid rounded px-2 py-1 bg-gray-50"
 				onClick$={async () => {
 					console.log("TODO: Purchase", params.id);
 					await onPurchase(itemData.price);

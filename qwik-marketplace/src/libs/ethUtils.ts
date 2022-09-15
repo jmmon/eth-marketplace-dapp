@@ -1,404 +1,396 @@
 import { ethers } from "ethers";
 
-export const CONTRACT_ADDRESS = "0x6d2aECB3BB19F17F331253Ac009aF92e63672417";
+export const CONTRACT_ADDRESS = "0xF4A12Ff527bC99440f93ec444dB86633DB9463ff";
 
 export const CONTRACT_ABI = [
   {
-    inputs: [],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        components: [
+        "components": [
           {
-            internalType: "address",
-            name: "owner",
-            type: "address",
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
           },
           {
-            internalType: "string",
-            name: "ipfsHash",
-            type: "string",
+            "internalType": "string",
+            "name": "ipfsHash",
+            "type": "string"
           },
           {
-            internalType: "uint256",
-            name: "price",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           },
           {
-            internalType: "bytes32",
-            name: "id",
-            type: "bytes32",
-          },
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          }
         ],
-        indexed: false,
-        internalType: "struct Marketplace.Item",
-        name: "_item",
-        type: "tuple",
+        "indexed": false,
+        "internalType": "struct Marketplace.Item",
+        "name": "_item",
+        "type": "tuple"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_itemsForSaleCount",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_itemsForSaleCount",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_sellersItemsLength",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sellersItemsLength",
+        "type": "uint256"
+      }
     ],
-    name: "eventAddItem",
-    type: "event",
+    "name": "eventAddItem",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_itemId",
+        "type": "bytes32"
       },
       {
-        indexed: false,
-        internalType: "address",
-        name: "_owner",
-        type: "address",
+        "indexed": false,
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_newItemListLength",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_newItemListLength",
+        "type": "uint256"
+      }
     ],
-    name: "eventDeleteItem",
-    type: "event",
+    "name": "eventDeleteItem",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_removedItemId",
-        type: "bytes32",
-      },
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_removedItemId",
+        "type": "bytes32"
+      }
     ],
-    name: "eventItemRemoved",
-    type: "event",
+    "name": "eventItemRemoved",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_index",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_itemId",
+        "type": "bytes32"
+      }
     ],
-    name: "eventItemRemovedFromIdList",
-    type: "event",
+    "name": "eventItemRemovedFromIdList",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_index",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_itemId",
+        "type": "bytes32"
+      }
     ],
-    name: "eventItemRemovedFromSeller",
-    type: "event",
+    "name": "eventItemRemovedFromSeller",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
+    "anonymous": false,
+    "inputs": [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_contractBalance",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_contractBalance",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_sellerProceeds",
-        type: "uint256",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sellerProceeds",
+        "type": "uint256"
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_remainingItemsForSale",
-        type: "uint256",
-      },
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_remainingItemsForSale",
+        "type": "uint256"
+      }
     ],
-    name: "eventSell",
-    type: "event",
+    "name": "eventSell",
+    "type": "event"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    name: "itemFromId",
-    outputs: [
+    "name": "itemFromId",
+    "outputs": [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       },
       {
-        internalType: "string",
-        name: "ipfsHash",
-        type: "string",
+        "internalType": "string",
+        "name": "ipfsHash",
+        "type": "string"
       },
       {
-        internalType: "uint256",
-        name: "price",
-        type: "uint256",
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
       },
       {
-        internalType: "bytes32",
-        name: "id",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "itemIdList",
-    outputs: [
+    "name": "itemIdList",
+    "outputs": [
       {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       },
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "itemIdsFromSeller",
-    outputs: [
+    "name": "itemIdsFromSeller",
+    "outputs": [
       {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "string",
-        name: "_dataHash",
-        type: "string",
+        "internalType": "string",
+        "name": "_dataHash",
+        "type": "string"
       },
       {
-        internalType: "uint256",
-        name: "_price",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "_price",
+        "type": "uint256"
+      }
     ],
-    name: "addItem",
-    outputs: [
+    "name": "addItem",
+    "outputs": [
       {
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
     ],
-    stateMutability: "nonpayable",
-    type: "function",
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "_itemId",
+        "type": "bytes32"
+      }
     ],
-    name: "sell",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-    payable: true,
+    "name": "sell",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "_itemId",
+        "type": "bytes32"
+      }
     ],
-    name: "deleteItem",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "deleteItem",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "getAllItems",
-    outputs: [
+    "inputs": [],
+    "name": "getAllItems",
+    "outputs": [
       {
-        components: [
+        "components": [
           {
-            internalType: "address",
-            name: "owner",
-            type: "address",
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
           },
           {
-            internalType: "string",
-            name: "ipfsHash",
-            type: "string",
+            "internalType": "string",
+            "name": "ipfsHash",
+            "type": "string"
           },
           {
-            internalType: "uint256",
-            name: "price",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           },
           {
-            internalType: "bytes32",
-            name: "id",
-            type: "bytes32",
-          },
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          }
         ],
-        internalType: "struct Marketplace.Item[]",
-        name: "",
-        type: "tuple[]",
-      },
+        "internalType": "struct Marketplace.Item[]",
+        "name": "",
+        "type": "tuple[]"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: "getItemIdsCount",
-    outputs: [
+    "inputs": [],
+    "name": "getItemIdsCount",
+    "outputs": [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "bytes32",
-        name: "_id",
-        type: "bytes32",
-      },
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      }
     ],
-    name: "getItemFromId",
-    outputs: [
+    "name": "getItemFromId",
+    "outputs": [
       {
-        components: [
+        "components": [
           {
-            internalType: "address",
-            name: "owner",
-            type: "address",
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
           },
           {
-            internalType: "string",
-            name: "ipfsHash",
-            type: "string",
+            "internalType": "string",
+            "name": "ipfsHash",
+            "type": "string"
           },
           {
-            internalType: "uint256",
-            name: "price",
-            type: "uint256",
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           },
           {
-            internalType: "bytes32",
-            name: "id",
-            type: "bytes32",
-          },
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          }
         ],
-        internalType: "struct Marketplace.Item",
-        name: "",
-        type: "tuple",
-      },
+        "internalType": "struct Marketplace.Item",
+        "name": "",
+        "type": "tuple"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: "address",
-        name: "_sellerAddress",
-        type: "address",
-      },
+        "internalType": "address",
+        "name": "_sellerAddress",
+        "type": "address"
+      }
     ],
-    name: "getSellerItemIdsArrayFromAddress",
-    outputs: [
+    "name": "getSellerItemIdsArrayFromAddress",
+    "outputs": [
       {
-        internalType: "bytes32[]",
-        name: "",
-        type: "bytes32[]",
-      },
+        "internalType": "bytes32[]",
+        "name": "",
+        "type": "bytes32[]"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 export const CONTRACT = {

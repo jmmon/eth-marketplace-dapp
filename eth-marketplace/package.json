@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.16",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
@@ -35,6 +36,7 @@
     ]
   },
   "dependencies": {
-    "solidity-coverage": "^0.7.21"
+    "solidity-coverage": "^0.7.21",
+    "web3": "^1.7.5"
   }
 }
