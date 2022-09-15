@@ -25,3 +25,10 @@ declare interface INotificationEach {
 	id: number;
 	timeout: number;
 }
+
+declare interface ISessionContext {
+  connected?: boolean;
+  loggedIn?: boolean;
+	address?: string;
+	unlocked?: boolean;
+}

@@ -11,7 +11,7 @@ import {
 import type {DocumentHead} from "@builder.io/qwik-city";
 import {useEndpoint} from "@builder.io/qwik-city";
 import {useLocation} from "@builder.io/qwik-city";
-import {getSession} from "~/libs/getSession";
+import { SessionContext } from "~/libs/context";
 
 interface IMetamaskStore {
 	hasMetamask: boolean;
@@ -21,47 +21,7 @@ interface IMetamaskStore {
 	provider: undefined | object;
 }
 
-export interface EndpointData {
-	// articles: components["schemas"]["Article"][];
-	// pages: number;
-	// tags: string[];
-	// user?: components["schemas"]["User"];
-}
-
-export const onGet: RequestHandler<EndpointData> = async ({url, request}) => {
-	const {user} = getSession(request.headers.get("cookie"));
-	const isAuthenticated = !!user;
-	if (!isAuthenticated) {
-		return {};
-	}
-	return async () => {
-		// // example fetching articles, pages, tags
-		// const [{articles, pages}, {tags}] = await Promise.all([
-		// 	fetchArticles(url.search, user?.token),
-		// 	fetch(`${url.origin}/api/tags.json`).then((r) => {
-		// 		return r.text().then((t) => {
-		// 			try {
-		// 				return JSON.parse(t);
-		// 			} catch (e) {
-		// 				return {};
-		// 			}
-		// 		});
-		// 	}),
-		// ]);
-
-		return {
-			user,
-			// articles,
-			// pages,
-			// tags,
-		};
-	};
-};
-
-export const MyContext = createContext("my-context");
-
 export default component$(() => {
-	const resource = useEndpoint<typeof onGet>();
 	const location = useLocation();
 
 	const metamask = useStore<IMetamaskStore>({
@@ -72,9 +32,8 @@ export default component$(() => {
 		provider: undefined,
 	});
 
-	// context should hold metamask logged in info, account;
-	// for site-wide metamask integration
-	useContextProvider(MyContext, metamask);
+	const session = useContext(SessionContext); // our connected/logged in state
+
 
 	useClientEffect$(async () => {
 		const {default: detectProvider} = await import("@metamask/detect-provider");
@@ -167,42 +126,42 @@ export default component$(() => {
 			<p>The meta-framework for Qwik.</p>
 			<br />
 			<br />
-			<Marketplace />
+			{/* <Marketplace /> */}
 		</div>
 	);
 });
 
-export const Marketplace = component$((props) => {
-	const context = useContext(MyContext);
+// export const Marketplace = component$((props) => {
+// 	const context = useContext(MyContext);
 
-	// has to fetch the data from the contract;
-	// then each item has to fetch the data from IPFS
-	return (
-		<div>
-			<h1>The marketplace</h1>
-			<div>Some products</div>
-			{Object.keys(context).map((key) => {
-				return (
-					<div>
-						{key}: {context[key]}
-					</div>
-				);
-			})}
-		</div>
-	);
-});
+// 	// has to fetch the data from the contract;
+// 	// then each item has to fetch the data from IPFS
+// 	return (
+// 		<div>
+// 			<h1>The marketplace</h1>
+// 			<div>Some products</div>
+// 			{Object.keys(context).map((key) => {
+// 				return (
+// 					<div>
+// 						{key}: {context[key]}
+// 					</div>
+// 				);
+// 			})}
+// 		</div>
+// 	);
+// });
 
-export const Item = component$((props) => {
-	const context = useContext(MyContext);
+// export const Item = component$((props) => {
+// 	const context = useContext(MyContext);
 
-	const itemResource = useResource$(({track, cleanup}) => {});
-	return (
-		<div>
-			<div>Image</div>
-			<div></div>
-		</div>
-	);
-});
+// 	const itemResource = useResource$(({track, cleanup}) => {});
+// 	return (
+// 		<div>
+// 			<div>Image</div>
+// 			<div></div>
+// 		</div>
+// 	);
+// });
 
 export const head: DocumentHead = {
 	title: "Marketplace",

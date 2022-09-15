@@ -4,45 +4,70 @@ import {
 	useClientEffect$,
 	useContextProvider,
 	useStore,
+	$,
 } from "@builder.io/qwik";
 import {RequestHandler, useEndpoint} from "@builder.io/qwik-city";
-import {SessionContext} from "~/libs/context";
-import {getSession} from "~/libs/getSession";
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
+import { SessionContext } from "~/libs/context";
 
-export interface EndpointData {
-  user?: object; // schema of user
-}
 
-export const onGet: RequestHandler<EndpointData> = ({request}) => {
-	const {user} = getSession(request.headers.get("cookie"));
-	return {
-		user,
-	};
-};
+	//display metamask login
+	// once logged in, run an interval to check check if the account changes?
+	// save loggedIn or connected context for other components
 
 export default component$(() => {
-	const resource = useEndpoint<typeof onGet>();
 	const session = useStore({
-		loaded: false,
-		user: undefined,
-	} as any);
+		connected: false, 
+		loggedIn: false, 
+		address: '',
+		unlocked: false,
+	} as ISessionContext);
+
 	useContextProvider(SessionContext, session);
-	useClientEffect$(() => {
-		resource.promise
-			.then((data: any) => {
-				session.user = data?.user;
-				session.loaded = true;
-			})
-			.catch((error: any) => {
-				session.loaded = true;
+
+
+	const handleConnect$ = $(async () => {
+		// log in with ethereum
+		const ethereum = window.ethereum;
+		try {
+			// check if unlocked
+			const accounts = await ethereum.request({
+				method: "eth_requestAccounts",
 			});
+
+			//save accounts to our store
+			session.unlocked = true;
+			session.address = accounts[0];
+
+	
+		} catch (error) {
+			console.log('Error connecting metamask:', error.message);
+		}
 	});
+
+	useClientEffect$(async () => {
+		if (typeof web3 === 'undefined') {
+			session.unlocked = false;
+		}
+
+		session.address = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+		console.log('address:', session.address);
+		const accountInterval = setInterval(async () => {
+			const address = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+			if (address !== session.address && session.address !== "undefined") {
+				console.log('new address:', session.address);
+				session.address = address;
+				location.reload();
+			}
+		}, 1000);
+
+		return () => clearInterval(accountInterval);
+	})
 
 	return (
 		<div>
-			<Header />
+			{!session.unlocked  && <Header connect$={handleConnect$} />}
 			<main>
 				<Slot />
 			</main>
@@ -50,3 +75,4 @@ export default component$(() => {
 		</div>
 	);
 });
+
