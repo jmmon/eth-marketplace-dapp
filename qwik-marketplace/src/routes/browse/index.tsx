@@ -171,4 +171,4 @@ export const fetchItemDataFromIPFS = async (
 
 	if (itemData && typeof itemData === 'object') return itemData;
 	return Promise.reject(itemData);
-// }
+}

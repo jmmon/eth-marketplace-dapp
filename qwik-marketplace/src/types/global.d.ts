@@ -1,7 +1,7 @@
-declare interface IItem {
+declare interface IContractItem {
 	owner: string;
 	ipfsHash: string;
-	price: string | number;
+	price: string | number | object;
  	id: string;
 }
 
@@ -10,16 +10,20 @@ declare interface IItemData {
 	name: string;
 	description: string;
 	imgHash: string;
+	owner: string;
+	ipfsHash: string;
+	id: string;
+	imgUrl: string;
 }
 
 declare interface INotifications {
-	each: object;
+	each: INotificationsEach[];
 	nextIndex: number;
 }
 
 
 // // maybe try swapping "each" back to an array?? later...
-declare interface INotificationEach {
+declare interface INotificationsEach {
 	message: string;
 	type: string;
 	id: number;
@@ -27,8 +31,10 @@ declare interface INotificationEach {
 }
 
 declare interface ISessionContext {
-  connected?: boolean;
-  loggedIn?: boolean;
 	address?: string;
 	unlocked?: boolean;
+	isBrowser?: boolean;
+	items: IContractItem[];
+	notifications: INotifications;
+	test: number;
 }

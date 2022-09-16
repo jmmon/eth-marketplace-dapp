@@ -3,9 +3,9 @@ header {
 }
 
 header .header-inner {
-  display: grid;
-  grid-template-columns: 40% 60%;
+  display: flex;
   gap: 1rem;
+  align-items: center;
   padding: 10px;
   max-width: 800px;
   margin: 0 auto;
@@ -15,33 +15,34 @@ header .header-inner {
   max-width: 100%;
 }
 
-header a {
-  color: white;
-  text-decoration: none;
-  padding: 4px 8px;
-  margin-right: 5px;
-  border-radius: 4px;
+header .header-inner h1 {
+  justify-self: start;
+  color: #fff;
+  font-size: 2rem;
 }
 
-header a:hover {
-  background-color: #ffffff50;
+.connector {
+  justify-self: center;
+  transition: all 0.2s ease;
+  opacity: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: #fff;
+  padding: 4px;
 }
 
-header .active {
-  background-color: #ffffff30;
+.connector.showing {
+  opacity: 1;
 }
 
-.theme-toggle {
-  background: transparent;
-  width: 30px;
-  border: none;
-  cursor: pointer;
+
+.connector .text {
+  padding: 0 0.5rem;
 }
 
-.theme-light .theme-toggle::before {
-  content: '☽';
-}
-
-.theme-dark .theme-toggle::before {
-  content: '☀';
+.connector button {
+  background: #eee;
+  border: 1px solid #bbb;
+  padding: 0.5rem;
 }

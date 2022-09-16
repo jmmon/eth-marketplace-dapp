@@ -32,7 +32,7 @@ export default component$(() => {
 		const controller = new AbortController();
 		cleanup(() => controller.abort());
 
-		return getItemShell(params.id, controller);
+		return getItemData(getItemShell(params.id, controller));
 	});
 
 	return (
@@ -70,7 +70,7 @@ export const getItemShell = async (id: string): Promise<IItemDataPlus> => {
 		};
 		console.log({newItem});
 
-		return getItemData(newItem);
+		return Promise.resolve(newItem);
 
 
 

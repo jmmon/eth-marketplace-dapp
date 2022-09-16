@@ -1,0 +1,45 @@
+.details.wrapper,
+.details.wrapper > *,
+.details.wrapper > * > * {
+	overflow: hidden;
+	transition: all 0.1s ease;
+}
+
+/* closed state */
+.details.wrapper {
+	overflow: hidden;
+	position: absolute;
+	top: 0;
+	left: calc(100vw - 60px);
+	display: grid;
+	grid-template-columns: 1fr 80vw 1fr;
+	padding: 10vh 0;
+	height: 100vh;
+	width: 60px;
+	background-color: #00000000;
+}
+
+.details.wrapper.showing {
+	left: 0;
+	width: 100vw;
+	background-color: #00000020;
+	/* transition: background-color 0.3s ease; */
+}
+
+.details.wrapper.loggedOut {
+	background-color: #00000000;
+	left: 100vw;
+}
+
+
+
+
+.details.body {
+	overflow-x: hidden;
+	width: 80vw;
+	top: 0;
+	height: 80vh;
+	background: #fff;
+	border: 1px solid gray;
+	margin: auto;
+}

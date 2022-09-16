@@ -9,159 +9,37 @@ import {
 	useStore,
 } from "@builder.io/qwik";
 import type {DocumentHead} from "@builder.io/qwik-city";
-import {useEndpoint} from "@builder.io/qwik-city";
-import {useLocation} from "@builder.io/qwik-city";
+import Browse from "~/components/browse/browse";
+import Create from "~/components/create/create";
+import Details from "~/components/details/details";
 import { SessionContext } from "~/libs/context";
 
-interface IMetamaskStore {
-	hasMetamask: boolean;
-	error: undefined | string;
-	account: string;
-	blockNumber: number;
-	provider: undefined | object;
-}
-
 export default component$(() => {
-	const location = useLocation();
-
-	const metamask = useStore<IMetamaskStore>({
-		hasMetamask: true, // will check and switch to false if needed
-		error: undefined,
-		account: "",
-		blockNumber: -1,
-		provider: undefined,
-	});
-
 	const session = useContext(SessionContext); // our connected/logged in state
-
-
-	useClientEffect$(async () => {
-		const {default: detectProvider} = await import("@metamask/detect-provider");
-
-		//check for web3 provider
-		const provider = await detectProvider();
-		console.log("typeof provider", typeof provider);
-
-		// if there's no web3 provider
-		if (!provider) {
-			// no metamask detected
-			metamask.hasMetamask = false;
-			metamask.error =
-				"Error: Metamask not detected. You may browse products, but you may not purchase any products without using Metamask.";
-			return;
-		}
-
-		// if there's a web3 provider that's not metamask
-		if (provider !== window.ethereum) {
-			metamask.error =
-				"Error: Metamask not selected as provider. Maybe you have multiple wallets installed?";
-			return;
-		}
-
-		// first try to see if metamask is already connected?
-		// if not, try showing the log in button.
-
-		// Successfully logged in, do stuff!
-		const ethereum = window.ethereum;
-		const accounts = await ethereum.request({
-			method: "eth_requestAccounts",
-		}); 
-		metamask.account = accounts[0];
-
-		// const chainId = await ethereum.request({
-		// 	method: "eth_chainId",
-		// });
-		// console.log({chainId});
-	});
-
-	const handleConnect = $(async () => {
-		// log in with ethereum
-		const ethereum = window.ethereum;
-		try {
-			// check if unlocked
-			const accounts = await ethereum.request({
-				method: "eth_requestAccounts",
-			});
-			//save accounts to our store
-			metamask.account = accounts[0];
-			console.log("account:", metamask.account);
-		} catch (error) {
-			metamask.error = error.message;
-		}
-	});
+	useClientEffect$(() => console.log('session:', {session}));
 
 	return (
 		<div>
-			<h1 class="pb-2 text-lg">Welcome to Qwik City</h1>
+			{session.address &&  <Create />}
 
-			{!metamask.account && (
-				<button
-					class="bg-gray-200 hover:bg-sky-100 rounded p-2"
-					onClick$={handleConnect}
-				>
-					Connect Metamask
-				</button>
-			)}
+			{session.details.show && <Details session={session}/>}
 
-			{metamask.account && (
-				<div class="bg-green-200 p-2 rounded">
-					<p>You have connected Metamask! Here's your account:</p>
-					<ul>
-						<li>{metamask.account}</li>
-					</ul>
-				</div>
-			)}
 
-			{metamask.error && (
-				<div class="bg-red-200 p-2 rounded">
-					<p>{metamask.error}</p>
-					<button onCLick$={() => (metamask.error = undefined)}>X</button>
-				</div>
-			)}
-
-			{metamask.blockNumber > 0 && (
-				<p>Found block number {metamask.blockNumber} from etherjs!</p>
-			)}
-
-			<p>The meta-framework for Qwik.</p>
-			<br />
-			<br />
-			{/* <Marketplace /> */}
+			<Browse showItem$={showItem$} />
 		</div>
 	);
 });
 
-// export const Marketplace = component$((props) => {
-// 	const context = useContext(MyContext);
+export const showItem$ = $((id: string, session: object) => {
+	console.log({session});
+	console.log('showing item, id:', id);
+	const thisItem = session.items.find(item => item?.id === id);
+	console.log({thisItem});
 
-// 	// has to fetch the data from the contract;
-// 	// then each item has to fetch the data from IPFS
-// 	return (
-// 		<div>
-// 			<h1>The marketplace</h1>
-// 			<div>Some products</div>
-// 			{Object.keys(context).map((key) => {
-// 				return (
-// 					<div>
-// 						{key}: {context[key]}
-// 					</div>
-// 				);
-// 			})}
-// 		</div>
-// 	);
-// });
+	session.details.item = thisItem ?? null;
+	session.details.show = true;
+})
 
-// export const Item = component$((props) => {
-// 	const context = useContext(MyContext);
-
-// 	const itemResource = useResource$(({track, cleanup}) => {});
-// 	return (
-// 		<div>
-// 			<div>Image</div>
-// 			<div></div>
-// 		</div>
-// 	);
-// });
 
 export const head: DocumentHead = {
 	title: "Marketplace",
