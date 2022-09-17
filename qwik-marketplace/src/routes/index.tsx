@@ -2,6 +2,7 @@ import {
 	$,
 	component$,
 	createContext,
+	mutable,
 	useClientEffect$,
 	useContext,
 	useContextProvider,
@@ -12,7 +13,9 @@ import type {DocumentHead} from "@builder.io/qwik-city";
 import Browse from "~/components/browse/browse";
 import Create from "~/components/create/create";
 import Details from "~/components/details/details";
+import Store from "~/components/store/store";
 import { SessionContext } from "~/libs/context";
+import { getItemsFromAddress } from "~/libs/ethUtils";
 
 export default component$(() => {
 	const session = useContext(SessionContext); // our connected/logged in state
@@ -20,26 +23,17 @@ export default component$(() => {
 
 	return (
 		<div>
+			{/* instead, could hold an array of "pages/overlays/modals" and add and remove from that array, and then stack the display of modals based on the array  */}
 			{session.address &&  <Create />}
 
-			{session.details.show && <Details session={session}/>}
+			<Details item={mutable(session.details.item)} />
 
+			<Store address={mutable(session.store.address)} />
 
-			<Browse showItem$={showItem$} />
+			<Browse />
 		</div>
 	);
 });
-
-export const showItem$ = $((id: string, session: object) => {
-	console.log({session});
-	console.log('showing item, id:', id);
-	const thisItem = session.items.find(item => item?.id === id);
-	console.log({thisItem});
-
-	session.details.item = thisItem ?? null;
-	session.details.show = true;
-})
-
 
 export const head: DocumentHead = {
 	title: "Marketplace",
