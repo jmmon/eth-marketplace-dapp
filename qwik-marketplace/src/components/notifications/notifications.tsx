@@ -17,7 +17,7 @@ export const loremSplit =
 	);
 
 export const addNotification = $((
-	session: object,
+	session: ISessionContext,
 	message: string,
 	type?: string,
 	timeout?: number,
@@ -32,17 +32,17 @@ export const addNotification = $((
 		timeout: timeout ?? 0,
 	};
 	// add it to our list, the rest should be handled by the notification?
-	notifications.each.push(thisNotification);
+	notifications?.each?.push(thisNotification);
 	notifications.nextIndex++;
 });
 
-export const removeNotification = $((session: object, id: number ) => {
+export const removeNotification = $((session: ISessionContext, id: number ) => {
 	const notifications = session.notifications;
 
-	const remainingAsMatrix = notifications.each.filter((n) => n[id] !== id);
+	const remainingAsMatrix = notifications.each?.filter((n) => n.id !== id) ?? null;
 
 	// reset our store and currentIndex
-	if (remainingAsMatrix.length === 0) {
+	if (remainingAsMatrix?.length === 0 || remainingAsMatrix === null) {
 		notifications.each = [];
 		notifications.nextIndex = 0;
 		return;
@@ -51,7 +51,7 @@ export const removeNotification = $((session: object, id: number ) => {
 	session.notifications.each = remainingAsMatrix;
 });
 
-export const generateNotification = $((session: object) => {
+export const generateNotification = $((session: ISessionContext) => {
 	const typeNum = Math.floor(Math.random() * 3);
 	const loremNum = Math.floor(Math.random() * 99);
 	const durationNum = Math.floor(Math.random() * 10) * 1000;
@@ -117,7 +117,7 @@ export const Notifications = component$(() => {
 	return (
 		<div class="grid grid-cols-1 gap-2">
 			<button onClick$={() => generateNotification(session)}>Create notification</button>
-			{Object.values(session.notifications.each).map((thisNotification) => (
+			{session.notifications.each?.map((thisNotification) => (
 				<Notification
 					key={thisNotification.id}
 					thisNotification={thisNotification}

@@ -1,3 +1,5 @@
+declare var window: any;
+import { $ } from "@builder.io/qwik";
 import { ethers } from "ethers";
 
 export const CONTRACT_ADDRESS = "0x45a1009F5FFe45eFE8436A43c02137Fcd940CcBC";
@@ -401,7 +403,7 @@ export const connect = async () => {
 
 
 
-export const getContract = async (withSigner = false as boolean) => {
+export const getContract = async (withSigner: boolean = false) => {
   console.log('getContract: new ethers.providers');
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   let contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
@@ -421,7 +423,7 @@ export const getContract = async (withSigner = false as boolean) => {
   return contract;
 }
 
-export const formatItem = (item: IItem): IItem => {
+export const formatItem = (item: Array<any>): IContractItem => {
   const bigNum = item[2];
 
   return {
@@ -436,11 +438,36 @@ export const getItems = async (): Promise<IContractItem[]> => {
 	try {
 		const contract = await getContract();
 
-		const items = await contract.getAllItems();
+		const items = await contract.getAllItems() as Array<any>;
 		console.log("items from the smart contract!:", {items});
     
     const formattedItems = items.map(item => formatItem(item));
 		
+		console.log({formattedItems});
+		return Promise.resolve(formattedItems);
+
+	} catch (error) {
+		console.log("error getting items:", error);
+		return Promise.resolve([]);
+	}
+};
+
+export const getItemsFromAddress = async (address: string): Promise<IContractItem[]> => {
+	try {
+		const contract = await getContract();
+
+		const itemIds = await contract.getItemIdsFromSeller(address) as Array<any>;
+		console.log("itemIds from the smart contract!:", {itemIds});
+
+    // fetch each item from contract and format it
+    // const items = itemIds.map(async id => )
+    const formattedItemsPromises = itemIds.map(async thisId => 
+      formatItem(
+        await contract.itemFromId(thisId) as Array<any>
+      )
+    );
+    console.log({formattedItemsPromises})
+		const formattedItems = await Promise.all(formattedItemsPromises);
 		console.log({formattedItems});
 		return Promise.resolve(formattedItems);
 
@@ -455,7 +482,7 @@ export const getItem = async (id: string): Promise<IContractItem> => {
 	try {
 		const contract = await getContract();
 
-		const item = await contract.itemFromId(id);
+		const item = await contract.itemFromId(id) as Array<any>;
 		console.log("item from the smart contract!:", {item});
 
     const formattedItem = formatItem(item);
@@ -471,9 +498,10 @@ export const getItem = async (id: string): Promise<IContractItem> => {
 
 
 export const fetchItemDataFromIPFS = async (
-	item: IContractItem,
+	item: IContractItem | null,
 	controller?: AbortController
-): Promise<IItemData> => {
+): Promise<IItemData | object> => {
+  if (item === null) return Promise.reject({});
 	//gotta fetch the item data from IPFS... then
 	// console.log('before before the url fetching itemData');
 	const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
@@ -494,5 +522,61 @@ export const fetchItemDataFromIPFS = async (
 	};
 
 	if (itemData && typeof itemData === "object") return itemData;
-	return Promise.reject(itemData);
+	return Promise.reject({});
 };
+
+
+export const  onPurchase = $(async (itemData: IItemData) => {
+  const address = await connect();
+  const contract = await getContract(true);
+
+  const options = {value: `${itemData.price}`};
+  const tx = await contract.sell(itemData.id, options);
+  console.log("response from purchase:", {tx});
+  // TODO: Show some success screen?
+});
+
+
+// watches for metamask address changes
+export const startWatchAddress = $(async (session: ISessionContext) => {
+  // save initial address
+  session.address = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+  console.log('address:', session.address);
+
+  const accountInterval = setInterval(async () => {
+    console.log('account interval');
+    // every second, check address again
+    const address = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+
+    // while we have an initial address, if the address changes save our new address (and reload if needed);
+    if (address !== session.address && session.address !== "undefined") {
+      console.log('new address:', address);
+      if (address === "undefined") {
+        console.log('no address now, clearing address from context');
+      }
+      // set to undefined or new address
+      session.address = address;
+      // location.reload();
+    }
+  }, 1000);
+
+});
+
+export 	const handleConnect = $(async (session: ISessionContext) => {
+  try {
+    // check if unlocked
+    console.log('checking if unlocked from handleConnect');
+    const address = (await window.ethereum.request({
+      method: "eth_requestAccounts",
+    }))[0];
+
+    //save address to our store
+    session.unlocked = true;
+    session.address = address;
+
+    startWatchAddress(session);
+
+  } catch (error) {
+    console.log('Error connecting metamask:', error.message);
+  }
+});

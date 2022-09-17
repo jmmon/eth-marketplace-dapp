@@ -1,3 +1,4 @@
+declare var window: any;
 import {
 	$,
 	component$,
@@ -10,48 +11,47 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import Styles from "./create.css";
-import { read } from "fs";
-import { create } from "ipfs-http-client";
-import { CID } from "ipfs-http-client";
+import {read} from "fs";
+import {create} from "ipfs-http-client";
+import {CID} from "ipfs-http-client";
 
-
-
-import { connect, getContract } from "~/libs/ethUtils";
-import Notifications, { addNotification } from "~/components/notifications/notifications";
+import {connect, getContract} from "~/libs/ethUtils";
+import {
+	Notifications,
+	addNotification,
+} from "~/components/notifications/notifications";
 
 export default component$(() => {
 	useStylesScoped$(Styles);
-	const store = useStore({showCreate: false});
+	const store = useStore({showCreate: false} as {showCreate: boolean});
 	const handleClick = $(() => {
 		store.showCreate = !store.showCreate;
 		console.log("now", store.showCreate);
 	});
 	const session = useContext(SessionContext);
-	const photoInputRef = useRef();
-	const state = useStore<IState>(
-		{
-			price: undefined,
-			imageString: "",
-			dataString: "",
-		}
-	);
+	const photoInputRef = useRef<HTMLInputElement | undefined>();
+	const state = useStore<ICreateFormState>({
+		price: undefined,
+		imageString: "",
+		dataString: "",
+	});
 
 	useClientEffect$(async () => {
-		// import polyfill 
+		// import polyfill
 		await import("~/libs/wzrdin_buffer_polyfill.js");
-	})
+	});
 
-	const handleSubmit = $(async (e) => {
-		const formData = new FormData(e.target);
+	const handleSubmit = $(async (target: HTMLFormElement) => {
+		const formData = new FormData(target);
 		console.log([...formData.entries()]);
 		const ipfsOptions = {url: "http://127.0.0.1:5001"};
 		const ipfs = create(ipfsOptions);
 
-		if (session.isBrowser) {
-			const address = await connect();
-			console.log('account connected:', address);
-			addNotification(session, `Account connected: address linked:${address}`);
-		}
+		// if (session.isBrowser) {
+		const address = await connect();
+		console.log("account connected:", address);
+		addNotification(session, `Account connected: address linked:${address}`);
+		// }
 
 		const contract = await getContract(true);
 
@@ -59,31 +59,42 @@ export default component$(() => {
 		const reader = new FileReader();
 
 		reader.onloadend = async () => {
-			const bufPhoto = session.isBrowser
-				? window.buffer.Buffer(reader.result)
-				: Buffer.from(reader.result);
+			const bufPhoto = window.buffer.Buffer(reader.result);
+			// const bufPhoto = session.isBrowser
+			// 	? window.buffer.Buffer(reader.result)
+			// 	: Buffer.from(reader.result);
 
 			try {
 				const {cid} = await ipfs.add(bufPhoto);
 				state.imageString = cid.toString();
 				// console.log("cid.toString()", cid.toString());
-			console.log('image upload successful:', state.imageString);
+				console.log("image upload successful:", state.imageString);
 
 				addNotification(session, `Image upload successful!`, "success", 5000);
-				addNotification(session, 
+				addNotification(
+					session,
 					`Image file uploaded! Reference string: ${state.imageString}`
 				);
 
 				// continue to upload the whole data
 				uploadItemData();
 			} catch (err) {
-				console.log('image upload error:', err.message);
-				addNotification(session, `Image upload failed: ${err.message}`, "error");
+				console.log("image upload error:", err.message);
+				addNotification(
+					session,
+					`Image upload failed: ${err.message}`,
+					"error"
+				);
 			}
 		};
 
 		const uploadItemData = async () => {
-			let formDataObject = {};
+			let formDataObject: ICreateFormDataObject = {
+				price: "",
+				name: "",
+				description: "",
+				imgHash: "",
+			};
 			[...formData.entries()]
 				.filter(([key, value]) => key !== "photo")
 				.forEach(([key, value]) => (formDataObject[key] = value));
@@ -95,9 +106,10 @@ export default component$(() => {
 			const formDataJson = JSON.stringify(formDataObject);
 			console.log("json version:", formDataJson);
 
-			const bufData = session.isBrowser
-				? window.buffer.Buffer(formDataJson)
-				: Buffer.from(formDataJson);
+			const bufData = window.buffer.Buffer(formDataJson);
+			// const bufData = session.isBrowser
+			// 	? window.buffer.Buffer(formDataJson)
+			// 	: Buffer.from(formDataJson);
 
 			try {
 				const {cid} = await ipfs.add(bufData);
@@ -105,60 +117,76 @@ export default component$(() => {
 				// some sort of error: set property of textarea#description: cannot set property because it only has a getter
 
 				state.dataString = cid.toString();
-				console.log('data upload successful:', state.dataString);
-				addNotification(session, `ItemData upload successful!`, "success", 5000);
-				addNotification(session, `ItemData file reference string: ${state.dataString}`);
+				console.log("data upload successful:", state.dataString);
+				addNotification(
+					session,
+					`ItemData upload successful!`,
+					"success",
+					5000
+				);
+				addNotification(
+					session,
+					`ItemData file reference string: ${state.dataString}`
+				);
 
 				// interact with contract
 				try {
-					const receipt = await contract.addItem(state.dataString, formDataObject.price);
+					const receipt = await contract.addItem(
+						state.dataString,
+						formDataObject.price
+					);
 
-					console.log('response from addItem:', {receipt});
+					console.log("response from addItem:", {receipt});
 					const jsonTx = JSON.stringify(receipt);
-					console.log('item added to dapp!:', jsonTx);
-					addNotification(session, `Add item successful!?:\n ${jsonTx}`, "success");
-
+					console.log("item added to dapp!:", jsonTx);
+					addNotification(
+						session,
+						`Add item successful!?:\n ${jsonTx}`,
+						"success"
+					);
 				} catch (e) {
 					addNotification(session, `Error: ${e.message}`, "warning");
 				}
-
 			} catch (err) {
-				addNotification(session, `ItemData upload failed: ${err.message}`, "error");
+				addNotification(
+					session,
+					`ItemData upload failed: ${err.message}`,
+					"error"
+				);
 			}
 		};
 
 		// start file read
-		reader.readAsArrayBuffer(photoInputRef.current.files[0]);
+		reader.readAsArrayBuffer(photoInputRef?.current?.files[0]);
 		//alternately, could try pulling file from formData
 	});
-
-	
 
 	// const handleCount = $(() => {
 	// 	session.test++;
 	// });
-	
+
 	return (
 		<aside
 			class={`create wrapper ${!session.address && "loggedOut"} ${
 				store.showCreate && "showing"
 			}`}
 		>
-				
 			<div
 				class={`create handle ${store.showCreate && "showing"}`}
 				onClick$={handleClick}
 			>
 				{/* 2 */}
 				{/* <div class={`create chevron ${store.showCreate && "close"}`}></div> */}
-				<div class="create text">{store.showCreate ?  "/\\ ":  "\\/ " }Add An Item</div>
+				<div class="create text">
+					{store.showCreate ? "/\\ " : "\\/ "}Add An Item
+				</div>
 			</div>
 			<div class={`create body ${store.showCreate && "showing"}`}>
 				{/* 3 */}
 				<form
 					class="flex flex-col w-full items-stretch"
 					preventdefault:submit
-					onSubmit$={(e) => handleSubmit(e)}
+					onSubmit$={(e) => handleSubmit(e.target)}
 				>
 					<h1 class="mx-auto text-lg py-4">Add Item to Marketplace</h1>
 					<label
