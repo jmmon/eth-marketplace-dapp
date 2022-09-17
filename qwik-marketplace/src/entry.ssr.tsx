@@ -15,8 +15,8 @@ export default function (opts: RenderToStreamOptions) {
       inOrder: {
         // strategy: 'disabled', // prevents streaming; forces server to get all resources before showing any html 
         strategy: 'auto',
-        minimumChunkSize: 0, // for testing...
-        initialChunkSize: 0,
+        // minimumChunkSize: 0, // for testing...
+        // initialChunkSize: 0,
       }
     }
   });

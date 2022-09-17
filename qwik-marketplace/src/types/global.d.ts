@@ -1,3 +1,4 @@
+
 declare interface IContractItem {
 	owner: string;
 	ipfsHash: string;
@@ -17,7 +18,7 @@ declare interface IItemData {
 }
 
 declare interface INotifications {
-	each: INotificationsEach[];
+	each: INotificationsEach[] | null;
 	nextIndex: number;
 }
 
@@ -35,6 +36,32 @@ declare interface ISessionContext {
 	unlocked?: boolean;
 	isBrowser?: boolean;
 	items: IContractItem[];
+	details: {
+		show: boolean;
+		item: IContractItem | null;
+	};
+	store: {
+		show: boolean;
+		address: string;
+		items: IContractItem[] | null;
+	};
 	notifications: INotifications;
-	test: number;
 }
+
+declare interface ICreateFormState {
+	price: string | number | undefined;
+	imageString: string;
+	dataString: string;
+}
+
+declare interface ICreateFormDataObject {
+	price: string | number;
+	name: string;
+	description: string;
+	imgHash: string | undefined;
+}
+
+
+// declare interface IItemFromContract {
+
+// }
