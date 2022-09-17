@@ -63,34 +63,47 @@ export const ItemPreview = component$((props: {
 	return (
 		<Resource
 			value={resource}
-			onPending={() => <div class="text-5xl text-red-600">LOADING...</div>}
-			onRejected={(error) => (
-				<div class="text-5xl text-red">Error! {error.message}</div>
-			)}
-			onResolved={(itemData: IItemData) => {
-				// const imgUrl = `http://localhost:8080/ipfs/${itemData.imgHash}`;
-				return (
-					<div class="item p-2 m-2 flex flex-wrap flex-col flex-1 items-center text-lg text-white text-left bg-blue-400 gap-1 w-4/12">
-						<div
-							style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 300px; width: 100%;`}
-						></div>
-						<h3 class="text-4xl">{itemData.name}</h3>
-						<span>{itemData.price} wei</span>
-						<span>
-							Owner's Address:
+			onPending={() => <div>Loading Items...</div>}
+			onRejected={(error) => <div>Error: {error.message}</div>}
+			onResolved={(itemData: IItemData) => (
+				<div class="p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12">
+					<h3 class=" text-4xl text-center bg-gray-100 text-gray-700 p-2">{itemData.name}</h3>
+
+					<div
+						style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 300px; width: 100%;`}
+					></div>
+					<div class="grid gap-1 bg-gray-100 text-gray-700 p-2">
+						<div>
+							<span class="text-sm text-gray-500">Name:</span>
+							<br/>
+							<span class="ml-2">
+							{itemData.name}
+							</span>
+						</div>
+						<div>
+							<span class="text-sm text-gray-500">Price:</span>
+							<br/>
+							<span class="ml-2">
+							{itemData.price} wei
+							</span>
+						</div>
+						<div>
+							<span class="text-sm text-gray-500">Owner's Address:</span>
 							<br />
-							{shortText(session.address ? itemData.owner : "#".repeat(20), 10)}
-						</span>
-						<p>{shortText(itemData.description, 30)}</p>
+							{session.address 
+								? <span class="text-blue-400 cursor-pointer" onClick$={() => console.log(`open address's store page`)}>{shortText(itemData.owner, 20)}</span>
+								: <span>{shortText("#".repeat(42), 20)}</span>
+							}
+						</div>
 						<button
-							class="border rounded bg-gray-100"
+							class="border rounded bg-white mt-1 p-1"
 							onClick$={() => props.showItem$(itemData.id, session)}
 						>
-							Details
+							See Details
 						</button>
 					</div>
-				);
-			}}
+				</div>
+			)}
 		/>
 	);
 });

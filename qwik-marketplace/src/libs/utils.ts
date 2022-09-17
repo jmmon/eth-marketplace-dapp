@@ -1,9 +1,10 @@
-export const shortText = (text: string, length = 30: number): string => {
+export const shortText = (text: string, length = 20: number): string => {
+	console.log('text length:', text.length);
+	console.log('length:', length);
+	if (text.length <= length) return text;
 	return text.slice(
 		0,
-		text.length > length // if text is long, return length chars including ...
-			? length - 3
-			: text.length * 2/3 // else return 2/3 of the text length
+		length - 3,
 	)
 	.trim()
 	.concat("...")
