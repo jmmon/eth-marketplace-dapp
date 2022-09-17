@@ -1,0 +1,28 @@
+.connector {
+  justify-self: center;
+  transition: all 0.2s ease;
+  opacity: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: #fff;
+  padding: 0.5rem;
+	position: fixed;
+	top: 0.25rem;
+	right: 0.25rem;
+}
+
+.connector.showing {
+  opacity: 1;
+}
+
+
+.connector .text {
+  padding: 0 0.5rem;
+}
+
+.connector button {
+  background: #eee;
+  border: 1px solid #bbb;
+  padding: 0.5rem;
+}

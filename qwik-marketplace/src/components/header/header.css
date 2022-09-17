@@ -11,38 +11,8 @@ header .header-inner {
   margin: 0 auto;
 }
 
-.full-screen header .header-inner {
-  max-width: 100%;
-}
-
 header .header-inner h1 {
   justify-self: start;
   color: #fff;
   font-size: 2rem;
-}
-
-.connector {
-  justify-self: center;
-  transition: all 0.2s ease;
-  opacity: 0;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  background: #fff;
-  padding: 4px;
-}
-
-.connector.showing {
-  opacity: 1;
-}
-
-
-.connector .text {
-  padding: 0 0.5rem;
-}
-
-.connector button {
-  background: #eee;
-  border: 1px solid #bbb;
-  padding: 0.5rem;
 }
