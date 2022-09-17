@@ -10,7 +10,7 @@
 	overflow: hidden;
 	position: absolute;
 	top: 0;
-	left: calc(100vw - 60px);
+	left: calc(100% - 60px);
 	display: grid;
 	grid-template-columns: 1fr 80vw 1fr;
 	padding: 10vh 0;
@@ -20,6 +20,7 @@
 }
 
 .create.wrapper.showing {
+	position: fixed;
 	left: 0;
 	width: 100vw;
 	background-color: #00000020;
