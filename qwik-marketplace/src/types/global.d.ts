@@ -22,11 +22,11 @@ declare interface INotifications {
 	nextIndex: number;
 }
 
+type NotificationTypes = Readonly<["success", "warning", "error", "other"]>
 
-// // maybe try swapping "each" back to an array?? later...
 declare interface INotificationsEach {
 	message: string;
-	type: string;
+	type: NotificationTypes;
 	id: number;
 	timeout: number;
 }
