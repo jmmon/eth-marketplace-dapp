@@ -18,8 +18,8 @@ export default component$(() => {
 	useClientEffect$(async ({track}) => {
 		track(session, 'staleItems');
 		console.log("browse: getting items");
-		session.items = await getItems();
 		session.staleItems = false;
+		session.items = await getItems();
 	});
 
 	return (
