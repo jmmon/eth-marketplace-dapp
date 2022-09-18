@@ -28,3 +28,34 @@ Frontend:
 	Visitors are people without Metamask linked
 	Buyers are people with metamask linked
 	Sellers only need an address, so they could be visitors that choose to sell
+
+
+
+
+
+TODO as of sept 18th:
+
+	Styling: 
+		Store page:
+			- Fix ItemPreviews are squished from sides
+		Notifications:
+			- Find better location for notifications??
+			- Center notifications like the Create Notification button
+			- ("Create Notification" text color lighten, button styling? )
+		Browse:
+			- Fix wide item when it is alone on the row
+		Create:
+			- Lighten label text color
+	
+	Optimizations:
+		Create / Details / Store pages:
+			- Make sure they do not render until they are needed, so the JS doesn't get loaded eagerly
+
+	Testing:
+		Test Delete, Purchase, some more: 
+			- should close details page when done
+
+	UX: 
+		Browse / ItemPreview:
+			- stop showing error-state as items load;
+			
