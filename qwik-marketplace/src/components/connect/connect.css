@@ -8,11 +8,13 @@
   background: #fff;
   padding: 0.5rem;
 	position: fixed;
-	top: 0.25rem;
+	top: -4.5rem;
+
 	right: 0.25rem;
 }
 
 .connector.showing {
+  top: 0.25rem;
   opacity: 1;
 }
 

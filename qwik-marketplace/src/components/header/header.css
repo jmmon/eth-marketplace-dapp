@@ -1,5 +1,6 @@
 header {
   background-color: #0093ee;
+  min-height: 4.5rem;
 }
 
 header .header-inner {
@@ -8,11 +9,12 @@ header .header-inner {
   align-items: center;
   padding: 10px;
   max-width: 800px;
-  margin: 0 auto;
+  margin: auto auto;
+  align-items: end;
+  justify-content: space-between;
 }
 
 header .header-inner h1 {
-  justify-self: start;
   color: #fff;
   font-size: 2rem;
 }
