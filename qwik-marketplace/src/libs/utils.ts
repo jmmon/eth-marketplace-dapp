@@ -9,3 +9,11 @@ export const shortText = (text: string, length: number = 20): string => {
 	.trim()
 	.concat("...")
 }
+
+export const shortAddress = (address: string) => {
+	return (String.prototype.concat(
+		address.slice(0, 5),
+		"...",
+		address.slice(-4)
+	))
+};

@@ -7,7 +7,7 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {fetchItemDataFromIPFS, getItemsFromAddress} from "~/libs/ethUtils";
-import {shortText} from "~/libs/utils";
+import {shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
 export const ItemPreview = component$((props: {item: IContractItem | null}) => {
@@ -96,10 +96,10 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 									class="text-blue-400 cursor-pointer"
 									onClick$={async () => await seeStore$(itemData.owner)}
 								>
-									{shortText(itemData.owner, 20)}
+									{shortAddress(itemData.owner)}
 								</span>
 							) : (
-								<span>{shortText("#".repeat(42), 20)}</span>
+								<span>{shortAddress("#".repeat(42))}</span>
 							)}
 						</div>
 						<button
