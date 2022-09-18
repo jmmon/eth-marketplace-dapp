@@ -63,7 +63,7 @@ export default component$(() => {
 			console.log({formDataObject});
 
 			const {units, price} = formDataObject;
-			formDataObject.price = `${+price * ETH_CONVERSION_RATIOS[units]}`;
+			formDataObject.price = "" + (+price * ETH_CONVERSION_RATIOS[units]);
 
 			formDataObject.imgHash = state.imageString;
 			console.log("final formDataObject:", formDataObject);
