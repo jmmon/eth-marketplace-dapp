@@ -50,6 +50,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 			item: thisItem ?? null,
 			show: true,
 		};
+		// session.details = {...session.details, show: true,}
 	});
 
 	return (

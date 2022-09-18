@@ -500,7 +500,7 @@ export const getItem = async (id: string): Promise<IContractItem> => {
 export const fetchItemDataFromIPFS = async (
 	item: IContractItem | null,
 	controller?: AbortController
-): Promise<IItemData | object> => {
+): Promise<IItemData> => {
   if (item === null) return Promise.reject({});
 	//gotta fetch the item data from IPFS... then
 	// console.log('before before the url fetching itemData');
@@ -522,33 +522,39 @@ export const fetchItemDataFromIPFS = async (
 	};
 
 	if (itemData && typeof itemData === "object") return itemData;
-	return Promise.reject({});
+	return Promise.reject(itemData);
 };
 
 
-export const  onPurchase = $(async (itemData: IItemData) => {
+export const onPurchase = $(async (itemData: IItemData): Promise<{success: boolean; error: {message: string} | null;}> => {
   try {
     const address = await connect();
     const contract = await getContract(true);
     const options = {value: `${itemData.price}`};
 
-    const tx = await contract.sell(itemData.id, options);
-    console.log("response from purchase:", {tx});
-    return true;
+    const response = await contract.sell(itemData.id, options);
+    console.log("response from purchase:", {response});
+    return {success: true, error: null};
 
   } catch (error) {
-    console.log("response from purchase:", {tx});
-    return {error};
+    console.log("error from purchase:", error.message);
+    return {success: false, error};
   }
 });
 
-export const onDelete = $( async (itemData: IItemData) => {
-  const address = await connect();
-  const contract = await getContract(true);
-
-  const tx = await contract.deleteItem(itemData.id);
-  console.log("response from purchase:", {tx});
-  return true;
+export const onDelete = $( async (itemData: IItemData): Promise<{success: boolean; error: {message: string} | null;}> => {
+  try {
+    const address = await connect();
+    const contract = await getContract(true);
+    
+    const response = await contract.deleteItem(itemData.id);
+    console.log("response from purchase:", {response});
+    return {success: true, error: null};
+    
+  } catch (error) {
+    console.log("error from delete:", error.message);
+    return {success: false, error};
+  }
 })
 
 
@@ -596,7 +602,7 @@ export 	const handleConnect = $(async (session: ISessionContext) => {
   }
 });
 
-export const addItemToMarket = $(async (state, formDataObject, session) => {
+export const addItemToMarket = $(async (state: ICreateFormState, formDataObject: ICreateFormDataObject, session: ISessionContext) => {
   // interact with contract
   try {
     const address = await connect();
@@ -619,8 +625,13 @@ export const addItemToMarket = $(async (state, formDataObject, session) => {
   }
 });
 
-export const ETH_CONVERSION_RATIOS = {
+export const ETH_CONVERSION_RATIOS: {
+  eth: number;
+  gwei: number;
+  wei: number;
+  [key: string]: number;
+} = {
   eth: 10**18,
   gwei: 10**9,
   wei: 1,
-}
+} 

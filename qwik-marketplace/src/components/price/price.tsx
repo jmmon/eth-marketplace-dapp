@@ -32,7 +32,7 @@ export const Price = component$(
 			track(state, "units");
 
 			//re calculate
-			state.output = props.price / ETH_CONVERSION_RATIOS[state.units];
+			state.output = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);
 
 			console.log({units: state.units, val: state.output});
 		});

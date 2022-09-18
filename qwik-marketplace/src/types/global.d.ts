@@ -22,7 +22,7 @@ declare interface INotifications {
 	nextIndex: number;
 }
 
-type NotificationTypes = Readonly<["success", "warning", "error", "other"]>
+type NotificationTypes = Readonly<["success", "warning", "error", "other"]> | number | undefined
 
 declare interface INotificationsEach {
 	message: string;
@@ -36,6 +36,7 @@ declare interface ISessionContext {
 	unlocked?: boolean;
 	isBrowser?: boolean;
 	items: IContractItem[];
+	staleItems: boolean;
 	details: {
 		show: boolean;
 		item: IContractItem | null;
@@ -56,9 +57,11 @@ declare interface ICreateFormState {
 
 declare interface ICreateFormDataObject {
 	price: string | number;
+	units: string;
 	name: string;
 	description: string;
 	imgHash: string | undefined;
+	[key: string]: string | number | undefined | File;
 }
 
 

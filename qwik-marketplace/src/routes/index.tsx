@@ -26,8 +26,11 @@ export default component$(() => {
 			{/* instead, could hold an array of "pages/overlays/modals" and add and remove from that array, and then stack the display of modals based on the array  */}
 			{session.address &&  <Create />}
 
+			{/* {session.details.item !== null && <Details item={mutable(session.details.item)} />} */}
 			<Details item={mutable(session.details.item)} />
+				
 
+			{/* {session.store.address !== "" && <Store address={mutable(session.store.address)} />} */}
 			<Store address={mutable(session.store.address)} />
 
 			<Browse />

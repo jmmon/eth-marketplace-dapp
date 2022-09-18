@@ -33,7 +33,7 @@ export default component$(() => {
 		console.log("now", store.showCreate);
 	});
 	const session = useContext(SessionContext);
-	const photoInputRef = useRef<HTMLInputElement | undefined>();
+	const photoInputRef = useRef<HTMLInputElement>();
 	const state = useStore<ICreateFormState>({
 		price: undefined,
 		imageString: "",
@@ -138,7 +138,14 @@ export default component$(() => {
 				}
 			};
 
-			reader.readAsArrayBuffer(photoInputRef?.current?.files[0]);
+			// reader.readAsArrayBuffer(window.buffer.Buffer(photoInputRef?.current?.files[0]));
+			if (photoInputRef?.current?.files?.[0]) {
+				reader.readAsArrayBuffer(photoInputRef.current.files[0] as Blob);
+
+			} else {
+				addNotification(session, "Invalid photo chosen", 2, 5000);
+				return;
+			}
 		};
 		
 		handleUpload();
@@ -166,7 +173,7 @@ export default component$(() => {
 				<form
 					class="flex flex-col w-full items-stretch"
 					preventdefault:submit
-					onSubmit$={(e) => handleSubmitForm(e.target)}
+					onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
 				>
 					<h1 class="mx-auto text-lg py-4">Add Item to Marketplace</h1>
 					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 flex">
@@ -178,6 +185,7 @@ export default component$(() => {
 								type="text"
 								placeholder="...and select your units"
 								id="price"
+								required
 							/>
 						</label>
 						<label class="inline">
@@ -198,6 +206,7 @@ export default component$(() => {
 								type="text"
 								placeholder="Name"
 								id="name"
+								required
 							/>
 						</label>
 					</fieldset>
@@ -209,6 +218,7 @@ export default component$(() => {
 								class="block w-full h-[200px]"
 								placeholder="Description"
 								id="description"
+								required
 							/>
 						</label>
 					</fieldset>
@@ -221,6 +231,7 @@ export default component$(() => {
 								type="file"
 								id="photo"
 								ref={photoInputRef}
+								required
 							>
 								Choose A File
 							</input>

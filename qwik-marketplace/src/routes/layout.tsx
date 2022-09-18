@@ -25,6 +25,7 @@ export default component$(() => {
 		unlocked: false,
 		isBrowser: false,
 		items: [],
+		staleItems: false,
 		details: {
 			show: false,
 			item: null,
