@@ -79,7 +79,7 @@ export default component$(() => {
 				addNotification(
 					session,
 					`ItemData upload successful! ${state.dataString}`,
-					"success",
+					0,
 					5000
 				);
 
@@ -95,16 +95,16 @@ export default component$(() => {
 					addNotification(
 						session,
 						`Add item successful!?:\n ${data}`,
-						"success"
+						0
 					);
 				} else {
-					addNotification(session, `Error: ${err.message}`, "warning");
+					addNotification(session, `Error: ${err.message}`, 1);
 				}
 			} catch (err) {
 				addNotification(
 					session,
 					`ItemData upload failed: ${err.message}`,
-					"error"
+					2
 				);
 			}
 		};
@@ -120,10 +120,10 @@ export default component$(() => {
 					state.imageString = cid.toString();
 					console.log("image upload successful:", state.imageString);
 
-					addNotification(session, `Image upload successful!`, "success", 5000);
+					addNotification(session, `Image upload successful!`, 0, 5000);
 					addNotification(
 						session,
-						`Image file uploaded! Reference string: ${state.imageString}`
+						`Image file uploaded! Reference string: ${state.imageString}`, 3
 					);
 
 					handleSubmitData();
@@ -133,7 +133,7 @@ export default component$(() => {
 					addNotification(
 						session,
 						`Image upload failed: ${err.message}`,
-						"error"
+						2
 					);
 				}
 			};
