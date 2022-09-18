@@ -15,10 +15,13 @@ import {
 	getContract,
 	getItem,
 	getItemsFromAddress,
+	onDelete,
 	onPurchase,
 } from "~/libs/ethUtils";
 import {shortText} from "~/libs/utils";
+import {addNotification} from "../notifications/notifications";
 import {Price} from "../price/price";
+import store from "../store/store";
 import Styles from "./details.css";
 
 export default component$((props: {item: IContractItem | null}) => {
@@ -68,7 +71,7 @@ export default component$((props: {item: IContractItem | null}) => {
 					onRejected={(error) => <div>Error: {error.message}</div>}
 					onResolved={(itemData) =>
 						Object.keys(itemData).length > 0 ? (
-							<ItemDetails itemData={itemData} />
+							<ItemDetails itemData={itemData} handleClose$={handleClose$}/>
 						) : (
 							<div>Loading...</div>
 						)
@@ -80,12 +83,17 @@ export default component$((props: {item: IContractItem | null}) => {
 });
 
 export const ItemDetails = component$(
-	({itemData}: {itemData: IItemData | any}) => {
+	(props: {itemData: IItemData | any; handleClose$: () => void;}) => {
+		const {itemData} = props;
 		const session = useContext(SessionContext);
 		useStylesScoped$(`.detailsWrapper {
 		grid-template-rows: 60px 40% auto;
 		overflow-y: auto;
 	}`);
+		const store = useStore({
+			onPurchase: "ready",
+			onDelete: "ready",
+		});
 
 		const seeStore$ = $(async (address: string) => {
 			console.log("seeStore: opening store for ", address);
@@ -102,31 +110,117 @@ export const ItemDetails = component$(
 			};
 		});
 
+		//timers to reset states back to "ready"
+		useWatch$(({track, cleanup}) => {
+			track(store, "onPurchase");
+			console.debug({"store.onPurchase": store.onPurchase})
+			if (store.onPurchase !== "done" && store.onPurchase !== "error") return;
+			const timer = setTimeout(() => {
+				store.onPurchase = "ready";
+				// close the details page
+				handleClose$();
+			}, 3000);
+			return () => {
+				clearTimeout(timer);
+			};
+		});
+		useWatch$(({track, cleanup}) => {
+			track(store, "onDelete");
+			console.debug({"store.onDelete": store.onDelete})
+			if (store.onDelete !== "done" && store.onDelete !== "error") return;
+			const timer = setTimeout(() => {
+				store.onDelete = "ready";
+				// close the details page
+				handleClose$();
+			}, 3000);
+			return () => {
+				clearTimeout(timer);
+			};
+		});
+
+		const onPurchaseWrapper = $(async () => {
+			store.onPurchase = "loading";
+			const response = await onPurchase(itemData);
+
+			if (typeof response === "boolean") {
+				addNotification(session, "Purchase successful!", 0, 5000);
+				store.onPurchase = "done";
+			} else {
+				addNotification(
+					session,
+					`Purchase error: ${response.message}`,
+					2,
+					10000
+				);
+				store.onPurchase = "error";
+			}
+			session.staleItems = true;
+		});
+
+		const onDeleteWrapper = $(async () => {
+			store.onDelete = "loading";
+			const response = await onDelete(itemData);
+
+			if (typeof response === "boolean") {
+				addNotification(session, "Delete successful!", 0, 5000);
+				store.onDelete = "done";
+			} else {
+				addNotification(session, `Delete error: ${response.message}`, 2, 10000);
+				store.onDelete = "error";
+			}
+			session.staleItems = true;
+		});
+
+		// useWatch$(({track}) => {
+		// 	track(props, 'itemData');
+		// 	console.debug({sessionAddress: session.address, itemOwner: itemData.owner, doesMatchStrict: session.address === itemData.owner, doesMatchLoose: session.address == itemData.owner,  doesMatchLowercaseStrict: session.address?.toLowerCase() === itemData.owner.toLowerCase(), doesMatchLowercaseLoose: session.address?.toLowerCase() == itemData.owner.toLowerCase()});
+		// })
+
 		return (
 			<div class="detailsWrapper w-full p-4 bg-gray-100 grid">
 				<h1 class="text-4xl text-center text-gray-700 p-2">{itemData.name}</h1>
 				<div
 					style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 400px; width: 100%;`}
-					onClick$={() => console.log('TODO: image popup modal')}
+					onClick$={() => console.log("TODO: image popup modal")}
 				></div>
 
 				<div class="flex flex-wrap gap-1 bg-gray-100 text-gray-700 p-2 flex-grow w-full">
-					<div class="flex-grow bg-gray-200 p-2">
+					<div class="flex-grow w-8/12 bg-gray-200 p-2">
 						<p class="text-sm text-gray-500">Name:</p>
 						<span class="ml-2 text-md">{itemData.name}</span>
 					</div>
 					<button
 						class="grow-0 w-3/12 border rounded bg-white p-1 "
-						onClick$={async () => {
-							await onPurchase(itemData);
-						}}
+						onClick$={onPurchaseWrapper}
+						disabled={store.onPurchase === "loading"}
 					>
-						Purchase
+						{store.onPurchase === "ready"
+							? "Purchase"
+							: store.onPurchase === "loading"
+							? "Purchasing..."
+							: store.onPurchase === "error"
+							? "Error"
+							: "Complete!"}
 					</button>
-					<div class="w-full bg-gray-200 p-2">
+					<div class="flex-grow w-8/12 bg-gray-200 p-2">
 						<p class="text-sm text-gray-500">Price:</p>
 						<Price price={itemData.price} class="ml-2 text-md" />
 					</div>
+					{session.address?.toLowerCase() === itemData.owner.toLowerCase() && (
+						<button
+							class="grow-0 w-3/12 border rounded bg-white p-1 "
+							disabled={store.onDelete === "loading"}
+							onClick$={onDeleteWrapper}
+						>
+							{store.onDelete === "ready"
+							? "Delete"
+							: store.onDelete === "loading"
+							? "Deleting..."
+							: store.onDelete === "error"
+							? "Error"
+							: "Complete!"}
+						</button>
+					)}
 					<div class="w-full bg-gray-200 p-2">
 						<p class="text-sm text-gray-500">Owner's Address:</p>
 						{session.address ? (
@@ -144,16 +238,20 @@ export const ItemDetails = component$(
 						<p class="text-sm text-gray-500">Description:</p>
 						<span class=" text-md ml-2 border-solid rounded border-gray-600 p-2 break-all overflow-y-scroll z-50">
 							{itemData.description}
-							{"#".repeat(Math.floor(Math.random()*10000))}
+							{"#".repeat(Math.floor(Math.random() * 10000))}
 						</span>
 					</div>
 					<button
 						class="grow-0 w-6/12 border text-bold rounded bg-white p-2 mx-auto"
-						onClick$={async () => {
-							await onPurchase(itemData);
-						}}
+						onClick$={onPurchaseWrapper}
 					>
-						Purchase
+						{store.onPurchase === "ready"
+							? "Purchase"
+							: store.onPurchase === "loading"
+							? "Purchasing..."
+							: store.onPurchase === "error"
+							? "Error"
+							: "Complete!"}
 					</button>
 					{session.address && (
 						<p
