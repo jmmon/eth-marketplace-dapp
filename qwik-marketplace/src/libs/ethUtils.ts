@@ -580,3 +580,32 @@ export 	const handleConnect = $(async (session: ISessionContext) => {
     console.log('Error connecting metamask:', error.message);
   }
 });
+
+export const addItemToMarket = $(async (state, formDataObject, session) => {
+  // interact with contract
+  try {
+    const address = await connect();
+    const contract = await getContract(true);
+
+    const receipt = await contract.addItem(
+      state.dataString,
+      formDataObject.price
+    );
+
+    session.staleItems = true; // refetch items
+
+    console.log("response from addItem:", {receipt});
+    const jsonTx = JSON.stringify(receipt);
+    console.log("item added to dapp!:", jsonTx);
+    return {data: jsonTx, err: null};
+    
+  } catch (e) {
+    return {data: null, err: e};
+  }
+});
+
+export const ETH_CONVERSION_RATIOS = {
+  eth: 10**18,
+  gwei: 10**9,
+  wei: 1,
+}

@@ -8,6 +8,7 @@ import {
 	useStore,
 	useStyles$,
 	useStylesScoped$,
+	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import Styles from "./create.css";
@@ -15,11 +16,14 @@ import {read} from "fs";
 import {create} from "ipfs-http-client";
 import {CID} from "ipfs-http-client";
 
-import {connect, getContract} from "~/libs/ethUtils";
+import {addItemToMarket, ETH_CONVERSION_RATIOS} from "~/libs/ethUtils";
 import {
 	Notifications,
 	addNotification,
 } from "~/components/notifications/notifications";
+
+export const ipfsOptions = {url: "http://127.0.0.1:5001"};
+export const ipfs = create(ipfsOptions);
 
 export default component$(() => {
 	useStylesScoped$(Styles);
@@ -36,61 +40,19 @@ export default component$(() => {
 		dataString: "",
 	});
 
-	useClientEffect$(async () => {
-		// import polyfill
-		await import("~/libs/wzrdin_buffer_polyfill.js");
+	useClientEffect$(() => {
+		// import polyfill, adds window.buffer.Buffer() method
+		import("~/libs/wzrdin_buffer_polyfill.js");
 	});
 
-	const handleSubmit = $(async (target: HTMLFormElement) => {
-		const formData = new FormData(target);
-		console.log([...formData.entries()]);
-		const ipfsOptions = {url: "http://127.0.0.1:5001"};
-		const ipfs = create(ipfsOptions);
+	const handleSubmitForm = $(async (target: HTMLFormElement) => {
 
-		// if (session.isBrowser) {
-		const address = await connect();
-		console.log("account connected:", address);
-		addNotification(session, `Account connected: address linked:${address}`);
-		// }
+		const handleSubmitData = async () => {
+			const formData = new FormData(target);
 
-		const contract = await getContract(true);
-
-		// upload file
-		const reader = new FileReader();
-
-		reader.onloadend = async () => {
-			const bufPhoto = window.buffer.Buffer(reader.result);
-			// const bufPhoto = session.isBrowser
-			// 	? window.buffer.Buffer(reader.result)
-			// 	: Buffer.from(reader.result);
-
-			try {
-				const {cid} = await ipfs.add(bufPhoto);
-				state.imageString = cid.toString();
-				// console.log("cid.toString()", cid.toString());
-				console.log("image upload successful:", state.imageString);
-
-				addNotification(session, `Image upload successful!`, "success", 5000);
-				addNotification(
-					session,
-					`Image file uploaded! Reference string: ${state.imageString}`
-				);
-
-				// continue to upload the whole data
-				uploadItemData();
-			} catch (err) {
-				console.log("image upload error:", err.message);
-				addNotification(
-					session,
-					`Image upload failed: ${err.message}`,
-					"error"
-				);
-			}
-		};
-
-		const uploadItemData = async () => {
 			let formDataObject: ICreateFormDataObject = {
 				price: "",
+				units: "",
 				name: "",
 				description: "",
 				imgHash: "",
@@ -100,52 +62,43 @@ export default component$(() => {
 				.forEach(([key, value]) => (formDataObject[key] = value));
 			console.log({formDataObject});
 
-			formDataObject["imgHash"] = state.imageString;
+			const {units, price} = formDataObject;
+			formDataObject.price = `${+price * ETH_CONVERSION_RATIOS[units]}`;
+
+			formDataObject.imgHash = state.imageString;
 			console.log("final formDataObject:", formDataObject);
 
 			const formDataJson = JSON.stringify(formDataObject);
-			console.log("json version:", formDataJson);
-
 			const bufData = window.buffer.Buffer(formDataJson);
-			// const bufData = session.isBrowser
-			// 	? window.buffer.Buffer(formDataJson)
-			// 	: Buffer.from(formDataJson);
 
 			try {
 				const {cid} = await ipfs.add(bufData);
-				// console.log("cid.toString()", cid.toString());
-				// some sort of error: set property of textarea#description: cannot set property because it only has a getter
 
 				state.dataString = cid.toString();
-				console.log("data upload successful:", state.dataString);
+				console.log("data upload to IPFS successful:", state.dataString);
 				addNotification(
 					session,
-					`ItemData upload successful!`,
+					`ItemData upload successful! ${state.dataString}`,
 					"success",
 					5000
 				);
-				addNotification(
-					session,
-					`ItemData file reference string: ${state.dataString}`
+
+				// TODO: display message: "Attempting transaction, please sign in metamask!"
+				const {data, err} = await addItemToMarket(
+					state,
+					formDataObject,
+					session
 				);
 
-				// interact with contract
-				try {
-					const receipt = await contract.addItem(
-						state.dataString,
-						formDataObject.price
-					);
-
-					console.log("response from addItem:", {receipt});
-					const jsonTx = JSON.stringify(receipt);
-					console.log("item added to dapp!:", jsonTx);
+				if (err === null) {
+					// TODO: display message: "Success at adding item to marketplace! Thanks for participating!"
 					addNotification(
 						session,
-						`Add item successful!?:\n ${jsonTx}`,
+						`Add item successful!?:\n ${data}`,
 						"success"
 					);
-				} catch (e) {
-					addNotification(session, `Error: ${e.message}`, "warning");
+				} else {
+					addNotification(session, `Error: ${err.message}`, "warning");
 				}
 			} catch (err) {
 				addNotification(
@@ -156,15 +109,42 @@ export default component$(() => {
 			}
 		};
 
-		// start file read
-		reader.readAsArrayBuffer(photoInputRef?.current?.files[0]);
-		//alternately, could try pulling file from formData
+		const handleUpload = async () => {
+			const reader = new FileReader();
+
+			reader.onloadend = async () => {
+				const bufPhoto = window.buffer.Buffer(reader.result);
+
+				try {
+					const {cid} = await ipfs.add(bufPhoto);
+					state.imageString = cid.toString();
+					console.log("image upload successful:", state.imageString);
+
+					addNotification(session, `Image upload successful!`, "success", 5000);
+					addNotification(
+						session,
+						`Image file uploaded! Reference string: ${state.imageString}`
+					);
+
+					handleSubmitData();
+
+				} catch (err) {
+					console.log("image upload error:", err.message);
+					addNotification(
+						session,
+						`Image upload failed: ${err.message}`,
+						"error"
+					);
+				}
+			};
+
+			reader.readAsArrayBuffer(photoInputRef?.current?.files[0]);
+		};
+		
+		handleUpload();
 	});
 
-	// const handleCount = $(() => {
-	// 	session.test++;
-	// });
-
+	// need to add conversion: select option choosing which type the input will represent; some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below! Need for force browse to refetch;
 	return (
 		<aside
 			class={`create wrapper ${!session.address && "loggedOut"} ${
@@ -186,63 +166,66 @@ export default component$(() => {
 				<form
 					class="flex flex-col w-full items-stretch"
 					preventdefault:submit
-					onSubmit$={(e) => handleSubmit(e.target)}
+					onSubmit$={(e) => handleSubmitForm(e.target)}
 				>
 					<h1 class="mx-auto text-lg py-4">Add Item to Marketplace</h1>
-					<label
-						class="border rounded w-10/12 mx-auto my-3 px-2 pt-1 pb-2"
-						for="price"
-					>
-						Price
-						<input
-							name="price"
-							class="block"
-							type="text"
-							placeholder="In wei..."
-							id="price"
-						/>
-					</label>
-					<label
-						class="border rounded w-10/12 mx-auto my-3 px-2 pt-1 pb-2"
-						for="name"
-					>
-						Name
-						<input
-							name="name"
-							class="block"
-							type="text"
-							placeholder="Name"
-							id="name"
-						/>
-					</label>
-					<label
-						class="border rounded w-10/12 mx-auto my-3 px-2 pt-1 pb-2"
-						for="description"
-					>
-						Description
-						<textarea
-							name="description"
-							rows="5"
-							cols="40"
-							placeholder="Description"
-							id="description"
-						/>
-					</label>
-					<label
-						class="border rounded w-10/12 mx-auto my-3 px-2 pt-1 pb-2"
-						for="photo"
-					>
-						Upload a Photo
-						<input
-							name="photo"
-							class="block"
-							type="file"
-							id="photo"
-							ref={photoInputRef}
-						>
-							Choose A File
-						</input>
-					</label>
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 flex">
+						<label class="w-9/12" for="price">
+							Price
+							<input
+								name="price"
+								class="block w-full"
+								type="text"
+								placeholder="...and select your units"
+								id="price"
+							/>
+						</label>
+						<label class="inline">
+							Units
+							<select name="units" class="block" id="units">
+								<option value="eth">ETH</option>
+								<option value="gwei">GWEI</option>
+								<option value="wei">WEI</option>
+							</select>
+						</label>
+					</fieldset>
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
+						<label for="name">
+							Name
+							<input
+								name="name"
+								class="block w-full"
+								type="text"
+								placeholder="Name"
+								id="name"
+							/>
+						</label>
+					</fieldset>
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
+						<label for="description">
+							Description
+							<textarea
+								name="description"
+								class="block w-full h-[200px]"
+								placeholder="Description"
+								id="description"
+							/>
+						</label>
+					</fieldset>
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
+						<label for="photo">
+							Upload a Photo
+							<input
+								name="photo"
+								class="block w-full"
+								type="file"
+								id="photo"
+								ref={photoInputRef}
+							>
+								Choose A File
+							</input>
+						</label>
+					</fieldset>
 					<button class="border rounded  mx-auto p-4 my-4">
 						Add Item To Blockchain Marketplace
 					</button>
