@@ -1,5 +1,6 @@
 import {
 	component$,
+	mutable,
 	useClientEffect$,
 	useContext,
 	useStylesScoped$,
@@ -7,22 +8,18 @@ import {
 import {SessionContext} from "~/libs/context";
 import {getItems} from "~/libs/ethUtils";
 import {ItemPreview} from "../itemPreview/itemPreview";
+import Styles from "./browse.css";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
 
-	useStylesScoped$(`.itemsContainer {
-		display: flex; 
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 1rem; 
-		font-size: 20px;
-		margin: 1.5rem;
-	}`);
+	useStylesScoped$(Styles);
 
-	useClientEffect$(async () => {
+	useClientEffect$(async ({track}) => {
+		track(session, 'staleItems');
 		console.log("browse: getting items");
 		session.items = await getItems();
+		session.staleItems = false;
 	});
 
 	return (
@@ -36,7 +33,7 @@ export default component$(() => {
 					</div>
 				) : (
 					session.items.map((item, index) => (
-						<ItemPreview key={index} item={item} />
+						<ItemPreview key={index} item={mutable(item)} />
 					))
 				)}
 			</div>
