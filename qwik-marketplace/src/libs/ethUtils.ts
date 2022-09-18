@@ -527,14 +527,29 @@ export const fetchItemDataFromIPFS = async (
 
 
 export const  onPurchase = $(async (itemData: IItemData) => {
+  try {
+    const address = await connect();
+    const contract = await getContract(true);
+    const options = {value: `${itemData.price}`};
+
+    const tx = await contract.sell(itemData.id, options);
+    console.log("response from purchase:", {tx});
+    return true;
+
+  } catch (error) {
+    console.log("response from purchase:", {tx});
+    return {error};
+  }
+});
+
+export const onDelete = $( async (itemData: IItemData) => {
   const address = await connect();
   const contract = await getContract(true);
 
-  const options = {value: `${itemData.price}`};
-  const tx = await contract.sell(itemData.id, options);
+  const tx = await contract.deleteItem(itemData.id);
   console.log("response from purchase:", {tx});
-  // TODO: Show some success screen?
-});
+  return true;
+})
 
 
 // watches for metamask address changes
