@@ -421,11 +421,15 @@ export const getContract = async (withSigner: boolean = false) => {
   try {
     contract = await contract.connect(await provider.getSigner());
 
+    return {address, contract};
   } catch (error) {
     console.log('getContract signing error:', error);
   }
   return contract;
 }
+
+
+
 
 export const formatItem = (item: Array<any>): IContractItem => {
   const bigNum = item[2];
@@ -436,7 +440,7 @@ export const formatItem = (item: Array<any>): IContractItem => {
     price: bigNum["_hex"],
     id: item[3],
   };
-};
+}
 
 export const getItem = async (id: string): Promise<IContractItem> => {
 	try {
@@ -452,10 +456,10 @@ export const getItem = async (id: string): Promise<IContractItem> => {
 
 	} catch (error) {
 		console.log("error getting item:", error.message);
-    // console.log('where is this firing at the start?');
 		return Promise.reject(error);
 	}
 };
+
 
 export const getItems = async (): Promise<IContractItem[]> => {
 	try {
@@ -467,7 +471,7 @@ export const getItems = async (): Promise<IContractItem[]> => {
     const formattedItems = items.map(item => formatItem(item));
 		
 		console.log({formattedItems});
-		return formattedItems;
+		return Promise.resolve(formattedItems);
 
 	} catch (error) {
 		console.log("error getting items:", error);
@@ -492,13 +496,14 @@ export const getItemsFromAddress = async (address: string): Promise<IContractIte
     console.log({formattedItemsPromises})
 		const formattedItems = await Promise.all(formattedItemsPromises);
 		console.log({formattedItems});
-		return formattedItems;
+		return Promise.resolve(formattedItems);
 
 	} catch (error) {
 		console.log("error getting items:", error);
 		return Promise.resolve([]);
 	}
 };
+
 
 export const fetchItemDataFromIPFS = async (
 	item: IContractItem | null,
@@ -527,10 +532,8 @@ export const fetchItemDataFromIPFS = async (
 	return Promise.reject(itemData);
 };
 
-
-export const handleSell = async (itemData: IItemData): Promise<{success: boolean; error: {message: string} | null;}> => {
+export const handlePurchase = async (itemData: IItemData): Promise<{success: boolean; error: {message: string} | null;}> => {
   try {
-    // const address = await connect();
     const contract = await getContract(true);
     const options = {value: `${itemData.price}`};
 
@@ -546,7 +549,6 @@ export const handleSell = async (itemData: IItemData): Promise<{success: boolean
 
 export const handleDelete = async (itemData: IItemData): Promise<{success: boolean; error: {message: string} | null;}> => {
   try {
-    // const address = await connect();
     const contract = await getContract(true);
     
     const response = await contract.deleteItem(itemData.id);
@@ -578,10 +580,8 @@ export const maintainSameAddress = async (session: ISessionContext) => {
       }
       // set to undefined or new address
       session.address = address;
-      // location.reload(); // needed?
     }
   }, 1000);
-
 };
 
 export 	const handleConnect = async (session: ISessionContext) => {
@@ -606,7 +606,6 @@ export 	const handleConnect = async (session: ISessionContext) => {
 export const addItemToMarket = async (state: ICreateFormState, formDataObject: ICreateFormDataObject, session: ISessionContext) => {
   // interact with contract
   try {
-    // const address = await connect();
     const contract = await getContract(true);
 
     const receipt = await contract.addItem(
@@ -616,11 +615,12 @@ export const addItemToMarket = async (state: ICreateFormState, formDataObject: I
 
     session.staleItems = true; // refetch items
 
-    console.log("item added to dapp! response from addItem:", {receipt});
+    console.log("response from addItem:", {receipt});
     const jsonTx = JSON.stringify(receipt);
+    console.log("item added to dapp!:", jsonTx);
     return {data: jsonTx, err: null};
     
-  } catch (error) {
-    return {data: null, error: error};
+  } catch (e) {
+    return {data: null, err: e};
   }
 };

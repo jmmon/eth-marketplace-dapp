@@ -8,7 +8,7 @@ import {
 import {SessionContext} from "~/libs/context";
 import {getItems} from "~/libs/ethUtils";
 import {ItemPreview} from "../itemPreview/itemPreview";
-import Styles from "./browse.css";
+import Styles from "./browse.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext);

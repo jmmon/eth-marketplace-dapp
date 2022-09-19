@@ -1,13 +1,14 @@
 import {
 	$,
 	component$,
+	mutable,
 	Resource,
 	useContext,
 	useResource$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {fetchItemDataFromIPFS, getItemsFromAddress} from "~/libs/ethUtils";
-import {shortAddress, shortText} from "~/libs/utils";
+import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
 export const ItemPreview = component$((props: {item: IContractItem | null}) => {
@@ -21,53 +22,25 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 		return await fetchItemDataFromIPFS(props.item, controller);
 	});
 
-	const seeStore$ = $(async (address: string) => {
-		console.log("seeStore: opening store for ", address);
-
-		session.details = {
-			...session.details,
-			show: false,
-		};
-
-		session.store = {
-			show: true,
-			address,
-			items: await getItemsFromAddress(address),
-		};
-	});
-
-	const seeDetails$ = $((id: string) => {
-		const thisItem = session.items.find((item) => item?.id === id);
-		console.log("see details button: showing item:", {id, session, thisItem});
-
-		session.store = {
-			...session.store,
-			show: false,
-		};
-
-		// create new object so that we can track the change
-		session.details = {
-			item: thisItem ?? null,
-			show: true,
-		};
-		// session.details = {...session.details, show: true,}
-	});
-
 	return (
 		<Resource
+			// onRejected={(error) => <div>Error: {error.message}</div>}
+			// onPending={() => <div>Loading Items...</div>}
 			value={resource}
-			onPending={() => <div>Loading Items...</div>}
-			onRejected={(error) => <div>Error: {error.message}</div>}
+			onPending={() => (console.log('pending'), <ItemShell />)}
+			onRejected={(error) => <ItemShell error={error.message}/>}
+			// onResolved={(itemData: IItemData) => (console.log('resolved'), <ItemShell itemData={mutable(itemData)} />)}
 			onResolved={(itemData: IItemData) => (
 				<div class=" p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12 overflow-y-clip">
 					<h3
 						class="text-4xl text-center bg-gray-100 text-gray-700 p-2 cursor-pointer"
-						onClick$={() => seeDetails$(itemData.id)}
+						onClick$={() => seeDetails(itemData.id, session)}
 					>
 						{shortText(itemData.name, 17)}
 					</h3>
 
-					<div class=" cursor-pointer"
+					<div
+						class=" cursor-pointer"
 						style={`background: url(${itemData.imgUrl}); 
 						background-repeat: no-repeat; 
 						background-size: cover; 
@@ -76,7 +49,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 						min-width: 300px;
 						width: 100%;
 					`}
-						onClick$={() => seeDetails$(itemData.id)}
+						onClick$={() => seeDetails(itemData.id, session)}
 					></div>
 					<div class="grid gap-1 bg-gray-100 text-gray-700 p-2">
 						<div>
@@ -95,7 +68,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 							{session.address ? (
 								<span
 									class="text-blue-400 cursor-pointer"
-									onClick$={async () => await seeStore$(itemData.owner)}
+									onClick$={() => seeStore(itemData.owner, session)}
 								>
 									{shortAddress(itemData.owner)}
 								</span>
@@ -105,7 +78,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 						</div>
 						<button
 							class="border rounded bg-white mt-1 p-1"
-							onClick$={() => seeDetails$(itemData.id)}
+							onClick$={() => seeDetails(itemData.id, session)}
 						>
 							See Details
 						</button>
@@ -113,5 +86,85 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 				</div>
 			)}
 		/>
+	);
+});
+
+export const ItemShell = component$((props: {itemData?: IItemData; error?: string;}) => {
+	const session = useContext(SessionContext);
+	console.log('shell firing:', {itemData: props?.itemData ?? "empty"});
+	return (
+		<div class=" p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12 overflow-y-clip">
+			<h3
+				class={`text-4xl text-center bg-gray-100 text-gray-700 p-2 cursor-pointer ${!props?.itemData?.name && 'text-gray-100'}`}
+				onClick$={props?.itemData?.name ? () => seeDetails(props?.itemData?.id, session) : null}
+			>
+				{props?.error ? `${props?.error}` : props?.itemData?.name ? shortText(props?.itemData?.name, 17) : "Loading..."}
+			</h3>
+			{/* <div
+				class={`cursor-pointer ${!props?.itemData?.imgUrl && "bg-gray-100"}`}
+				style={`${
+					props?.itemData?.imgUrl
+						? `background: url(${props?.itemData?.imgUrl}); 
+		background-repeat: no-repeat; 
+		background-size: cover; 
+		background-position: center;`
+						: ""
+				}
+		height: 200px; 
+		min-width: 300px;
+		width: 100%;
+	`}
+				onClick$={props?.itemData?.id ? () => seeDetails(props?.itemData?.id, session) : null}
+			></div> */}
+			{	props?.itemData?.imgUrl ? (<div
+						class=" cursor-pointer"
+						style={`background: url(${props.itemData.imgUrl}); 
+						background-repeat: no-repeat; 
+						background-size: cover; 
+						background-position: center; 
+						height: 200px; 
+						min-width: 300px;
+						width: 100%;
+					`}
+						onClick$={() => seeDetails(props?.itemData?.id, session)}
+					></div>) : (<div
+									class="cursor-pointer bg-gray-100"
+									style={`height: 200px; 
+									min-width: 300px;
+									width: 100%;
+								`}
+								></div>)
+
+			}
+			<div class="grid gap-1 bg-gray-100 text-gray-700 p-2">
+				<div>
+					<p class="text-sm text-gray-500">Name:</p>
+					<span class="ml-2">{props?.itemData?.name ?? " "}</span>
+				</div>
+				<div>
+					<p class="text-sm text-gray-500">Price:</p>
+					<Price price={props?.itemData?.price ?? " "} class="ml-2" />
+				</div>
+				<div>
+					<p class="text-sm text-gray-500">Owner's Address:</p>
+					{ session.address && props?.itemData?.owner? (
+						<span
+							class="text-blue-400 cursor-pointer"
+							onClick$={() => seeStore(props?.itemData?.owner, session)}
+						>
+							{shortAddress(props?.itemData?.owner)}
+						</span>
+					) : (
+						<span>{shortAddress("#".repeat(42))}</span>
+					)}
+				</div>
+				<button
+					class="border rounded bg-white mt-1 p-1"
+					onClick$={props?.itemData?.id ? () => seeDetails(props?.itemData?.id, session) : null}
+				>
+					See Details
+				</button>
+			</div>
+		</div>
 	);
 });

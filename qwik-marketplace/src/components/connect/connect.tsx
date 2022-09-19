@@ -1,7 +1,7 @@
 import {component$, useContext, useStylesScoped$} from "@builder.io/qwik";
 import { SessionContext } from "~/libs/context";
 import { handleConnect } from "~/libs/ethUtils";
-import Styles from "./connect.css";
+import Styles from "./connect.css?inline";
 
 export default component$(() => {
   const session = useContext(SessionContext);

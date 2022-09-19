@@ -9,7 +9,7 @@ import {
 import {SessionContext} from "~/libs/context";
 import {getItemsFromAddress} from "~/libs/ethUtils";
 import {ItemPreview} from "../itemPreview/itemPreview";
-import Styles from "./store.css";
+import Styles from "./store.css?inline";
 
 export default component$((props: {address: string}) => {
 	const session = useContext(SessionContext);

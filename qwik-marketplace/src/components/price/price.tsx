@@ -13,10 +13,14 @@ interface IPriceState {
 }
 
 export const Price = component$(
-	(props: {price: string; class: string; default?: string}) => {
+	(props: {
+		price: string; 
+		class: string; 
+		default?: string
+	}) => {
 		const state = useStore<IPriceState>({
 			units: props.default ?? 'eth',
-			output: "",
+			output: " ",
 		});
 
 		const cycleUnits = $(() => {
@@ -30,6 +34,8 @@ export const Price = component$(
 
 		useWatch$(({track}) => {
 			track(state, "units");
+
+			if (props.price === " ") return;
 
 			//re calculate
 			state.output = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);

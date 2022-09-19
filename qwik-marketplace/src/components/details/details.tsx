@@ -18,11 +18,11 @@ import {
 	onDelete,
 	onPurchase,
 } from "~/libs/ethUtils";
-import {shortText} from "~/libs/utils";
+import {seeStore, shortText} from "~/libs/utils";
 import {addNotification} from "../notifications/notifications";
 import {Price} from "../price/price";
 import store from "../store/store";
-import Styles from "./details.css";
+import Styles from "./details.css?inline";
 
 export default component$((props: {item: IContractItem | null}) => {
 	const session = useContext(SessionContext);
@@ -31,6 +31,8 @@ export default component$((props: {item: IContractItem | null}) => {
 	const itemDetailsResource = useResource$<IItemData>(
 		async ({track, cleanup}) => {
 			track(props, "item");
+
+			if (!props.item.id) return new Promise(); // return empty promise if no item id is sent
 
 			const controller = new AbortController();
 			cleanup(() => controller.abort());
@@ -93,21 +95,6 @@ export const ItemDetails = component$((
 		onDelete: "ready",
 	});
 
-	const seeStore$ = $(async (address: string) => {
-		console.log("seeStore: opening store for ", address);
-
-		session.details = {
-			...session.details,
-			show: false,
-		};
-
-		session.store = {
-			show: true,
-			address,
-			items: await getItemsFromAddress(address),
-		};
-	});
-
 	//timers to reset states back to "ready"
 	useWatch$(({track, cleanup}) => {
 		track(store, "onPurchase");
@@ -138,41 +125,33 @@ export const ItemDetails = component$((
 
 	const onPurchaseWrapper = $(async () => {
 		store.onPurchase = "loading";
-		const response = await onPurchase(itemData);
+		let notification = {message: 'Purchase successful!', type: 0, time: 5000}
+		const response = await handleSell(itemData);
 
-		if (response.success === true) {
-			addNotification(session, "Purchase successful!", 0, 5000);
-			store.onPurchase = "done";
-		} else if (response.error) {
-			addNotification(
-				session,
-				`Purchase error: ${response.error.message}`,
-				2,
-				10000
-			);
+		if (response.error) {
 			store.onPurchase = "error";
+			notification = {message: `Purchase error: ${response.error.message}`, type: 2, time: 10000}
+		} else if (response.success === true) {
+			store.onPurchase = "done";
 		}
+		addNotification(session, notification.message, notification.type, notification.time);
 		session.staleItems = true;
 	});
 
 	const onDeleteWrapper = $(async () => {
 		store.onDelete = "loading";
-		const response = await onDelete(itemData);
+		let notification = {message: 'Delete successful!', type: 0, time: 5000}
+		const response = await handleDelete(itemData);
 
-		if (response.success === true) {
-			addNotification(session, "Delete successful!", 0, 5000);
-			store.onDelete = "done";
-		} else if (response.error) {
-			addNotification(session, `Delete error: ${response.error.message}`, 2, 10000);
+		if (response.error) {
 			store.onDelete = "error";
+			notification = {message: `Delete error: ${response.error.message}`, type: 2, time: 10000}
+		} else if (response.success === true) {
+			store.onDelete = "done";
 		}
+		addNotification(session, notification.message, notification.type, notification.time);
 		session.staleItems = true;
 	});
-
-	// useWatch$(({track}) => {
-	// 	track(props, 'itemData');
-	// 	console.debug({sessionAddress: session.address, itemOwner: itemData.owner, doesMatchStrict: session.address === itemData.owner, doesMatchLoose: session.address == itemData.owner,  doesMatchLowercaseStrict: session.address?.toLowerCase() === itemData.owner.toLowerCase(), doesMatchLowercaseLoose: session.address?.toLowerCase() == itemData.owner.toLowerCase()});
-	// })
 
 	return (
 		<div class="detailsWrapper w-full p-4 bg-gray-100 grid">
@@ -224,7 +203,7 @@ export const ItemDetails = component$((
 					{session.address ? (
 						<span
 							class="text-blue-400 cursor-pointer text-md"
-							onClick$={() => seeStore$(itemData.owner)}
+							onClick$={() => seeStore(itemData.owner, session)}
 						>
 							{itemData.owner}
 						</span>
@@ -254,7 +233,7 @@ export const ItemDetails = component$((
 				{session.address && (
 					<p
 						class="text-blue-400 cursor-pointer text-sm"
-						onClick$={() => seeStore$(itemData.owner)}
+						onClick$={() => seeStore(itemData.owner, session)}
 					>
 						See more from this address
 					</p>

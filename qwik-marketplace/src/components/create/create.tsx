@@ -11,7 +11,7 @@ import {
 	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import Styles from "./create.css";
+import Styles from "./create.css?inline";
 import {read} from "fs";
 import {create} from "ipfs-http-client";
 import {CID} from "ipfs-http-client";
@@ -84,13 +84,13 @@ export default component$(() => {
 				);
 
 				// TODO: display message: "Attempting transaction, please sign in metamask!"
-				const {data, err} = await addItemToMarket(
+				const {data, error} = await addItemToMarket(
 					state,
 					formDataObject,
 					session
 				);
 
-				if (err === null) {
+				if (error === null) {
 					// TODO: display message: "Success at adding item to marketplace! Thanks for participating!"
 					addNotification(
 						session,

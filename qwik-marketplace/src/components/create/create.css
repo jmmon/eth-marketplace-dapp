@@ -2,7 +2,7 @@
 .create.wrapper > *,
 .create.wrapper > * > * {
 	overflow: hidden;
-	transition: all 0.1s ease;
+	transition: all 0.2s ease;
 }
 
 /* closed state */

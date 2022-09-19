@@ -17,3 +17,30 @@ export const shortAddress = (address: string) => {
 		address.slice(-4)
 	))
 };
+
+export const seeStore = (address: string, session: ISessionContext) => {
+	console.log("seeStore: opening store for ", address);
+	session.details = {
+		...session.details,
+		show: false,
+	};
+	session.store = {
+		...session.store,
+		show: true,
+		address,
+		stale: true,
+	};
+};
+
+export const seeDetails = (id: string, session: ISessionContext) => {
+	const thisItem = session.items.find((item) => item?.id === id);
+	console.log("see details button: showing item:", {id, session, thisItem});
+	session.store = {
+		...session.store,
+		show: false,
+	};
+	session.details = {
+		item: thisItem,
+		show: true,
+	};
+};
