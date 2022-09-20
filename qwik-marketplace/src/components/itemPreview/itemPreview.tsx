@@ -25,9 +25,8 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 	return (
 		<Resource
 			// onRejected={(error) => <div>Error: {error.message}</div>}
-			// onPending={() => <div>Loading Items...</div>}
 			value={resource}
-			onPending={() => (console.log('pending'), <ItemShell />)}
+			onPending={() => <ItemShell />}
 			onRejected={(error) => <ItemShell error={error.message}/>}
 			// onResolved={(itemData: IItemData) => (console.log('resolved'), <ItemShell itemData={mutable(itemData)} />)}
 			onResolved={(itemData: IItemData) => (
@@ -91,7 +90,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 
 export const ItemShell = component$((props: {itemData?: IItemData; error?: string;}) => {
 	const session = useContext(SessionContext);
-	console.log('shell firing:', {itemData: props?.itemData ?? "empty"});
+	// console.log('shell firing:', {itemData: props?.itemData ?? "empty"});
 	return (
 		<div class=" p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12 overflow-y-clip">
 			<h3

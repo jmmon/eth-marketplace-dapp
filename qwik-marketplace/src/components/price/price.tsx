@@ -38,9 +38,15 @@ export const Price = component$(
 			if (props.price === " ") return;
 
 			//re calculate
-			state.output = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);
+			
+			const price = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);
+			// limit decimal places
+			const x = 8;
+			state.output = Math.round(price * Math.pow(10,x)) / Math.pow(10,x);
+			// show tilde if rounded to 0 but not 0
+			state.output = (state.output == '0' && +props.price > 0 && "~") + state.output
 
-			console.log({units: state.units, val: state.output});
+			// TODO: show tilde if output converted to wei is not equal to wei!! to cover all "approximate" cases
 		});
 
 		return (
@@ -48,6 +54,7 @@ export const Price = component$(
 				onClick$={cycleUnits}
 				class={`cursor-pointer ${props.class ?? ""}`}
 			>
+				{/* {state.output == '0' && +props.price > 0 && "~"} */}
 				{state.output} {state.units}
 			</span>
 		);

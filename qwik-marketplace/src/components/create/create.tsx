@@ -6,7 +6,6 @@ import {
 	useContext,
 	useRef,
 	useStore,
-	useStyles$,
 	useStylesScoped$,
 	useWatch$,
 } from "@builder.io/qwik";
@@ -16,7 +15,7 @@ import {read} from "fs";
 import {create} from "ipfs-http-client";
 import {CID} from "ipfs-http-client";
 
-import {addItemToMarket, ETH_CONVERSION_RATIOS} from "~/libs/ethUtils";
+import {addItemToMarket, convertPrice} from "~/libs/ethUtils";
 import {
 	Notifications,
 	addNotification,
@@ -27,148 +26,190 @@ export const ipfs = create(ipfsOptions);
 
 export default component$(() => {
 	useStylesScoped$(Styles);
-	const store = useStore({showCreate: false} as {showCreate: boolean});
-	const handleClick = $(() => {
-		store.showCreate = !store.showCreate;
-		console.log("now", store.showCreate);
-	});
 	const session = useContext(SessionContext);
 	const photoInputRef = useRef<HTMLInputElement>();
-	const state = useStore<ICreateFormState>({
-		price: undefined,
+	const formState = useStore<ICreateFormState>({
+		// price: undefined,
 		imageString: "",
 		dataString: "",
 	});
 
+	const handleToggle = $(() => {
+		session.create.show = !session.create.show;
+		
+	});
+
+	useWatch$(({track}) => {
+		track(session.create, 'show');
+		console.log('tracking show create');
+
+		if (!session.create.show) {
+			session.create.note.class = "bg-yellow-200";
+			session.create.note.message = ``;
+		}
+	})
+
+	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
-		// import polyfill, adds window.buffer.Buffer() method
 		import("~/libs/wzrdin_buffer_polyfill.js");
 	});
 
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
 
+		// the data upload (after image uploads)
 		const handleSubmitData = async () => {
-			const formData = new FormData(target);
 
-			let formDataObject: ICreateFormDataObject = {
+			let formattedFormData: ICreateFormDataObject = {
 				price: "",
 				units: "",
 				name: "",
 				description: "",
 				imgHash: "",
 			};
-			[...formData.entries()]
-				.filter(([key, value]) => key !== "photo")
-				.forEach(([key, value]) => (formDataObject[key] = value));
-			console.log({formDataObject});
 
-			const {units, price} = formDataObject;
-			formDataObject.price = "" + (+price * ETH_CONVERSION_RATIOS[units]);
+			const formatFormDataToBuffer = () => {
+				const formData = new FormData(target);
+				// fill in data (except file input for photo)
+				[...formData.entries()]
+					.filter(([key, value]) => key !== "photo")
+					.forEach(([key, value]) => (formattedFormData[key] = value));
+				console.log({formDataObject: formattedFormData});
 
-			formDataObject.imgHash = state.imageString;
-			console.log("final formDataObject:", formDataObject);
+				// handle price conversion
 
-			const formDataJson = JSON.stringify(formDataObject);
-			const bufData = window.buffer.Buffer(formDataJson);
+				// const {units, price} = formattedFormData;
+				formattedFormData.price = convertPrice(formattedFormData);
 
-			try {
-				const {cid} = await ipfs.add(bufData);
+				// add imageString from image upload step
+				formattedFormData.imgHash = formState.imageString;
+				console.log("final formDataObject:", formattedFormData);
 
-				state.dataString = cid.toString();
-				console.log("data upload to IPFS successful:", state.dataString);
-				addNotification(
-					session,
-					`ItemData upload successful! ${state.dataString}`,
-					0,
-					5000
-				);
+				// return buffer of JSON of data
+				const formDataJson = JSON.stringify(formattedFormData);
+				return window.buffer.Buffer(formDataJson);
+			}
+			const bufData = formatFormDataToBuffer();
 
-				// TODO: display message: "Attempting transaction, please sign in metamask!"
+			// const handleUploadData = async () => {
+				try {
+					session.create.note.class = "bg-green-200";
+					session.create.note.message = "Uploading data to IPFS...";
+	
+					const {cid} = await ipfs.add(bufData);
+	
+					formState.dataString = cid.toString();
+					addNotification(
+						session,
+						`ItemData upload successful! ${formState.dataString}`,
+						0,
+						5000
+					);
+					
+				} catch (err) {
+					session.create.note.class = "bg-red-200";
+					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
+					addNotification(
+						session,
+						`Error uploading item data to IPFS: ${err.message}`,
+						2
+					);
+				}
+			// }
+			// handleUploadData();
+
+			const addToMarket = async () => {
+				session.create.note.class = "bg-green-200";
+				session.create.note.message = `Initiating transaction to add item...`;
+
 				const {data, error} = await addItemToMarket(
-					state,
-					formDataObject,
+					formState,
+					formattedFormData,
 					session
 				);
 
-				if (error === null) {
-					// TODO: display message: "Success at adding item to marketplace! Thanks for participating!"
-					addNotification(
-						session,
-						`Add item successful!?:\n ${data}`,
-						0
-					);
-				} else {
-					addNotification(session, `Error: ${err.message}`, 1);
+				if (error) {				
+					session.create.note.class = "bg-red-200";
+					session.create.note.message = `Error adding item to smart contract: ${error.message}`;
+
+					addNotification(session, `Error adding item to marketplace: ${error.message}`, 2);
+					return;
 				}
-			} catch (err) {
+
+				session.create.note.class = "bg-blue-200";
+				session.create.note.message = `Transaction successful! Item added to marketplace.`;
+
 				addNotification(
 					session,
-					`ItemData upload failed: ${err.message}`,
-					2
+					`Add item successful!?:\n ${data}`,
+					0
 				);
+
+				// close the create page
+				session.create.show = false;
+				session.browse.stale = true; // refetch items			
 			}
+			addToMarket();
 		};
-
-		const handleUpload = async () => {
+		
+		//the image upload
+		const handleUploadPhoto = async () => {
+			if (!photoInputRef?.current?.files?.[0]) {
+				return addNotification(session, "Invalid photo chosen", 2, 5000);
+			}
+			session.create.note.class = "bg-lime-200";
+			session.create.note.message = "Uploading image to IPFS...";
+			
 			const reader = new FileReader();
-
 			reader.onloadend = async () => {
 				const bufPhoto = window.buffer.Buffer(reader.result);
 
 				try {
 					const {cid} = await ipfs.add(bufPhoto);
-					state.imageString = cid.toString();
-					console.log("image upload successful:", state.imageString);
+					formState.imageString = cid.toString();
 
-					addNotification(session, `Image upload successful!`, 0, 5000);
 					addNotification(
 						session,
-						`Image file uploaded! Reference string: ${state.imageString}`, 3
+						`Image file uploaded! Reference string: ${formState.imageString}`, 3
 					);
 
+					// trigger the next step
 					handleSubmitData();
 
 				} catch (err) {
-					console.log("image upload error:", err.message);
+					session.create.note.class = "bg-red-200";
+					session.create.note.message = `Error uploading image to IPFS: ${err.message}`;
 					addNotification(
 						session,
-						`Image upload failed: ${err.message}`,
+						`Error uploading image to IPFS: ${err.message}`,
 						2
 					);
 				}
 			};
 
-			// reader.readAsArrayBuffer(window.buffer.Buffer(photoInputRef?.current?.files[0]));
-			if (photoInputRef?.current?.files?.[0]) {
-				reader.readAsArrayBuffer(photoInputRef.current.files[0] as Blob);
-
-			} else {
-				addNotification(session, "Invalid photo chosen", 2, 5000);
-				return;
-			}
+			reader.readAsArrayBuffer(photoInputRef.current.files[0] as Blob);
 		};
 		
-		handleUpload();
+		handleUploadPhoto();
 	});
 
-	// need to add conversion: select option choosing which type the input will represent; some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below! Need for force browse to refetch;
+	// some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below!
 	return (
 		<aside
 			class={`create wrapper ${!session.address && "loggedOut"} ${
-				store.showCreate && "showing"
+				session.create.show && "showing"
 			}`}
 		>
 			<div
-				class={`create handle ${store.showCreate && "showing"}`}
-				onClick$={handleClick}
+				class={`create handle ${session.create.show && "showing"}`}
+				onClick$={handleToggle}
 			>
 				{/* 2 */}
-				{/* <div class={`create chevron ${store.showCreate && "close"}`}></div> */}
+				{/* <div class={`create chevron ${session.create.show && "close"}`}></div> */}
 				<div class="create text">
-					{store.showCreate ? "/\\ " : "\\/ "}Add An Item
+					{session.create.show ? "/\\ " : "\\/ "}Add An Item
 				</div>
 			</div>
-			<div class={`create body ${store.showCreate && "showing"}`}>
+			<div class={`create body ${session.create.show && "showing"}`}>
 				{/* 3 */}
 				<form
 					class="flex flex-col w-full items-stretch"
@@ -176,33 +217,33 @@ export default component$(() => {
 					onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
 				>
 					<h1 class="mx-auto text-lg py-4">Add Item to Marketplace</h1>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 flex">
-						<label class="w-9/12" for="price">
-							Price
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow flex">
+						<label class="w-9/12 text-gray-500">
+							Price:
 							<input
 								name="price"
-								class="block w-full"
+								class="block w-full text-black placeholder-gray-300"
 								type="text"
 								placeholder="...and select your units"
 								id="price"
 								required
 							/>
 						</label>
-						<label class="inline">
-							Units
-							<select name="units" class="block" id="units">
+						<label class="inline text-gray-500">
+							Units:
+							<select name="units" class="block text-black" id="units">
 								<option value="eth">ETH</option>
 								<option value="gwei">GWEI</option>
 								<option value="wei">WEI</option>
 							</select>
 						</label>
 					</fieldset>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
-						<label for="name">
-							Name
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+						<label class="text-gray-500">
+							Name:
 							<input
 								name="name"
-								class="block w-full"
+								class="block w-full text-black placeholder-gray-300"
 								type="text"
 								placeholder="Name"
 								id="name"
@@ -210,24 +251,24 @@ export default component$(() => {
 							/>
 						</label>
 					</fieldset>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
-						<label for="description">
-							Description
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+						<label class="text-gray-500">
+							Description:
 							<textarea
 								name="description"
-								class="block w-full h-[200px]"
+								class="block w-full h-[200px] text-black placeholder-gray-300"
 								placeholder="Description"
 								id="description"
 								required
 							/>
 						</label>
 					</fieldset>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2">
-						<label for="photo">
-							Upload a Photo
+					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+						<label class="text-gray-500">
+							Upload a Photo:
 							<input
 								name="photo"
-								class="block w-full"
+								class="block w-full text-gray-700 "
 								type="file"
 								id="photo"
 								ref={photoInputRef}
@@ -237,10 +278,12 @@ export default component$(() => {
 							</input>
 						</label>
 					</fieldset>
-					<button class="border rounded  mx-auto p-4 my-4">
+					<button class="border rounded mx-auto p-4 my-4 bg-gray-50 text-gray-700  w-[400px] shadow-md hover:shadow hover:bg-white">
 						Add Item To Blockchain Marketplace
 					</button>
+					{session.create.note.message !== "" && <p class={`text-center border rounded mx-auto p-4 my-4 text-gray-700  w-[400px] shadow-md ${session.create.note.class}`}>{session.create.note.message}</p>}
 				</form>
+
 			</div>
 			<div class="create spacer"></div>
 			{/* 4 */}

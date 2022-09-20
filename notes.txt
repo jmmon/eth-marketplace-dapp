@@ -44,18 +44,18 @@ TODO as of sept 18th:
 			- ("Create Notification" text color lighten, button styling? )
 		Browse:
 			- Fix wide item when it is alone on the row
-		Create:
+		Create: (DONE)
 			- Lighten label text color
 	
 	Optimizations:
 		Create / Details / Store pages:
 			- Make sure they do not render until they are needed, so the JS doesn't get loaded eagerly
-
+			- How to do this? it might already...
 	Testing:
 		Test Delete, Purchase, some more: 
 			- should close details page when done
 
-	UX: 
+	UX: (DONE)
 		Browse / ItemPreview:
 			- stop showing error-state as items load;
 			

@@ -5,27 +5,31 @@ import {
 	useClientEffect$,
 	useContextProvider,
 	useStore,
+	useWatch$,
 } from "@builder.io/qwik";
 import {RequestHandler, useEndpoint} from "@builder.io/qwik-city";
-import Footer from "../components/footer/footer";
+// import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
 import { SessionContext } from "~/libs/context";
 import { Notifications } from "~/components/notifications/notifications";
 import Connect from "~/components/connect/connect";
 
-
-//display metamask login
-// once logged in, run an interval to check check if the account changes?
-// save loggedIn or connected context for other components
-
-
 export default component$(() => {
 	const session = useStore({
 		address: '',
-		unlocked: false,
 		isBrowser: false,
-		items: [],
-		staleItems: false,
+		showCreate: false,
+		create: {
+			show: false,
+			note: {
+				message: '',
+				class: '',
+			},
+		},
+		browse: {
+			items: [],
+			stale: false,
+		},
 		details: {
 			show: false,
 			item: null,
@@ -34,6 +38,7 @@ export default component$(() => {
 			show: false,
 			address: '',
 			items: [],
+			stale: false,
 		},
 		notifications: {
 			each: [],
@@ -44,11 +49,16 @@ export default component$(() => {
 
 	useContextProvider(SessionContext, session);
 
+	//debugging:
+	useWatch$(({track}) => {
+		track(session);
+		console.log('session changed:', session);
+	})
+
 	
 	useClientEffect$(async () => {
 		session.isBrowser = true;
 		if (typeof window.ethereum === 'undefined') {
-			session.unlocked = false;
 			session.address = undefined;
 		}
 	})
@@ -63,5 +73,5 @@ export default component$(() => {
 			<Notifications />
 		</div>
 	);
-});
 
+});

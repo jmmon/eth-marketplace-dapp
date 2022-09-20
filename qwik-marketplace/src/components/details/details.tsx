@@ -98,7 +98,7 @@ export const ItemDetails = component$((
 	//timers to reset states back to "ready"
 	useWatch$(({track, cleanup}) => {
 		track(store, "onPurchase");
-		console.debug({"store.onPurchase": store.onPurchase})
+		console.log({"store.onPurchase": store.onPurchase})
 		if (store.onPurchase !== "done" && store.onPurchase !== "error") return;
 		const timer = setTimeout(() => {
 			store.onPurchase = "ready";
@@ -111,7 +111,7 @@ export const ItemDetails = component$((
 	});
 	useWatch$(({track, cleanup}) => {
 		track(store, "onDelete");
-		console.debug({"store.onDelete": store.onDelete})
+		console.log({"store.onDelete": store.onDelete})
 		if (store.onDelete !== "done" && store.onDelete !== "error") return;
 		const timer = setTimeout(() => {
 			store.onDelete = "ready";

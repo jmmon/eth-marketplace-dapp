@@ -28,7 +28,7 @@ export const addNotification = $((
 		id: session.notifications.nextIndex, // 1 more than last index is the new index for this notification
 		timeout: timeout ?? 0,
 	};
-	console.debug('adding notification:', thisNotification);
+	console.log('adding notification:', thisNotification);
 	// add it to our list, the rest should be handled by the notification?
 	session.notifications?.each?.push(thisNotification);
 	session.notifications.nextIndex++;
