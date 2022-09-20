@@ -1,376 +1,378 @@
 declare var window: any;
 import { ethers } from "ethers";
 
-export const CONTRACT_ADDRESS = "0x45a1009F5FFe45eFE8436A43c02137Fcd940CcBC";
+export const CONTRACT = {
+  address: "0x45a1009F5FFe45eFE8436A43c02137Fcd940CcBC",
+  abi: [
+    {
+      inputs: [],
+      stateMutability: "nonpayable",
+      type: "constructor",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "ipfsHash",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "id",
+              type: "bytes32",
+            },
+          ],
+          indexed: false,
+          internalType: "struct Marketplace.Item",
+          name: "_item",
+          type: "tuple",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_itemsForSaleCount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_sellersItemsLength",
+          type: "uint256",
+        },
+      ],
+      name: "eventAddItem",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "bytes32",
+          name: "_itemId",
+          type: "bytes32",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "_owner",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_newItemListLength",
+          type: "uint256",
+        },
+      ],
+      name: "eventDeleteItem",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "bytes32",
+          name: "_removedItemId",
+          type: "bytes32",
+        },
+      ],
+      name: "eventItemRemoved",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_index",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "bytes32",
+          name: "_itemId",
+          type: "bytes32",
+        },
+      ],
+      name: "eventItemRemovedFromIdList",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_index",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "bytes32",
+          name: "_itemId",
+          type: "bytes32",
+        },
+      ],
+      name: "eventItemRemovedFromSeller",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_valueSent",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_itemPrice",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_contractBalance",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_sellerProceeds",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "_remainingItemsForSale",
+          type: "uint256",
+        },
+      ],
+      name: "eventSell",
+      type: "event",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "arrOfItemIds",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      name: "itemFromId",
+      outputs: [
+        {
+          internalType: "address",
+          name: "owner",
+          type: "address",
+        },
+        {
+          internalType: "string",
+          name: "ipfsHash",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "price",
+          type: "uint256",
+        },
+        {
+          internalType: "bytes32",
+          name: "id",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "itemIdsFromSeller",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_dataHash",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_price",
+          type: "uint256",
+        },
+      ],
+      name: "addItem",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "success",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "_itemId",
+          type: "bytes32",
+        },
+      ],
+      name: "sell",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+      payable: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "_itemId",
+          type: "bytes32",
+        },
+      ],
+      name: "deleteItem",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAllItems",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "ipfsHash",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "id",
+              type: "bytes32",
+            },
+          ],
+          internalType: "struct Marketplace.Item[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "getItemIdsLength",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_sellerAddress",
+          type: "address",
+        },
+      ],
+      name: "getItemIdsFromSeller",
+      outputs: [
+        {
+          internalType: "bytes32[]",
+          name: "",
+          type: "bytes32[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+  ],
+};
 
-export const CONTRACT_ABI = [
-  {
-    inputs: [],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-          },
-          {
-            internalType: "string",
-            name: "ipfsHash",
-            type: "string",
-          },
-          {
-            internalType: "uint256",
-            name: "price",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "id",
-            type: "bytes32",
-          },
-        ],
-        indexed: false,
-        internalType: "struct Marketplace.Item",
-        name: "_item",
-        type: "tuple",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_itemsForSaleCount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_sellersItemsLength",
-        type: "uint256",
-      },
-    ],
-    name: "eventAddItem",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "_owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_newItemListLength",
-        type: "uint256",
-      },
-    ],
-    name: "eventDeleteItem",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_removedItemId",
-        type: "bytes32",
-      },
-    ],
-    name: "eventItemRemoved",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_index",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
-    ],
-    name: "eventItemRemovedFromIdList",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_index",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
-    ],
-    name: "eventItemRemovedFromSeller",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_valueSent",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_itemPrice",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_contractBalance",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_sellerProceeds",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_remainingItemsForSale",
-        type: "uint256",
-      },
-    ],
-    name: "eventSell",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "arrOfItemIds",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    name: "itemFromId",
-    outputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "ipfsHash",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "price",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes32",
-        name: "id",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "itemIdsFromSeller",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_dataHash",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "_price",
-        type: "uint256",
-      },
-    ],
-    name: "addItem",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
-    ],
-    name: "sell",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-    payable: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "_itemId",
-        type: "bytes32",
-      },
-    ],
-    name: "deleteItem",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getAllItems",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-          },
-          {
-            internalType: "string",
-            name: "ipfsHash",
-            type: "string",
-          },
-          {
-            internalType: "uint256",
-            name: "price",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "id",
-            type: "bytes32",
-          },
-        ],
-        internalType: "struct Marketplace.Item[]",
-        name: "",
-        type: "tuple[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-  {
-    inputs: [],
-    name: "getItemIdsLength",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_sellerAddress",
-        type: "address",
-      },
-    ],
-    name: "getItemIdsFromSeller",
-    outputs: [
-      {
-        internalType: "bytes32[]",
-        name: "",
-        type: "bytes32[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true,
-  },
-];
 
 export const ETH_CONVERSION_RATIOS: {
   eth: number;
@@ -383,13 +385,9 @@ export const ETH_CONVERSION_RATIOS: {
   wei: 1,
 };
 
+
 export const convertPrice = ({units, price} : {units: string; price: string;}): string =>
   String(+price * ETH_CONVERSION_RATIOS[units]);
-
-export const CONTRACT = {
-  address: CONTRACT_ADDRESS,
-  abi: CONTRACT_ABI,
-};
 
 export const connect = async () => {
   let provider;
@@ -505,7 +503,7 @@ export const fetchItemDataFromIPFS = async (
   controller?: AbortController
 ): Promise<IItemData> => {
   if (item === null) return Promise.reject({});
-
+  if (!item.ipfsHash) return Promise.reject({});
   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
   const ipfsResponse = await fetch(url, {
     signal: controller?.signal,
@@ -563,7 +561,7 @@ export const handleDelete = async (
 // watches for metamask address changes
 export const maintainSameAddress = async (session: ISessionContext) => {
   session.address = (
-    await window.ethereum.request({ method: "eth_accounts" })
+    await window?.ethereum.request({ method: "eth_accounts" })
   )[0];
   console.log("initial address:", session.address);
 
@@ -592,7 +590,7 @@ export const handleConnect = async (session: ISessionContext) => {
     // check if unlocked
     console.log("checking if unlocked from handleConnect");
     const address = (
-      await window.ethereum.request({
+      await window?.ethereum.request({
         method: "eth_requestAccounts",
       })
     )[0];

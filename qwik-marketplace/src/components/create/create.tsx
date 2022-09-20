@@ -20,6 +20,7 @@ import {
 	Notifications,
 	addNotification,
 } from "~/components/notifications/notifications";
+import {errors} from "ethers";
 
 export const ipfsOptions = {url: "http://127.0.0.1:5001"};
 export const ipfs = create(ipfsOptions);
@@ -36,18 +37,17 @@ export default component$(() => {
 
 	const handleToggle = $(() => {
 		session.create.show = !session.create.show;
-		
 	});
 
 	useWatch$(({track}) => {
-		track(session.create, 'show');
-		console.log('tracking show create');
+		track(session.create, "show");
+		console.log("tracking show create");
 
 		if (!session.create.show) {
 			session.create.note.class = "bg-yellow-200";
 			session.create.note.message = ``;
 		}
-	})
+	});
 
 	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
@@ -55,48 +55,73 @@ export default component$(() => {
 	});
 
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
+		let handleSubmitData: () => void;
+		try {
+			// the data upload (after image uploads)
+			handleSubmitData = async () => {
+				let formattedFormData: ICreateFormDataObject = {
+					price: "",
+					units: "",
+					name: "",
+					description: "",
+					imgHash: "",
+				};
 
-		// the data upload (after image uploads)
-		const handleSubmitData = async () => {
+				const formatFormDataToBuffer = () => {
+					const formData = new FormData(target);
+					// fill in data (except file input for photo)
+					[...formData.entries()]
+						.filter(([key, value]) => key !== "photo")
+						.forEach(([key, value]) => (formattedFormData[key] = value));
+					console.log({formDataObject: formattedFormData});
 
-			let formattedFormData: ICreateFormDataObject = {
-				price: "",
-				units: "",
-				name: "",
-				description: "",
-				imgHash: "",
-			};
+					// handle price conversion
 
-			const formatFormDataToBuffer = () => {
-				const formData = new FormData(target);
-				// fill in data (except file input for photo)
-				[...formData.entries()]
-					.filter(([key, value]) => key !== "photo")
-					.forEach(([key, value]) => (formattedFormData[key] = value));
-				console.log({formDataObject: formattedFormData});
+					// const {units, price} = formattedFormData;
+					formattedFormData.price = convertPrice(formattedFormData);
 
-				// handle price conversion
+					// add imageString from image upload step
+					formattedFormData.imgHash = formState.imageString;
+					console.log("final formDataObject:", formattedFormData);
 
-				// const {units, price} = formattedFormData;
-				formattedFormData.price = convertPrice(formattedFormData);
+					const validateForm = (
+						formDataObject: ICreateFormDataObject
+					): boolean | string[] => {
+						// check each entries to make sure there is a value
+						let errors = [];
+						const entries = Object.entries(formDataObject);
+						entries.forEach(([key, value]) => {
+							if (value === undefined) {
+								errors.push(`${value} is undefined`);
+							} else if (value === null) {
+								errors.push(`${value} is null`);
+							} else if (value === "") {
+								errors.push(`${value} is empty`);
+							}
+						});
+						if (errors.length > 0) return errors;
+						return true;
+					};
 
-				// add imageString from image upload step
-				formattedFormData.imgHash = formState.imageString;
-				console.log("final formDataObject:", formattedFormData);
+					const result = validateForm(formattedFormData);
+					console.log({validate: result});
+					if (result !== true) {
+						throw new Error(result.join(",\n"));
+					}
 
-				// return buffer of JSON of data
-				const formDataJson = JSON.stringify(formattedFormData);
-				return window.buffer.Buffer(formDataJson);
-			}
-			const bufData = formatFormDataToBuffer();
+					// return buffer of JSON of data
+					const formDataJson = JSON.stringify(formattedFormData);
+					return window.buffer.Buffer(formDataJson);
+				};
+				const bufData = formatFormDataToBuffer();
 
-			// const handleUploadData = async () => {
+				// const handleUploadData = async () => {
 				try {
 					session.create.note.class = "bg-green-200";
 					session.create.note.message = "Uploading data to IPFS...";
-	
+
 					const {cid} = await ipfs.add(bufData);
-	
+
 					formState.dataString = cid.toString();
 					addNotification(
 						session,
@@ -104,7 +129,6 @@ export default component$(() => {
 						0,
 						5000
 					);
-					
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
@@ -114,43 +138,54 @@ export default component$(() => {
 						2
 					);
 				}
-			// }
-			// handleUploadData();
+				// }
+				// handleUploadData();
 
-			const addToMarket = async () => {
-				session.create.note.class = "bg-green-200";
-				session.create.note.message = `Initiating transaction to add item...`;
+				const addToMarket = async () => {
+					session.create.note.class = "bg-green-200";
+					session.create.note.message = `Initiating transaction to add item...`;
 
-				const {data, error} = await addItemToMarket(
-					formState,
-					formattedFormData,
-					session
-				);
+					const {data, error} = await addItemToMarket(
+						formState,
+						formattedFormData,
+						session
+					);
 
-				if (error) {				
-					session.create.note.class = "bg-red-200";
-					session.create.note.message = `Error adding item to smart contract: ${error.message}`;
+					if (error) {
+						session.create.note.class = "bg-red-200";
+						session.create.note.message = `Error adding item to smart contract: ${error.message}`;
 
-					addNotification(session, `Error adding item to marketplace: ${error.message}`, 2);
-					return;
-				}
+						addNotification(
+							session,
+							`Error adding item to marketplace: ${error.message}`,
+							2
+						);
+						return;
+					}
 
-				session.create.note.class = "bg-blue-200";
-				session.create.note.message = `Transaction successful! Item added to marketplace.`;
+					session.create.note.class = "bg-blue-200";
+					session.create.note.message = `Transaction successful! Item added to marketplace.`;
 
-				addNotification(
-					session,
-					`Add item successful!?:\n ${data}`,
-					0
-				);
+					addNotification(session, `Add item successful!?:\n ${data}`, 0);
 
-				// close the create page
-				session.create.show = false;
-				session.browse.stale = true; // refetch items			
-			}
-			addToMarket();
-		};
-		
+					// close the create page
+					session.create.show = false;
+					// session.browse.stale = true; // refetch items
+
+					// new:
+					session.items = {
+						...session.items,
+						stale: true,
+					}
+				};
+				addToMarket();
+			};
+		} catch (error) {
+			session.create.note.class = "bg-red-200";
+			session.create.note.message = `Error uploading data: ${error.message}`;
+			addNotification(session, `Error uploading data: ${error.message}`, 2);
+		}
+
 		//the image upload
 		const handleUploadPhoto = async () => {
 			if (!photoInputRef?.current?.files?.[0]) {
@@ -158,7 +193,7 @@ export default component$(() => {
 			}
 			session.create.note.class = "bg-lime-200";
 			session.create.note.message = "Uploading image to IPFS...";
-			
+
 			const reader = new FileReader();
 			reader.onloadend = async () => {
 				const bufPhoto = window.buffer.Buffer(reader.result);
@@ -169,12 +204,12 @@ export default component$(() => {
 
 					addNotification(
 						session,
-						`Image file uploaded! Reference string: ${formState.imageString}`, 3
+						`Image file uploaded! Reference string: ${formState.imageString}`,
+						3
 					);
 
 					// trigger the next step
 					handleSubmitData();
-
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading image to IPFS: ${err.message}`;
@@ -188,10 +223,11 @@ export default component$(() => {
 
 			reader.readAsArrayBuffer(photoInputRef.current.files[0] as Blob);
 		};
-		
+
 		handleUploadPhoto();
 	});
 
+	// return (<div>Testing create page</div>);
 	// some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below!
 	return (
 		<aside
@@ -281,9 +317,14 @@ export default component$(() => {
 					<button class="border rounded mx-auto p-4 my-4 bg-gray-50 text-gray-700  w-[400px] shadow-md hover:shadow hover:bg-white">
 						Add Item To Blockchain Marketplace
 					</button>
-					{session.create.note.message !== "" && <p class={`text-center border rounded mx-auto p-4 my-4 text-gray-700  w-[400px] shadow-md ${session.create.note.class}`}>{session.create.note.message}</p>}
+					{session.create.note.message !== "" && (
+						<p
+							class={`text-center border rounded mx-auto p-4 my-4 text-gray-700  w-[400px] shadow-md ${session.create.note.class}`}
+						>
+							{session.create.note.message}
+						</p>
+					)}
 				</form>
-
 			</div>
 			<div class="create spacer"></div>
 			{/* 4 */}

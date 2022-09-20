@@ -24,7 +24,6 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 
 	return (
 		<Resource
-			// onRejected={(error) => <div>Error: {error.message}</div>}
 			value={resource}
 			onPending={() => <ItemShell />}
 			onRejected={(error) => <ItemShell error={error.message}/>}
@@ -76,7 +75,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 							)}
 						</div>
 						<button
-							class="border rounded bg-white mt-1 p-1"
+			class="m-1 p-2 border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-white"
 							onClick$={() => seeDetails(itemData.id, session)}
 						>
 							See Details

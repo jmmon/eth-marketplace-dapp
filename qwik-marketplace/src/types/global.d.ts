@@ -1,3 +1,4 @@
+type window = any;
 
 declare interface IContractItem {
 	owner: string;
@@ -17,10 +18,6 @@ declare interface IItemData {
 	imgUrl: string;
 }
 
-declare interface INotifications {
-	each: INotificationsEach[] | null;
-	nextIndex: number;
-}
 
 type NotificationTypes = Readonly<["success", "warning", "error", "other"]> | number | undefined
 
@@ -33,10 +30,18 @@ declare interface INotificationsEach {
 
 declare interface ISessionContext {
 	address?: string;
-	unlocked?: boolean;
-	isBrowser?: boolean;
-	items: IContractItem[];
-	staleItems: boolean;
+	// isBrowser?: boolean;
+	create: {
+		show: boolean;
+		note: {
+			message: string;
+			class: string;
+		};
+	};
+	items: {
+		stale: boolean;
+		list: IContractItem[];
+	}
 	details: {
 		show: boolean;
 		item: IContractItem | null;
@@ -46,7 +51,10 @@ declare interface ISessionContext {
 		address: string;
 		items: IContractItem[] | null;
 	};
-	notifications: INotifications;
+	notifications: {
+		each: INotificationsEach[];
+		nextIndex: number;
+	};
 }
 
 declare interface ICreateFormState {

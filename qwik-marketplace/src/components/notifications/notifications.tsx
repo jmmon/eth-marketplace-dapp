@@ -71,12 +71,19 @@ export const Notification = component$(
 		const notification = useStore({
 			...thisNotification,
 			bgColor: thisNotification.type === 0
-				? "bg-green-200" 
+				? "bg-green-100" 
 				: thisNotification.type === 1
-				? "bg-orange-200"
+				? "bg-orange-100"
 				: thisNotification.type === 2
-				? "bg-red-200"
-				: "bg-blue-200",
+				? "bg-red-100"
+				: "bg-blue-100",
+			borderColor: thisNotification.type === 0
+				? "border-green-200" 
+				: thisNotification.type === 1
+				? "border-orange-200"
+				: thisNotification.type === 2
+				? "border-red-200"
+				: "border-blue-200",
 		});
 
 		useClientEffect$(() => {
@@ -91,10 +98,10 @@ export const Notification = component$(
 		});
 
 		return (
-			<div class={`w-[600px] rounded ${notification.bgColor} flex flex-col`}>
+			<div class={`p-4 mx-auto w-[600px] rounded ${notification.bgColor} border-2 ${notification.borderColor} flex flex-col`}>
 				<button
 					onClick$={() => remove$()}
-					class="self-end text-red-600 hover:text-black"
+					class="self-end text-red-700 hover:text-black font-bold mr-[-6px] mt-[-12px]"
 				>
 					X
 				</button>
@@ -107,8 +114,10 @@ export const Notification = component$(
 export const Notifications = component$(() => {
 	const session = useContext(SessionContext);
 	return (
-		<div class="grid grid-cols-1 gap-2">
-			<button onClick$={() => generateNotification(session)}>Create notification</button>
+		<div class="grid grid-cols-1 gap-2 justify-center w-full">
+			<button 
+			class="mx-auto p-4 w-[600px] border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-white"
+			onClick$={() => generateNotification(session)}>Create notification</button>
 			{session.notifications.each?.map((thisNotification) => (
 				<Notification
 					key={thisNotification.id}

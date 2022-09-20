@@ -16,8 +16,10 @@ export default component$(() => {
 	return (
 		<header>
 			<div class="header-inner">
-        <QwikLogo class="justify-self-start"/>
-				<h1 class="justify-self-start">Marketplace</h1>
+				<div class="justify-self-start flex items-end gap-1">
+        	<QwikLogo />
+					<h1 class="font-bold" >Marketplace</h1>
+				</div>
 				{session.address && (
 					<div onClick$={() => store.fullAddress = !store.fullAddress} class="text-red-200 justify-self-end pt-2 cursor-pointer">
 						Welcome,{" "}

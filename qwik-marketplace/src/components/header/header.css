@@ -10,6 +10,7 @@ header .header-inner {
   max-width: 800px;
   margin: auto auto;
   align-items: flex-end;
+  justify-content: space-between;
 }
 
 header .header-inner h1 {

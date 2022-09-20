@@ -12,7 +12,7 @@ import {getItemsFromAddress} from "~/libs/ethUtils";
 import {ItemPreview} from "../itemPreview/itemPreview";
 import Styles from "./store.css?inline";
 
-export default component$((props) => {
+export default component$(() => {
 	const session = useContext(SessionContext);
 	useStylesScoped$(Styles);
 

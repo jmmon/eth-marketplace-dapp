@@ -10,22 +10,26 @@ export const shortAddress = (address: string) =>
   String.prototype.concat(address.slice(0, 5), "...", address.slice(-4));
 
 export const seeStore = (address: string, session: ISessionContext) => {
-  console.log("seeStore: opening store for ", address);
+  // filter our items to find all created by a given address
+  const items = session.items.list.filter((item) => item?.owner === address);
 
   session.details.show = false;
 
-  // session.store.address = address;
-  // session.store.show = true;
-	session.store = {address, show: true};
-	// session.store.stale = true;
+	session.store = {
+    items, 
+    address, 
+    show: true
+  };
 };
 
 export const seeDetails = (id: string, session: ISessionContext) => {
-  const thisItem = session.browse.items.find((item) => item?.id === id);
-  console.log("see details button: showing item:", { id, session, thisItem });
+  // search our already fetched items for the matching one
+  const item = session.items.list.find((item) => item?.id === id);
 
   session.store.show = false;
 
-  session.details.item = thisItem;
-  session.details.show = true;
+  session.details = {
+    item, 
+    show: true
+  };
 };

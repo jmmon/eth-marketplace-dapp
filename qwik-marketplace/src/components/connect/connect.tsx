@@ -9,7 +9,9 @@ export default component$(() => {
 
 	return (
 		<div class={`connector ${!session.address && "showing"}`}>
-			<button onClick$={() => handleConnect(session)}>Connect Metamask</button>
+			<button 
+			class="m-1 p-2 border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-white"
+			onClick$={() => handleConnect(session)}>Connect Metamask</button>
 			<div class="text">Connect With Your Metamask Wallet To Buy Items</div>
 		</div>
 	);
