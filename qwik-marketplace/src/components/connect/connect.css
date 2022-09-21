@@ -7,14 +7,14 @@
   align-items: center;
   background: #fff;
   padding: 0.5rem;
-	position: fixed;
+	position: relative;
 	top: -4.5rem;
 
-	right: 0.25rem;
+	/* right: 0.25rem; */
 }
 
 .connector.showing {
-  top: 0.25rem;
+  top: 0;
   opacity: 1;
 }
 

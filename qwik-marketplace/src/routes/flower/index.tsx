@@ -9,13 +9,14 @@ export default component$(() => {
   const state = useStore({
     count: 0,
     number: 20,
+    pride: false,
   });
 
   useClientEffect$(({ cleanup }) => {
     const timeout = setTimeout(() => (state.count = 1), 500);
     cleanup(() => clearTimeout(timeout));
 
-    const internal = setInterval(() => state.count++, 7000);
+    const internal = setInterval(() => state.count++, 10000);
     cleanup(() => clearInterval(internal));
   });
 
@@ -29,13 +30,18 @@ export default component$(() => {
           state.number = (ev.target as HTMLInputElement).valueAsNumber;
         }}
       />
+      <label class="flex w-max mx-auto text-gray-700 gap-1 py-2 px-4 border rounded border-gray-300">
+        <input type="checkbox" onInput$={(ev) => state.pride = (ev.target as HTMLInputElement).checked} />
+        Rainbow
+      </label>
       <div
         style={{
-          '--state': `${state.count * 0.1}`,
+          '--state': `${state.count * 0.3}`,
         }}
         class={{
           host: true,
-          pride: loc.query['pride'] === 'true',
+          pride: state.pride, 
+          // pride: loc.query['pride'] === 'true',
         }}
       >
         {Array.from({ length: state.number }, (_, i) => (
@@ -49,6 +55,7 @@ export default component$(() => {
           />
         )).reverse()}
       </div>
+      <span class="mt-5 text-gray-500 flex justify-center">Flower courtesy of Qwik basic starter</span>
     </>
   );
 });

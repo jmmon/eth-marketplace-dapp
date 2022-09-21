@@ -35,9 +35,14 @@ export default component$(() => {
 		dataString: "",
 	});
 
+	const clickStore = useStore({inside: false});
+
 	const handleToggle = $(() => {
 		session.create.show = !session.create.show;
 	});
+	const handleClose = $(() => {
+		session.create.show = false;
+	})
 
 	useWatch$(({track}) => {
 		track(session.create, "show");
@@ -233,11 +238,18 @@ export default component$(() => {
 		<aside
 			class={`create wrapper ${!session.address && "loggedOut"} ${
 				session.create.show && "showing"
-			}`}
+			} ${session.create.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`}
+			onClick$={() => {
+				if (clickStore.inside) clickStore.inside = false;
+				else handleClose();
+			}}
 		>
 			<div
 				class={`create handle ${session.create.show && "showing"}`}
-				onClick$={handleToggle}
+				onClick$={() => {
+					clickStore.inside = true;
+					handleToggle()
+				}}
 			>
 				{/* 2 */}
 				{/* <div class={`create chevron ${session.create.show && "close"}`}></div> */}
@@ -245,15 +257,28 @@ export default component$(() => {
 					{session.create.show ? "/\\ " : "\\/ "}Add An Item
 				</div>
 			</div>
-			<div class={`create body ${session.create.show && "showing"}`}>
+			<div class={`create body ${session.create.show && "showing"}`} onClick$={() => clickStore.inside = true}>
 				{/* 3 */}
 				<form
 					class="flex flex-col w-full items-stretch"
 					preventdefault:submit
 					onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
 				>
-					<h1 class="mx-auto text-lg py-4">Add Item to Marketplace</h1>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow flex">
+					<h1 class="mx-auto text-2xl py-4 text-gray-500">Add Item to Marketplace</h1>
+										<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+						<label class="text-gray-500">
+							Name:
+							<input
+								name="name"
+								class="block w-full text-black placeholder-gray-300"
+								type="text"
+								placeholder="Name"
+								id="name"
+								required
+							/>
+						</label>
+					</fieldset>
+<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow flex">
 						<label class="w-9/12 text-gray-500">
 							Price:
 							<input
@@ -274,19 +299,7 @@ export default component$(() => {
 							</select>
 						</label>
 					</fieldset>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
-						<label class="text-gray-500">
-							Name:
-							<input
-								name="name"
-								class="block w-full text-black placeholder-gray-300"
-								type="text"
-								placeholder="Name"
-								id="name"
-								required
-							/>
-						</label>
-					</fieldset>
+
 					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
 						<label class="text-gray-500">
 							Description:

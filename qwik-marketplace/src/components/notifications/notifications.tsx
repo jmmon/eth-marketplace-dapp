@@ -7,8 +7,7 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 
-// export const notificationsContext = createContext('notifications-context');
-
+export const notificationTypes = ["success", 'warning', 'error', 'other'];
 // generating notifications
 export const types = ["error", "warning", "success", "other"];
 export const loremSplit =
@@ -50,9 +49,9 @@ export const removeNotification = $((session: ISessionContext, id: number ) => {
 });
 
 export const generateNotification = $((session: ISessionContext) => {
-	const typeNum = Math.floor(Math.random() * 3);
+	const typeNum = Math.floor(Math.random() * 4);
 	const loremNum = Math.floor(Math.random() * 99);
-	const durationNum = Math.floor(Math.random() * 10) * 1000;
+	const durationNum = (typeNum < 3) ? Math.floor(Math.random() * 10) * 1000 : 0;
 
 	// const type = types[typeNum];
 	console.log(`{dur: ${durationNum}, type: ${types[typeNum]}, lorem: ${loremNum}}`);
@@ -84,6 +83,13 @@ export const Notification = component$(
 				: thisNotification.type === 2
 				? "border-red-200"
 				: "border-blue-200",
+			color: thisNotification.type === 0
+				? "text-green-700" 
+				: thisNotification.type === 1
+				? "text-orange-700"
+				: thisNotification.type === 2
+				? "text-red-700"
+				: "text-blue-700",
 		});
 
 		useClientEffect$(() => {
@@ -97,27 +103,33 @@ export const Notification = component$(
 			return () => clearTimeout(timer);
 		});
 
+
 		return (
-			<div class={`p-4 mx-auto w-[600px] rounded ${notification.bgColor} border-2 ${notification.borderColor} flex flex-col`}>
+			<div 
+				class={`p-2 mx-auto w-[600px] rounded ${notification.bgColor} border-2 ${notification.borderColor} flex flex-wrap bg-opacity-70 backdrop-blur pt-1`}
+			>
+				<h3 
+					class={`${notification.color} text-lg flex-grow drop-shadow-xl`}
+				>
+					{notificationTypes[thisNotification.type].slice(0, 1).toUpperCase().concat(notificationTypes[thisNotification.type].slice(1))}
+				</h3>
 				<button
 					onClick$={() => remove$()}
-					class="self-end text-red-700 hover:text-black font-bold mr-[-6px] mt-[-12px]"
+					class="justify-self-end text-xl text-red-700 opacity-50 hover:opacity-100 hover:text-black font-bold mt-[-6px]"
 				>
 					X
 				</button>
-				<p class="break-all self-start">{notification.message}</p>
+				<p class="w-full break-all self-start">{notification.message}</p>
 			</div>
 		);
 	}
 );
 
+// wrapper/container
 export const Notifications = component$(() => {
 	const session = useContext(SessionContext);
 	return (
 		<div class="grid grid-cols-1 gap-2 justify-center w-full">
-			<button 
-			class="mx-auto p-4 w-[600px] border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-white"
-			onClick$={() => generateNotification(session)}>Create notification</button>
 			{session.notifications.each?.map((thisNotification) => (
 				<Notification
 					key={thisNotification.id}

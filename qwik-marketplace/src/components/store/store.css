@@ -8,27 +8,18 @@
 /* closed state */
 .store.wrapper {
 	overflow: hidden;
-	position: absolute;
+	position: fixed;
 	top: 0;
-	left: calc(100vw - 60px);
+	left: calc(100vw - 0px);
 	display: grid;
 	padding: 10vh 0;
 	height: 100vh;
 	width: 0px;
-	background-color: #00000000;
 }
 
 .store.wrapper.showing {
-	position: fixed;
 	left: 0;
 	width: 100%;
-	background-color: #00000020;
-	/* transition: background-color 0.3s ease; */
-}
-
-.store.wrapper.loggedOut {
-	background-color: #00000000;
-	left: 100vw;
 }
 
 

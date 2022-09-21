@@ -33,3 +33,9 @@ export const seeDetails = (id: string, session: ISessionContext) => {
     show: true
   };
 };
+
+export const closeAll = (session: ISessionContext) => {
+  session.store.show = false;
+  session.details.show = false;
+  session.create.show = false;
+}

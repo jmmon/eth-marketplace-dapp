@@ -13,6 +13,7 @@ import Header from "../components/header/header";
 import Connect from "~/components/connect/connect";
 import {SessionContext} from "~/libs/context";
 import {Notifications} from "~/components/notifications/notifications";
+import { Overlay } from "~/components/overlay/overlay";
 
 export default component$(() => {
 	const session = useStore(
@@ -49,27 +50,15 @@ export default component$(() => {
 
 	useContextProvider(SessionContext, session);
 
-	//debugging:
-	// useWatch$(({track}) => {
-	// 	track(session);
-	// 	console.log("session changed:", session);
-	// });
-
-	// useClientEffect$(async () => {
-	// 	session.isBrowser = true;
-	// 	if (typeof window.ethereum === "undefined") {
-	// 		session.address = undefined;
-	// 	}
-	// });
-
 	return (
 		<div>
-			<Header />
-			<Connect />
 			<main>
+				<div class="pt-20">
 				<Slot />
+				</div>
 			</main>
-			<Notifications />
+			<Header />
+			<Overlay />
 		</div>
 	);
 });

@@ -1,29 +1,45 @@
-import {component$, useContext, useStore, useStyles$} from "@builder.io/qwik";
+import {$, component$, useContext, useStore, useStyles$} from "@builder.io/qwik";
 import styles from "./header.css?inline";
 
 import {SessionContext} from "~/libs/context";
 import {handleConnect} from "~/libs/ethUtils";
-import { shortAddress } from "~/libs/utils";
+import {closeAll, shortAddress} from "~/libs/utils";
 
-import { QwikLogo } from '../icons/qwik';
-
+import {QwikLogo} from "../icons/qwik";
+import {Link, useLocation} from "@builder.io/qwik-city";
 
 export default component$(() => {
+	const loc = useLocation();
 	const session = useContext(SessionContext);
 	useStyles$(styles);
 	const store = useStore({fullAddress: false});
+	console.log({loc});
 
 	return (
-		<header>
+		<header class="bg-qwikBlue-dark w-full h-20 backdrop-blur bg-opacity-70 fixed top-0">
 			<div class="header-inner">
-				<div class="justify-self-start flex items-end gap-1">
-        	<QwikLogo />
-					<h1 class="font-bold" >Marketplace</h1>
+				<div class="justify-self-start grid grid-flow-col h-full">
+					<Link href="/flower" class="p-2 transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end">
+						<QwikLogo />
+					</Link>
+					{loc.pathname === "/" ?
+					(<h1
+						class="font-bold text-white cursor-pointer p-2  transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
+						onClick$={() => closeAll(session)}
+					>
+						Marketplace
+					</h1>) : 
+					(<Link href="/" class="font-bold text-white cursor-pointer text-[2rem] p-2 transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur" >Marketplace</Link>)}
 				</div>
 				{session.address && (
-					<div onClick$={() => store.fullAddress = !store.fullAddress} class="text-red-200 justify-self-end pt-2 cursor-pointer">
+					<div
+						onClick$={() => (store.fullAddress = !store.fullAddress)}
+						class="text-white text-lg justify-self-end pt-2 cursor-pointer"
+					>
 						Welcome,{" "}
-						{store.fullAddress? session.address : shortAddress(session.address)}
+						{store.fullAddress
+							? session.address
+							: shortAddress(session.address)}
 					</div>
 				)}
 			</div>

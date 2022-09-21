@@ -7,6 +7,7 @@ import {
 	useStore,
 	useStylesScoped$,
 	useWatch$,
+	useStore,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {
@@ -28,11 +29,13 @@ export default component$(() => {
 	const session = useContext(SessionContext);
 	useStylesScoped$(Styles);
 
+	const clickStore = useStore({inside: false});
+
 	const itemDetailsResource = useResource$<IItemData>(
 		async ({track, cleanup}) => {
 			// track(props, "item");
 			track(session, "details");
-			if (!session.details?.show) return new Promise();
+			// if (!session.details?.show) return new Promise();
 
 			if (!session.details?.item?.id) return new Promise(); // return empty promise if no item id is sent
 
@@ -53,8 +56,21 @@ export default component$(() => {
 	});
 
 	return (
-		<aside class={`details wrapper ${session.details.show && "showing"}`}>
-			<div class={`details body ${session.details.show && "showing"}`}>
+		<aside
+			class={`details wrapper ${session.details.show && "showing"} ${
+				session.details.show
+					? "bg-black backdrop-blur bg-opacity-10"
+					: "bg-transparent"
+			}`}
+			onClick$={() => {
+				if (clickStore.inside) clickStore.inside = false;
+				else handleClose$();
+			}}
+		>
+			<div 
+			class={`details body ${session.details.show && "showing"}`}
+			onClick$={() => clickStore.inside = true}
+			>
 				<div class="flex bg-blue-100">
 					<button
 						onClick$={handleClose$}
@@ -62,8 +78,10 @@ export default component$(() => {
 					>
 						X
 					</button>
-					<h1 class="mx-auto text-lg py-4 pr-[60px]">Details</h1>
+					<h1 class="mx-auto text-lg py-4 pr-[60px] text-blue-500">Details</h1>
 				</div>
+				{/* <div class="grid grid-flow-col"> */}
+				{/* <div class="h-full w-2 bg-gray-100"></div> */}
 				<Resource
 					value={itemDetailsResource}
 					onPending={() => <div>Loading...</div>}
@@ -76,6 +94,9 @@ export default component$(() => {
 						)
 					}
 				/>
+				{/* <div class="h-full w-2 bg-gray-100"></div> */}
+				{/* </div> */}
+				{/* <div class="h-2 bg-gray-300 w-full"></div> */}
 			</div>
 		</aside>
 	);
@@ -85,10 +106,10 @@ export const ItemDetails = component$(
 	(props: {itemData: IItemData | any; handleClose$: () => void}) => {
 		const {itemData, handleClose$} = props;
 		const session = useContext(SessionContext);
-		useStylesScoped$(`.detailsWrapper {
-		grid-template-rows: 60px 40% auto;
-		overflow-y: auto;
-	}`);
+		// 	useStylesScoped$(`.detailsWrapper {
+		// 	grid-template-rows: 60px 40% auto;
+		// 	overflow-y: auto;
+		// }`);
 		const store = useStore({
 			onPurchase: "ready",
 			onDelete: "ready",
@@ -146,7 +167,7 @@ export const ItemDetails = component$(
 			session.items = {
 				...session.items,
 				stale: true,
-			}
+			};
 		});
 
 		const onDeleteWrapper = $(async () => {
@@ -170,78 +191,80 @@ export const ItemDetails = component$(
 				notification.type,
 				notification.time
 			);
-				session.items = {
+			session.items = {
 				...session.items,
 				stale: true,
-			}
+			};
 		});
 
 		return (
-			<div class="detailsWrapper w-full p-4 bg-gray-100 grid">
-				<h1 class="text-4xl text-center text-gray-700 p-2">{itemData.name}</h1>
+			<div class="detailsWrapper w-full p-4 bg-white flex flex-wrap gap-1 text-gray-700 p-2 flex-grow w-full overflow-y-auto">
+				<h1 class="text-4xl text-center text-gray-700 p-2 w-full bg-gray-100">
+					{itemData.name}
+				</h1>
 				<div
-					style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center; height: 400px; width: 100%;`}
-					onClick$={() => console.log("TODO: image popup modal")}
+					class="w-full h-96 bg-gray-200"
+					style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center;`}
+					onClick$={() => console.log("TODO: image modal (popup)?")}
 				></div>
-				<div class="flex flex-wrap gap-1 bg-gray-100 text-gray-700 p-2 flex-grow w-full">
-					<div class="flex-grow w-8/12 bg-gray-200 p-2">
-						<p class="text-sm text-gray-500">Name:</p>
-						<span class="ml-2 text-md">{itemData.name}</span>
-					</div>
+				<div class="flex-grow w-8/12 bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Name:</p>
+					<span class="ml-2 text-md">{itemData.name}</span>
+				</div>
+				<button
+					class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-amber-200 shadow-md hover:shadow-sm hover:bg-amber-50"
+					onClick$={onPurchaseWrapper}
+					disabled={store.onPurchase === "loading"}
+				>
+					{store.onPurchase === "ready"
+						? "Purchase"
+						: store.onPurchase === "loading"
+						? "Purchasing..."
+						: store.onPurchase === "error"
+						? "Error"
+						: "Complete!"}
+				</button>
+				<div class="flex-grow w-8/12 bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Price:</p>
+					<Price price={itemData.price} class="ml-2 text-md" />
+				</div>
+				{session.address?.toLowerCase() === itemData.owner.toLowerCase() && (
 					<button
-						class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-amber-200 shadow-md hover:shadow-sm hover:bg-amber-50"
-						onClick$={onPurchaseWrapper}
-						disabled={store.onPurchase === "loading"}
+						class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-red-200 shadow-md hover:shadow-sm hover:bg-red-50"
+						// class="grow-0 w-3/12 border rounded bg-white p-1 "
+						disabled={store.onDelete === "loading"}
+						onClick$={onDeleteWrapper}
 					>
-						{store.onPurchase === "ready"
-							? "Purchase"
-							: store.onPurchase === "loading"
-							? "Purchasing..."
-							: store.onPurchase === "error"
+						{store.onDelete === "ready"
+							? "Delete"
+							: store.onDelete === "loading"
+							? "Deleting..."
+							: store.onDelete === "error"
 							? "Error"
 							: "Complete!"}
 					</button>
-					<div class="flex-grow w-8/12 bg-gray-200 p-2">
-						<p class="text-sm text-gray-500">Price:</p>
-						<Price price={itemData.price} class="ml-2 text-md" />
-					</div>
-					{session.address?.toLowerCase() === itemData.owner.toLowerCase() && (
-						<button
-							class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-red-200 shadow-md hover:shadow-sm hover:bg-red-50"
-							// class="grow-0 w-3/12 border rounded bg-white p-1 "
-							disabled={store.onDelete === "loading"}
-							onClick$={onDeleteWrapper}
+				)}
+				<div class="w-full bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Owner's Address:</p>
+					{session.address ? (
+						<span
+							class="text-blue-400 cursor-pointer text-md"
+							onClick$={() => seeStore(itemData.owner, session)}
 						>
-							{store.onDelete === "ready"
-								? "Delete"
-								: store.onDelete === "loading"
-								? "Deleting..."
-								: store.onDelete === "error"
-								? "Error"
-								: "Complete!"}
-						</button>
-					)}
-					<div class="w-full bg-gray-200 p-2">
-						<p class="text-sm text-gray-500">Owner's Address:</p>
-						{session.address ? (
-							<span
-								class="text-blue-400 cursor-pointer text-md"
-								onClick$={() => seeStore(itemData.owner, session)}
-							>
-								{itemData.owner}
-							</span>
-						) : (
-							<span class="text-md">{"#".repeat(42)}</span>
-						)}
-					</div>
-					<div class="w-full bg-gray-200 p-2">
-						<p class="text-sm text-gray-500">Description:</p>
-						<span class=" text-md ml-2 border-solid rounded border-gray-600 p-2 break-all overflow-y-scroll z-50">
-							{itemData.description}
-							{"#".repeat(Math.floor(Math.random() * 10000))}
+							{itemData.owner}
 						</span>
-					</div>
-				</div>{" "}
+					) : (
+						<span class="text-md">{"#".repeat(42)}</span>
+					)}
+				</div>
+				<div class="w-full bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Description:</p>
+					<span class=" text-md ml-2 border-solid rounded border-gray-600 p-2 break-all overflow-y-scroll z-50">
+						{itemData.description}
+						{"#".repeat(Math.floor(Math.random() * 10000))}
+					</span>
+				</div>
+				{/* </div>{" "} */}
 				<button
 					class="grow-0 w-6/12 mx-auto p-4 border border-gray-400 rounded bg-amber-200 shadow-md hover:shadow-sm hover:bg-amber-50"
 					// class="grow-0 w-6/12 border text-bold rounded bg-white p-2 mx-auto"
@@ -257,7 +280,7 @@ export const ItemDetails = component$(
 				</button>
 				{session.address && (
 					<p
-						class="text-blue-400 cursor-pointer text-center"
+						class="text-blue-400 cursor-pointer text-center mt-2 drop-shadow-md"
 						onClick$={() => seeStore(itemData.owner, session)}
 					>
 						See more from this address
