@@ -28,12 +28,7 @@ export const ipfs = create(ipfsOptions);
 export default component$(() => {
 	useStylesScoped$(Styles);
 	const session = useContext(SessionContext);
-	const photoInputRef = useRef<HTMLInputElement>();
-	const formState = useStore<ICreateFormState>({
-		// price: undefined,
-		imageString: "",
-		dataString: "",
-	});
+
 
 	const clickStore = useStore({inside: false});
 
@@ -46,14 +41,63 @@ export default component$(() => {
 
 	useWatch$(({track}) => {
 		track(session.create, "show");
-		console.log("tracking show create");
 
-		if (!session.create.show) {
+		if (!session.create.show && session.create.note.message !== '') {
+			console.log('clearing create message');
+
 			session.create.note.class = "bg-yellow-200";
 			session.create.note.message = ``;
 		}
 	});
 
+
+
+	// return (<div>Testing create page</div>);
+	// some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below!
+	return (
+		<aside
+			class={`create wrapper ${!session.address && "loggedOut"} ${
+				session.create.show && "showing"
+			} ${session.create.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`}
+			onClick$={() => {
+				if (clickStore.inside) clickStore.inside = false;
+				else handleClose();
+			}}
+		>
+			<div
+				class={`create handle ${session.create.show && "showing"}`}
+				onClick$={() => {
+					clickStore.inside = true;
+					handleToggle()
+				}}
+			>
+				{/* 2 */}
+				{/* <div class={`create chevron ${session.create.show && "close"}`}></div> */}
+				<div class="create text">
+					{session.create.show ? "/\\ " : "\\/ "}Add An Item
+				</div>
+			</div>
+			<div class={`create body ${session.create.show && "showing"}`} onClick$={() => clickStore.inside = true}>
+				{/* 3 */}
+			<CreateForm />				
+			</div>
+			<div class="create spacer"></div>
+			{/* 4 */}
+		</aside>
+	);
+});
+
+
+
+
+export const CreateForm = component$(() => {
+	const session = useContext(SessionContext);
+	const photoInputRef = useRef<HTMLInputElement>();
+	const formState = useStore<ICreateFormState>({
+		// price: undefined,
+		imageString: "",
+		dataString: "",
+	});
 	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
 		import("~/libs/wzrdin_buffer_polyfill.js");
@@ -62,6 +106,7 @@ export default component$(() => {
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
 		let handleSubmitData: () => void;
 		try {
+			// step 2
 			// the data upload (after image uploads)
 			handleSubmitData = async () => {
 				let formattedFormData: ICreateFormDataObject = {
@@ -132,7 +177,7 @@ export default component$(() => {
 						session,
 						`ItemData upload successful! ${formState.dataString}`,
 						0,
-						5000
+						3000
 					);
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
@@ -171,13 +216,12 @@ export default component$(() => {
 					session.create.note.class = "bg-blue-200";
 					session.create.note.message = `Transaction successful! Item added to marketplace.`;
 
-					addNotification(session, `Add item successful!?:\n ${data}`, 0);
+					addNotification(session, `Add item successful!?:\n ${data}`, 0, 10000);
 
 					// close the create page
 					session.create.show = false;
-					// session.browse.stale = true; // refetch items
 
-					// new:
+					// mark items as stale so it will refetch
 					session.items = {
 						...session.items,
 						stale: true,
@@ -190,7 +234,8 @@ export default component$(() => {
 			session.create.note.message = `Error uploading data: ${error.message}`;
 			addNotification(session, `Error uploading data: ${error.message}`, 2);
 		}
-
+		
+		//step 1
 		//the image upload
 		const handleUploadPhoto = async () => {
 			if (!photoInputRef?.current?.files?.[0]) {
@@ -210,7 +255,8 @@ export default component$(() => {
 					addNotification(
 						session,
 						`Image file uploaded! Reference string: ${formState.imageString}`,
-						3
+						3,
+						3000
 					);
 
 					// trigger the next step
@@ -231,35 +277,8 @@ export default component$(() => {
 
 		handleUploadPhoto();
 	});
-
-	// return (<div>Testing create page</div>);
-	// some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below!
-	return (
-		<aside
-			class={`create wrapper ${!session.address && "loggedOut"} ${
-				session.create.show && "showing"
-			} ${session.create.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`}
-			onClick$={() => {
-				if (clickStore.inside) clickStore.inside = false;
-				else handleClose();
-			}}
-		>
-			<div
-				class={`create handle ${session.create.show && "showing"}`}
-				onClick$={() => {
-					clickStore.inside = true;
-					handleToggle()
-				}}
-			>
-				{/* 2 */}
-				{/* <div class={`create chevron ${session.create.show && "close"}`}></div> */}
-				<div class="create text">
-					{session.create.show ? "/\\ " : "\\/ "}Add An Item
-				</div>
-			</div>
-			<div class={`create body ${session.create.show && "showing"}`} onClick$={() => clickStore.inside = true}>
-				{/* 3 */}
-				<form
+	return(
+<form
 					class="flex flex-col w-full items-stretch"
 					preventdefault:submit
 					onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
@@ -338,9 +357,6 @@ export default component$(() => {
 						</p>
 					)}
 				</form>
-			</div>
-			<div class="create spacer"></div>
-			{/* 4 */}
-		</aside>
 	);
-});
+
+})

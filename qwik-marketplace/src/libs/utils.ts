@@ -10,10 +10,11 @@ export const shortAddress = (address: string) =>
   String.prototype.concat(address.slice(0, 5), "...", address.slice(-4));
 
 export const seeStore = (address: string, session: ISessionContext) => {
+  session.details.show = false;
+
   // filter our items to find all created by a given address
   const items = session.items.list.filter((item) => item?.owner === address);
 
-  session.details.show = false;
 
 	session.store = {
     items, 
@@ -23,14 +24,23 @@ export const seeStore = (address: string, session: ISessionContext) => {
 };
 
 export const seeDetails = (id: string, session: ISessionContext) => {
-  // search our already fetched items for the matching one
-  const item = session.items.list.find((item) => item?.id === id);
-
   session.store.show = false;
+
+  // search our already fetched items for the matching one
+  const prevItem = session.details.item;
+  const item = session.items.list.find((item) => item?.id === id);
+  let stale: boolean = false;
+
+  if (prevItem?.id !== item.id) {
+    stale = true;
+  }
+
+  console.log('details item is now', {item}, 'and was it stale?', {stale});
 
   session.details = {
     item, 
-    show: true
+    show: true,
+    stale,
   };
 };
 

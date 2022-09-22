@@ -34,6 +34,7 @@ export default component$(() => {
 			details: { // details page
 				show: false,
 				item: null,
+				stale: false,
 			},
 			store: { // store page for particular address
 				show: false,

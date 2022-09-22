@@ -9,7 +9,6 @@
 	position: fixed;
 	top: 0;
 	left: calc(100vw - 60px);
-	/* display: flex; */
 	display: grid;
 	grid-template-columns: 1fr 80vw 1fr;
 	padding-top: 10vh;
@@ -50,14 +49,9 @@
 }
 
 .tab {
-	top: 0;
-	width: 60px;
-	height: 200px;
-	right: 10vw;
 	border: 1px solid gray;
 	background: #f0f0f0ff;
 	cursor: pointer;
-	margin-left: auto;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -83,7 +77,6 @@
 	width: 80vw;
 	min-width: 320px;
 	max-width: 1000px;
-	/* top: 0; */
 	height: 80vw;
 	min-height: 500px;
 	background: white;

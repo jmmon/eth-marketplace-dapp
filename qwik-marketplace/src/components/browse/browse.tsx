@@ -17,7 +17,7 @@ export default component$(() => {
 
 	console.log('browse renders');
 
-	const test = useStore({counter: 0});
+	// const test = useStore({counter: 0});
 
 	return (
 		<div class="w-full p-4 grid justify-center">
@@ -38,7 +38,10 @@ export default component$(() => {
 				) : (
 					console.log('rendering session items'),
 					session.items.list.map((item, index) => (
-						<ItemPreview key={index} item={item} index={index} test={test}/>
+						<ItemPreview 
+						key={item.id} 
+						item={mutable(item)} 
+						/>
 					))
 				)}
 			</div>

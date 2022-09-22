@@ -1,4 +1,5 @@
 import {
+	$,
 	component$,
 	Slot,
 	useStore,
@@ -10,13 +11,22 @@ import Styles from "./modal.css?inline";
 export const Modal = component$(
 	(props: {
 		modal: any;
-		handleClose$: () => void;
+		handleClose$?: () => void;
 		handleToggle$?: () => void;
+		tab?: boolean;
 		index: number;
 	}) => {
 		useStylesScoped$(Styles);
 		const click = useStore({inside: false});
-		console.log("modal renders");
+		// console.log("modal renders");
+
+		const handleClose = $(() => {
+			props.modal.show = false;
+		});
+
+		const handleToggle = $(() => {
+			props.modal.show = !props.modal.show;
+		})
 
 		return (
 			<aside
@@ -24,25 +34,31 @@ export const Modal = component$(
 					props.modal.show
 						? "showing bg-black backdrop-blur bg-opacity-10"
 						: "bg-transparent"
-				} ${!props.handleToggle$ ? "noTab" : ""}`}
+				} ${ 
+					// !props.handleToggle$ ? "noTab" : ""
+					!props.tab ? "noTab" : ""
+				}`}
 				onClick$={() => {
-					console.log(
-						"modal #" + props.index + " clicked:",
-						!click.inside
-							? "click outside: running handleClose"
-							: "click inside: no handleClose"
-					);
+					// console.log(
+					// 	"modal #" + props.index + " clicked:",
+					// 	!click.inside
+					// 		? "click outside: running handleClose"
+					// 		: "click inside: no handleClose"
+					// );
 					if (click.inside) click.inside = false;
-					else props.handleClose$();
+					// else props.handleClose$();
+					else handleClose();
 				}}
 			>
-				{props.handleToggle$ ? (
+				{ props.tab ? (
+				// {props.handleToggle$ ? (
 					<div
-						class={`tab ${props.modal.show ? "showing" : ""}`}
+						class={`spacer tab ${props.modal.show ? "showing" : ""}`}
 						onClick$={() => {
-							console.log("tab clicked", props.index);
+							// console.log("tab clicked", props.index);
 							click.inside = true;
-							props.handleToggle$();
+							// props.handleToggle$();
+							handleToggle();
 						}}
 					>
 						<div class="tab-text">
@@ -51,21 +67,20 @@ export const Modal = component$(
 					</div>
 				) : (
 					<div class={props.modal.show ? "spacer" : ""}></div>
-					// <div></div>
 				)}
 				<div
 					class={`body`}
 					onClick$={() => {
-						// console.log("body click");
-						console.log("body clicked", props.index);
+						// console.log("body clicked", props.index);
 						click.inside = true;
 					}}
 				>
 					<div class="header-container">
 						<button
 							onClick$={() => {
-								console.log("x clicked", props.index);
-								props.handleClose$();
+								// console.log("x clicked", props.index);
+								// props.handleClose$();
+								handleClose();
 							}}
 							class="close"
 						>
@@ -75,7 +90,6 @@ export const Modal = component$(
 					</div>
 					<Slot />
 				</div>
-				<div></div>
 			</aside>
 		);
 	}

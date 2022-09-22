@@ -16,6 +16,7 @@ import {
 	getContract,
 	getItem,
 	getItemsFromAddress,
+	handleDelete,
 	onDelete,
 	onPurchase,
 } from "~/libs/ethUtils";

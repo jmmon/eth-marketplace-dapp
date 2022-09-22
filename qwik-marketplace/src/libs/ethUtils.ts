@@ -502,7 +502,9 @@ export const fetchItemDataFromIPFS = async (
   item: IContractItem | null,
   controller?: AbortController
 ): Promise<IItemData> => {
+  console.log('item is null?', item===null);
   if (item === null) return Promise.reject({});
+  console.log('item missing ipfsHash?', !item.ipfsHash);
   if (!item.ipfsHash) return Promise.reject({});
   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
   const ipfsResponse = await fetch(url, {

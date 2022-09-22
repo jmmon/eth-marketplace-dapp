@@ -13,7 +13,7 @@ import {fetchItemDataFromIPFS, getItemsFromAddress} from "~/libs/ethUtils";
 import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
-export const ItemPreview = component$((props: {item: IContractItem | null; index: number; test: any;}) => {
+export const ItemPreview = component$((props: {item: IContractItem | null; index?: number; test: any;}) => {
 	const session = useContext(SessionContext);
 	const resource = useResource$<IItemData>(async ({track, cleanup}) => {
 		track(props);
@@ -23,10 +23,11 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 
 		return await fetchItemDataFromIPFS(props.item, controller);
 	});
-		console.log('rendering item', props.test.counter)
-		useClientEffect$(() => {
-			props.test.counter ++;
-		})
+
+		// console.log('rendering item', props?.test?.counter)
+		// useClientEffect$(() => {
+		// 	props.test.counter ++;
+		// })
 		// console.log("item preview", props.item ?? "no itemData" );
 		// console.log(`index: ${props.index}`);
 	return (
