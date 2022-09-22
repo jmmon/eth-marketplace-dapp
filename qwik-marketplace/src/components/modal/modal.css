@@ -1,0 +1,62 @@
+.modal, .modal > *, .modal > * > * {
+	overflow-x: hidden;
+	transition: all 0.2s ease;
+}
+
+
+.modal {
+	overflow-x: hidden;
+	position: fixed;
+	top: 0;
+	left: calc(100vw - 60px);
+	display: grid;
+	padding-top: 10vh;
+	height: 100vh;
+	width: 0px;
+}
+
+.modal.showing {
+	left: 0;
+	width: 100%;
+}
+
+
+
+.body {
+	overflow-x: hidden;
+	width: 80vw;
+	min-width: 320px;
+	max-width: 1000px;
+	top: 0;
+	height: 80vw;
+	min-height: 500px;
+	background: white;
+	margin: auto;
+	display: grid;
+	grid-template-rows: 60px auto;
+	z-index: 50;
+}
+
+.header.container {
+	display: flex;
+	background-color: #DBEAFE;
+	filter: none;
+	padding: 0;
+}
+
+.close {
+	background-color: #BFDBFE;
+	padding: 1rem;
+	font-size: 1.125rem;
+	line-height: 1.75rem;
+	width: 60px;
+	height: 60px;
+}
+
+.header {
+	margin-left: auto;
+	margin-right: auto;
+	padding: 1rem 60px 1rem 0;
+	font-size: 1.125rem;
+	/* line-height: 1.75rem; */
+}

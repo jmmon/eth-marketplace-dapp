@@ -33,9 +33,7 @@ export default component$(() => {
 
 	const itemDetailsResource = useResource$<IItemData>(
 		async ({track, cleanup}) => {
-			// track(props, "item");
 			track(session, "details");
-			// if (!session.details?.show) return new Promise();
 
 			if (!session.details?.item?.id) return new Promise(); // return empty promise if no item id is sent
 
@@ -68,7 +66,7 @@ export default component$(() => {
 			}}
 		>
 			<div 
-			class={`details body ${session.details.show && "showing"}`}
+			class={`details body`}
 			onClick$={() => clickStore.inside = true}
 			>
 				<div class="flex bg-blue-100">
@@ -80,8 +78,6 @@ export default component$(() => {
 					</button>
 					<h1 class="mx-auto text-lg py-4 pr-[60px] text-blue-500">Details</h1>
 				</div>
-				{/* <div class="grid grid-flow-col"> */}
-				{/* <div class="h-full w-2 bg-gray-100"></div> */}
 				<Resource
 					value={itemDetailsResource}
 					onPending={() => <div>Loading...</div>}
@@ -94,9 +90,6 @@ export default component$(() => {
 						)
 					}
 				/>
-				{/* <div class="h-full w-2 bg-gray-100"></div> */}
-				{/* </div> */}
-				{/* <div class="h-2 bg-gray-300 w-full"></div> */}
 			</div>
 		</aside>
 	);

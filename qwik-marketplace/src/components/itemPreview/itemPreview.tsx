@@ -3,15 +3,17 @@ import {
 	component$,
 	mutable,
 	Resource,
+	useClientEffect$,
 	useContext,
 	useResource$,
+	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {fetchItemDataFromIPFS, getItemsFromAddress} from "~/libs/ethUtils";
 import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
-export const ItemPreview = component$((props: {item: IContractItem | null}) => {
+export const ItemPreview = component$((props: {item: IContractItem | null; index: number; test: any;}) => {
 	const session = useContext(SessionContext);
 	const resource = useResource$<IItemData>(async ({track, cleanup}) => {
 		track(props);
@@ -21,7 +23,12 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 
 		return await fetchItemDataFromIPFS(props.item, controller);
 	});
-
+		console.log('rendering item', props.test.counter)
+		useClientEffect$(() => {
+			props.test.counter ++;
+		})
+		// console.log("item preview", props.item ?? "no itemData" );
+		// console.log(`index: ${props.index}`);
 	return (
 		<Resource
 			value={resource}
@@ -37,7 +44,6 @@ export const ItemPreview = component$((props: {item: IContractItem | null}) => {
 export const ItemShell = component$(
 	(props: {itemData?: IItemData; error?: string}) => {
 		const session = useContext(SessionContext);
-		console.log("shell:", props.itemData ?? "no itemData");
 		return (
 			<div class=" p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12 overflow-y-clip">
 				{props?.itemData ? (
