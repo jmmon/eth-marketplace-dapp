@@ -52,12 +52,8 @@
 
 .create.text {
 	flex-shrink: 0;
-
 	transform: rotate(90deg);
 }
-
-
-
 
 .create.body {
 	overflow-x: hidden;
@@ -68,19 +64,3 @@
 	border: 1px solid gray;
 	margin: auto;
 }
-
-/* .create.body.showing {
-} */
-
-/* 
-.create.chevron {
-	width: 40px;
-	height: 40px;
-	color: black;
-	background: url("chevron.png");
-
-}
-
-.create.chevron.close {
-	transform: rotate(180deg);
-} */

@@ -37,6 +37,19 @@ export default component$(() => {
 		modal.show = false;
 	});
 
+	const handleToggle$ = $(() => {
+		modal.show = !modal.show;
+	});
+	//testing modal 2nd
+	const modal2 = useStore({show: false});
+	const handleClose2$ = $(() => {
+		modal2.show = false;
+	});
+
+	const handleToggle2$ = $(() => {
+		modal2.show = !modal2.show;
+	});
+
 	return (
 		<div>
 			{/* <div>Testing</div> */}
@@ -46,10 +59,25 @@ export default component$(() => {
 			{/* {session.details.item !== null && <Details item={mutable(session.details.item)} />} */}
 			<Details item={mutable(session.details.item)} />
 
-			<Modal modal={modal} handleClose$={handleClose$}>
+			<Modal
+				modal={modal}
+				handleClose$={handleClose$}
+				handleToggle$={handleToggle$}
+				index={1}
+			>
 				<div>test</div>
 			</Modal>
-			<button onClick$={() => (modal.show = true)}>Open new modal</button>
+			<button class="border rounded bg-gray-200 p-2" onClick$={() => (modal.show = true)} >Open new modal</button>
+
+			<Modal
+				modal={modal2}
+				handleClose$={handleClose2$}
+				index={2}
+				// handleToggle$={handleToggle2$}
+			>
+				<div>My component goes here</div>
+			</Modal>
+			<button class="border rounded bg-gray-200 p-2" onClick$={() => (modal2.show = true)} >Open new modal 2</button>
 
 			{/* {session.store.address !== "" && <Store address={mutable(session.store.address)} />} */}
 			<Store />
