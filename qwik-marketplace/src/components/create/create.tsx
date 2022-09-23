@@ -6,91 +6,17 @@ import {
 	useContext,
 	useRef,
 	useStore,
-	useStylesScoped$,
-	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import Styles from "./create.css?inline";
-import {read} from "fs";
 import {create} from "ipfs-http-client";
-import {CID} from "ipfs-http-client";
 
 import {addItemToMarket, convertPrice} from "~/libs/ethUtils";
-import {
-	Notifications,
-	addNotification,
-} from "~/components/notifications/notifications";
-import {errors} from "ethers";
+import {addNotification} from "~/components/notifications/notifications";
 
 export const ipfsOptions = {url: "http://127.0.0.1:5001"};
 export const ipfs = create(ipfsOptions);
 
 export default component$(() => {
-	useStylesScoped$(Styles);
-	const session = useContext(SessionContext);
-
-
-	const clickStore = useStore({inside: false});
-
-	const handleToggle = $(() => {
-		session.create.show = !session.create.show;
-	});
-	const handleClose = $(() => {
-		session.create.show = false;
-	})
-
-	useWatch$(({track}) => {
-		track(session.create, "show");
-
-		if (!session.create.show && session.create.note.message !== '') {
-			console.log('clearing create message');
-
-			session.create.note.class = "bg-yellow-200";
-			session.create.note.message = ``;
-		}
-	});
-
-
-
-	// return (<div>Testing create page</div>);
-	// some feedback while item is added to the marketplace; to notify that we are requesting a transaction; and when transaction is completed; and auto close like a redirect? with a notification down below!
-	return (
-		<aside
-			class={`create wrapper ${!session.address && "loggedOut"} ${
-				session.create.show && "showing"
-			} ${session.create.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`}
-			onClick$={() => {
-				if (clickStore.inside) clickStore.inside = false;
-				else handleClose();
-			}}
-		>
-			<div
-				class={`create handle ${session.create.show && "showing"}`}
-				onClick$={() => {
-					clickStore.inside = true;
-					handleToggle()
-				}}
-			>
-				{/* 2 */}
-				{/* <div class={`create chevron ${session.create.show && "close"}`}></div> */}
-				<div class="create text">
-					{session.create.show ? "/\\ " : "\\/ "}Add An Item
-				</div>
-			</div>
-			<div class={`create body ${session.create.show && "showing"}`} onClick$={() => clickStore.inside = true}>
-				{/* 3 */}
-			<CreateForm />				
-			</div>
-			<div class="create spacer"></div>
-			{/* 4 */}
-		</aside>
-	);
-});
-
-
-
-
-export const CreateForm = component$(() => {
 	const session = useContext(SessionContext);
 	const photoInputRef = useRef<HTMLInputElement>();
 	const formState = useStore<ICreateFormState>({
@@ -126,8 +52,6 @@ export const CreateForm = component$(() => {
 					console.log({formDataObject: formattedFormData});
 
 					// handle price conversion
-
-					// const {units, price} = formattedFormData;
 					formattedFormData.price = convertPrice(formattedFormData);
 
 					// add imageString from image upload step
@@ -216,7 +140,12 @@ export const CreateForm = component$(() => {
 					session.create.note.class = "bg-blue-200";
 					session.create.note.message = `Transaction successful! Item added to marketplace.`;
 
-					addNotification(session, `Add item successful!?:\n ${data}`, 0, 10000);
+					addNotification(
+						session,
+						`Add item successful!?:\n ${data}`,
+						0,
+						10000
+					);
 
 					// close the create page
 					session.create.show = false;
@@ -225,7 +154,7 @@ export const CreateForm = component$(() => {
 					session.items = {
 						...session.items,
 						stale: true,
-					}
+					};
 				};
 				addToMarket();
 			};
@@ -234,7 +163,7 @@ export const CreateForm = component$(() => {
 			session.create.note.message = `Error uploading data: ${error.message}`;
 			addNotification(session, `Error uploading data: ${error.message}`, 2);
 		}
-		
+
 		//step 1
 		//the image upload
 		const handleUploadPhoto = async () => {
@@ -277,86 +206,87 @@ export const CreateForm = component$(() => {
 
 		handleUploadPhoto();
 	});
-	return(
-<form
-					class="flex flex-col w-full items-stretch"
-					preventdefault:submit
-					onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
+	return (
+		<form
+			class="flex flex-col w-full items-stretch"
+			preventdefault:submit
+			onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
+		>
+			<h1 class="mx-auto text-2xl py-4 text-gray-500">
+				Add Item to Marketplace
+			</h1>
+			<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+				<label class="text-gray-500">
+					Name:
+					<input
+						name="name"
+						class="block w-full text-black placeholder-gray-300"
+						type="text"
+						placeholder="Name"
+						id="name"
+						required
+					/>
+				</label>
+			</fieldset>
+			<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow flex">
+				<label class="w-9/12 text-gray-500">
+					Price:
+					<input
+						name="price"
+						class="block w-full text-black placeholder-gray-300"
+						type="text"
+						placeholder="...and select your units"
+						id="price"
+						required
+					/>
+				</label>
+				<label class="inline text-gray-500">
+					Units:
+					<select name="units" class="block text-black" id="units">
+						<option value="eth">ETH</option>
+						<option value="gwei">GWEI</option>
+						<option value="wei">WEI</option>
+					</select>
+				</label>
+			</fieldset>
+
+			<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+				<label class="text-gray-500">
+					Description:
+					<textarea
+						name="description"
+						class="block w-full h-[200px] text-black placeholder-gray-300"
+						placeholder="Description"
+						id="description"
+						required
+					/>
+				</label>
+			</fieldset>
+			<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
+				<label class="text-gray-500">
+					Upload a Photo:
+					<input
+						name="photo"
+						class="block w-full text-gray-700 "
+						type="file"
+						id="photo"
+						ref={photoInputRef}
+						required
+					>
+						Choose A File
+					</input>
+				</label>
+			</fieldset>
+			<button class="border rounded mx-auto p-4 my-4 bg-gray-50 text-gray-700  w-[400px] shadow-md hover:shadow hover:bg-white">
+				Add Item To Blockchain Marketplace
+			</button>
+			{session.create.note.message !== "" && (
+				<p
+					class={`text-center border rounded mx-auto p-4 my-4 text-gray-700  w-[400px] shadow-md ${session.create.note.class}`}
 				>
-					<h1 class="mx-auto text-2xl py-4 text-gray-500">Add Item to Marketplace</h1>
-										<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
-						<label class="text-gray-500">
-							Name:
-							<input
-								name="name"
-								class="block w-full text-black placeholder-gray-300"
-								type="text"
-								placeholder="Name"
-								id="name"
-								required
-							/>
-						</label>
-					</fieldset>
-<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow flex">
-						<label class="w-9/12 text-gray-500">
-							Price:
-							<input
-								name="price"
-								class="block w-full text-black placeholder-gray-300"
-								type="text"
-								placeholder="...and select your units"
-								id="price"
-								required
-							/>
-						</label>
-						<label class="inline text-gray-500">
-							Units:
-							<select name="units" class="block text-black" id="units">
-								<option value="eth">ETH</option>
-								<option value="gwei">GWEI</option>
-								<option value="wei">WEI</option>
-							</select>
-						</label>
-					</fieldset>
-
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
-						<label class="text-gray-500">
-							Description:
-							<textarea
-								name="description"
-								class="block w-full h-[200px] text-black placeholder-gray-300"
-								placeholder="Description"
-								id="description"
-								required
-							/>
-						</label>
-					</fieldset>
-					<fieldset class="border rounded w-[400px] mx-auto my-3 px-2 pt-1 pb-2 shadow">
-						<label class="text-gray-500">
-							Upload a Photo:
-							<input
-								name="photo"
-								class="block w-full text-gray-700 "
-								type="file"
-								id="photo"
-								ref={photoInputRef}
-								required
-							>
-								Choose A File
-							</input>
-						</label>
-					</fieldset>
-					<button class="border rounded mx-auto p-4 my-4 bg-gray-50 text-gray-700  w-[400px] shadow-md hover:shadow hover:bg-white">
-						Add Item To Blockchain Marketplace
-					</button>
-					{session.create.note.message !== "" && (
-						<p
-							class={`text-center border rounded mx-auto p-4 my-4 text-gray-700  w-[400px] shadow-md ${session.create.note.class}`}
-						>
-							{session.create.note.message}
-						</p>
-					)}
-				</form>
+					{session.create.note.message}
+				</p>
+			)}
+		</form>
 	);
-
-})
+});

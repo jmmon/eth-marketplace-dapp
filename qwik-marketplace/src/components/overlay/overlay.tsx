@@ -1,20 +1,15 @@
-import {component$, 
-	// useContext, 
-	useStylesScoped$} from "@builder.io/qwik";
-// import { SessionContext } from "~/libs/context";
+import {component$, useStylesScoped$} from "@builder.io/qwik";
 import Connect from "../connect/connect";
-import { Notifications } from "../notifications/notifications";
+import Notifications from "../notifications/notifications";
 import Styles from "./overlay.css?inline";
 
-export const Overlay = component$(() => {
-	// const session = useContext(SessionContext);
+export default component$(() => {
 	useStylesScoped$(Styles);
 
 	return (
 		<div class={`overlay`}>
-			{/* (testing overlay) */}
 			<Connect />
 			<Notifications />
 		</div>
 	);
-})
+});

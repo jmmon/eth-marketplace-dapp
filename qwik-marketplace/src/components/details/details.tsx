@@ -5,32 +5,22 @@ import {
 	useContext,
 	useResource$,
 	useStore,
-	useStylesScoped$,
 	useWatch$,
-	useStore,
 	mutable,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {
-	connect,
 	fetchItemDataFromIPFS,
-	getContract,
 	getItem,
-	getItemsFromAddress,
 	handleDelete,
 	handleSell,
-	onDelete,
-	onPurchase,
 } from "~/libs/ethUtils";
-import {seeStore, shortText} from "~/libs/utils";
+import {seeStore} from "~/libs/utils";
 import {addNotification} from "../notifications/notifications";
 import {Price} from "../price/price";
-import store from "../store/store";
-import Styles from "./details.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
-	useStylesScoped$(Styles);
 
 	const itemDetailsResource = useResource$<IItemData>(
 		async ({track, cleanup}) => {
@@ -74,10 +64,7 @@ export const ItemDetails = component$(
 	(props: {itemData: IItemData | any; handleClose$: () => void}) => {
 		const {itemData, handleClose$} = props;
 		const session = useContext(SessionContext);
-		// 	useStylesScoped$(`.detailsWrapper {
-		// 	grid-template-rows: 60px 40% auto;
-		// 	overflow-y: auto;
-		// }`);
+
 		const store = useStore({
 			onPurchase: "ready",
 			onDelete: "ready",
@@ -92,6 +79,11 @@ export const ItemDetails = component$(
 				store.onPurchase = "ready";
 				// close the details page
 				handleClose$();
+
+				session.items = {
+					...session.items,
+					stale: true,
+				};
 			}, 3000);
 			return () => {
 				clearTimeout(timer);
@@ -105,6 +97,11 @@ export const ItemDetails = component$(
 				store.onDelete = "ready";
 				// close the details page
 				handleClose$();
+
+				session.items = {
+					...session.items,
+					stale: true,
+				};
 			}, 3000);
 			return () => {
 				clearTimeout(timer);

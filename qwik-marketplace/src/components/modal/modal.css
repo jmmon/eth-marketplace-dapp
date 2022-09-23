@@ -60,6 +60,6 @@
 	display: grid;
 	grid-template-rows: 60px auto;
 	z-index: 50;
-	border: 2px solid gray;
+	border: 2px solid #6B7280;
 }
 

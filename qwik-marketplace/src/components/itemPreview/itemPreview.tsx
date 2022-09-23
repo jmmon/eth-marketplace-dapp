@@ -1,15 +1,12 @@
 import {
-	$,
 	component$,
 	mutable,
 	Resource,
-	useClientEffect$,
 	useContext,
 	useResource$,
-	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {fetchItemDataFromIPFS, getItemsFromAddress} from "~/libs/ethUtils";
+import {fetchItemDataFromIPFS} from "~/libs/ethUtils";
 import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
@@ -24,12 +21,6 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 		return await fetchItemDataFromIPFS(props.item, controller);
 	});
 
-		// console.log('rendering item', props?.test?.counter)
-		// useClientEffect$(() => {
-		// 	props.test.counter ++;
-		// })
-		// console.log("item preview", props.item ?? "no itemData" );
-		// console.log(`index: ${props.index}`);
 	return (
 		<Resource
 			value={resource}

@@ -3,23 +3,15 @@ import {
 	component$,
 	mutable,
 	Slot,
-	useContext,
 	useStore,
 	useStylesScoped$,
-	useWatch$,
 } from "@builder.io/qwik";
-import { SessionContext } from "~/libs/context";
+import {SessionContext} from "~/libs/context";
 import Styles from "./modal.css?inline";
 import TabStyles from "./tabStyles.css?inline";
 
 export const Modal = component$(
-	(props: {
-		modal: any;
-		handleClose$?: () => void;
-		handleToggle$?: () => void;
-		tab?: boolean;
-		title: any;
-	}) => {
+	(props: {modal: any; tab?: boolean; title: any}) => {
 		useStylesScoped$(Styles);
 		const click = useStore({inside: false});
 
@@ -33,9 +25,7 @@ export const Modal = component$(
 					props.modal.show
 						? "showing bg-black backdrop-blur bg-opacity-10"
 						: "bg-transparent"
-				} ${
-					!props.tab ? "noTab" : ""
-				}`}
+				} ${!props.tab ? "noTab" : ""}`}
 				onClick$={() => {
 					if (click.inside) click.inside = false;
 					else handleClose();
@@ -74,8 +64,8 @@ export const TabHandle = component$((props) => {
 	useStylesScoped$(TabStyles);
 
 	const handleToggle = $(() => {
-			props.modal.show = !props.modal.show;
-		});
+		props.modal.show = !props.modal.show;
+	});
 
 	return (
 		<div
@@ -85,7 +75,9 @@ export const TabHandle = component$((props) => {
 				handleToggle();
 			}}
 		>
-			<div class="tab-text">{props.modal.show ? "/\\ " : "\\/ "}Add An Item</div>
+			<div class="tab-text">
+				{props.modal.show ? "/\\ " : "\\/ "}Add An Item
+			</div>
 		</div>
 	);
 });

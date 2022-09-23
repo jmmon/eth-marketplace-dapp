@@ -1,23 +1,17 @@
 import {
-	$,
 	component$,
-	createContext,
 	mutable,
 	useClientEffect$,
 	useContext,
-	useContextProvider,
-	useResource$,
-	useStore,
 } from "@builder.io/qwik";
 import type {DocumentHead} from "@builder.io/qwik-city";
 import Browse from "~/components/browse/browse";
-import Create, {CreateForm} from "~/components/create/create";
+import CreateForm from "~/components/create/create";
 import Details from "~/components/details/details";
 import {Modal} from "~/components/modal/modal";
 import Store from "~/components/store/store";
-import {NxtImages} from "~/components/test/images";
 import {SessionContext} from "~/libs/context";
-import {fetchItemDataFromIPFS, getItems} from "~/libs/ethUtils";
+import {getItems} from "~/libs/ethUtils";
 
 export default component$(() => {
 	const session = useContext(SessionContext); // our connected/logged in state
@@ -29,7 +23,6 @@ export default component$(() => {
 		if (!session.items.stale) return;
 		console.log("items are stale, re-fetching items");
 		session.items.stale = false;
-
 
 		// const fetchedItems = await getItems();
 		// console.log({fetchedItems});
@@ -105,34 +98,19 @@ export default component$(() => {
 		// console.log('~FINAL: (finalItems values and fetchedItems values should be the same but different order):', {fetchedItems: newItems, fetchedItemsLength: newItems.length, finalItems: oldItems, finalItemsLength: oldItems.length});
 	});
 
-	useClientEffect$(({track}) => {
-		track(session, "details");
+	// useClientEffect$(({track}) => {
+	// 	track(session, "details");
 
-		if (!session.details.stale) return;
+	// 	if (!session.details.stale) return;
 
-		console.log("details item changed");
-		// do a fetch and set our item?
-		// or is the data already fetched??
-	});
-
-	
-	//testing modal 2nd
-	const modal2 = useStore({show: false});
-	const handleClose2$ = $(() => {
-		modal2.show = false;
-	});
-
-	const handleToggle2$ = $(() => {
-		modal2.show = !modal2.show;
-	});
+	// 	console.log("details item changed");
+	// 	// do a fetch and set our item?
+	// 	// or is the data already fetched??
+	// });
 
 	return (
 		<div>
-			{/* <div>Testing</div> */}
 			{/* instead, could hold an array of "pages/overlays/modals" and add and remove from that array, and then stack the display of modals based on the array  */}
-			{/* {session.address && <Create />} */}
-
-			{/* {session.details.item !== null && <Details item={mutable(session.details.item)} />} */}
 
 			{session.address && (
 				<Modal
@@ -144,12 +122,9 @@ export default component$(() => {
 					<CreateForm />
 				</Modal>
 			)}
-			<Modal
-				modal={mutable(session.details)}
-				key={1}
-				title={"Details"}
-			>
-			<Details item={mutable(session.details.item)} />
+
+			<Modal modal={mutable(session.details)} key={1} title={"Details"}>
+				<Details item={mutable(session.details.item)} />
 			</Modal>
 
 			<Modal
@@ -158,15 +133,9 @@ export default component$(() => {
 				title={mutable(`${session.store.address}'s Store`)}
 			>
 				<Store />
-				{/* <div>My component goes here</div> */}
 			</Modal>
-			{/* <button class="border rounded bg-gray-200 p-2" onClick$={() => (modal2.show = true)} >Open new modal 2</button> */}
 
-			{/* {session.store.address !== "" && <Store address={mutable(session.store.address)} />} */}
-
-			<Browse
-			// items={mutable(session.items.list)}
-			/>
+			<Browse />
 		</div>
 	);
 });

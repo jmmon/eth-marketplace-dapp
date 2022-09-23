@@ -1,9 +1,7 @@
 import {
 	component$,
 	mutable,
-	useClientEffect$,
 	useContext,
-	useStore,
 	useStylesScoped$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
@@ -14,10 +12,6 @@ import Styles from "./browse.css?inline";
 export default component$(() => {
 	const session = useContext(SessionContext);
 	useStylesScoped$(Styles);
-
-	console.log('browse renders');
-
-	// const test = useStore({counter: 0});
 
 	return (
 		<div class="w-full p-4 grid justify-center">
@@ -36,16 +30,15 @@ export default component$(() => {
 						No items were found on the blockchain. Try adding an item!
 					</div>
 				) : (
-					console.log('rendering session items'),
+					(console.log("rendering session items"),
 					session.items.list.map((item, index) => (
-						<ItemPreview 
-						key={item.id} 
-						item={mutable(item)} 
-						/>
-					))
+						<ItemPreview key={item.id} item={mutable(item)} />
+					)))
 				)}
 			</div>
-			<div class="w-full text-center text-gray-700">{session.items.list.length} Items Total</div>
+			<div class="w-full text-center text-gray-700">
+				{session.items.list.length} Items Total
+			</div>
 		</div>
 	);
 });

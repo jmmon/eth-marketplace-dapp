@@ -373,7 +373,6 @@ export const CONTRACT = {
   ],
 };
 
-
 export const ETH_CONVERSION_RATIOS: {
   eth: number;
   gwei: number;
@@ -385,9 +384,13 @@ export const ETH_CONVERSION_RATIOS: {
   wei: 1,
 };
 
-
-export const convertPrice = ({units, price} : {units: string; price: string;}): string =>
-  String(+price * ETH_CONVERSION_RATIOS[units]);
+export const convertPrice = ({
+  units,
+  price,
+}: {
+  units: string;
+  price: string;
+}): string => String(+price * ETH_CONVERSION_RATIOS[units]);
 
 export const connect = async () => {
   let provider;
@@ -422,7 +425,6 @@ export const getContract = async (withSigner: boolean = false) => {
     contract = await contract.connect(await provider.getSigner());
   } catch (error) {
     console.log("getContract signing error:", error);
-    // return {contract, error};
   }
   return contract;
 };
@@ -521,7 +523,6 @@ export const getItemsFromAddress = async (
     console.log("itemIds from the smart contract!:", { itemIds });
 
     // fetch each item from contract and format it
-    // const items = itemIds.map(async id => )
     const formattedItemsPromises = itemIds.map(async (thisId) =>
       formatItem((await contract.itemFromId(thisId)) as Array<any>)
     );
@@ -539,14 +540,16 @@ export const fetchItemDataFromIPFS = async (
   item: IContractItem | null,
   controller?: AbortController
 ): Promise<IItemData> => {
-  console.log('item is null?', item===null);
+  console.log("item is null?", item === null);
   if (item === null) return Promise.reject({});
-  console.log('item missing ipfsHash?', !item.ipfsHash);
+  console.log("item missing ipfsHash?", !item.ipfsHash);
   if (!item.ipfsHash) return Promise.reject({});
   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
-  const baseData = await (await fetch(url, {
-    signal: controller?.signal,
-  })).json();
+  const baseData = await (
+    await fetch(url, {
+      signal: controller?.signal,
+    })
+  ).json();
 
   const imgUrl = `http://localhost:8080/ipfs/${baseData.imgHash}`;
 
@@ -559,7 +562,7 @@ export const fetchItemDataFromIPFS = async (
   };
 
   if (itemData && typeof itemData === "object") return itemData;
-  console.log('rejected');
+  console.log("rejected");
   return Promise.reject(itemData);
 };
 
@@ -567,7 +570,6 @@ export const handleSell = async (
   itemData: IItemData
 ): Promise<{ success: boolean; error: { message: string } | null }> => {
   try {
-    // const address = await connect();
     const contract = await getContract(true);
     const options = { value: `${itemData.price}` };
 
@@ -584,7 +586,6 @@ export const handleDelete = async (
   itemData: IItemData
 ): Promise<{ success: boolean; error: { message: string } | null }> => {
   try {
-    // const address = await connect();
     const contract = await getContract(true);
 
     const response = await contract.deleteItem(itemData.id);
@@ -618,7 +619,6 @@ export const maintainSameAddress = async (session: ISessionContext) => {
       }
       // set to undefined or new address
       session.address = address;
-      // location.reload(); // needed?
     }
   }, 1000);
 };
@@ -650,15 +650,12 @@ export const addItemToMarket = async (
 ) => {
   // interact with contract
   try {
-    // const address = await connect();
     const contract = await getContract(true);
 
     const receipt = await contract.addItem(
       state.dataString,
       formDataObject.price
     );
-
-    // session.browse.stale = true; // refetch items
 
     console.log("item added to dapp! response from addItem:", { receipt });
     const jsonTx = JSON.stringify(receipt);

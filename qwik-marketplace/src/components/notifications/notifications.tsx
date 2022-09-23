@@ -126,7 +126,7 @@ export const Notification = component$(
 );
 
 // wrapper/container
-export const Notifications = component$(() => {
+export default component$(() => {
 	const session = useContext(SessionContext);
 	return (
 		<div class="grid grid-cols-1 gap-2 justify-center w-full">

@@ -2,18 +2,12 @@ declare var window: any;
 import {
 	component$,
 	Slot,
-	useClientEffect$,
 	useContextProvider,
 	useStore,
-	useWatch$,
 } from "@builder.io/qwik";
-import {RequestHandler, useEndpoint} from "@builder.io/qwik-city";
-// import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
-import Connect from "~/components/connect/connect";
 import {SessionContext} from "~/libs/context";
-import {Notifications} from "~/components/notifications/notifications";
-import { Overlay } from "~/components/overlay/overlay";
+import Overlay from "~/components/overlay/overlay";
 
 export default component$(() => {
 	const session = useStore(

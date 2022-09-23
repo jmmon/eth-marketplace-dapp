@@ -43,7 +43,7 @@ TODO as of sept 18th:
 		Store page:
 			- Fix ItemPreviews are squished from sides
 		Notifications:
-			- Find better location for notifications??
+(DONE)			- Find better location for notifications??
 (DONE)			- Center notifications like the Create Notification button
 (DONE)			- ("Create Notification" text color lighten, button styling? )
 		Browse:
@@ -56,7 +56,7 @@ TODO as of sept 18th:
 			- Make sure they do not render until they are needed, so the JS doesn't get loaded eagerly
 			- How to do this? it might already...
 		Modals:
-			- Make a container modal that fetches the modal contents? 
+(DONE)			- Make a container modal that fetches the modal contents? 
 			- Or nvm, prefetch should already not download the component until needed
 		
 	Testing:
