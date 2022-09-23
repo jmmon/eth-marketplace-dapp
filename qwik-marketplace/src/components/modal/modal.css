@@ -43,8 +43,9 @@
 	margin-left: auto;
 	margin-right: auto;
 	padding: 1rem 60px 1rem 0;
-	font-size: 1.125rem;
+	font-size: 1.5rem;
 	line-height: 1.75rem;
+	color: rgb(55 65 81);
 }
 
 .body {
@@ -59,5 +60,6 @@
 	display: grid;
 	grid-template-rows: 60px auto;
 	z-index: 50;
+	border: 2px solid gray;
 }
 

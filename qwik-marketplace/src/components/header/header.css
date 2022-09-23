@@ -19,3 +19,7 @@ header .header-inner h1 {
   /* color: #fff; */
   font-size: 2rem;
 }
+
+header.inFront {
+  z-index: 10;
+}

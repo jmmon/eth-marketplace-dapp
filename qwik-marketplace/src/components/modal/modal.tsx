@@ -18,8 +18,7 @@ export const Modal = component$(
 		handleClose$?: () => void;
 		handleToggle$?: () => void;
 		tab?: boolean;
-		index: number;
-		title: string;
+		title: any;
 	}) => {
 		useStylesScoped$(Styles);
 		const click = useStore({inside: false});

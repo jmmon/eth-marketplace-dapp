@@ -137,8 +137,7 @@ export default component$(() => {
 			{session.address && (
 				<Modal
 					modal={mutable(session.create)}
-					index={1}
-					key={1}
+					key={0}
 					tab={true}
 					title={"Add An Item"}
 				>
@@ -147,26 +146,23 @@ export default component$(() => {
 			)}
 			<Modal
 				modal={mutable(session.details)}
-				index={3}
-				key={3}
+				key={1}
 				title={"Details"}
 			>
 			<Details item={mutable(session.details.item)} />
 			</Modal>
 
 			<Modal
-				modal={modal2}
-				handleClose$={handleClose2$}
-				index={2}
+				modal={mutable(session.store)}
 				key={2}
-				// handleToggle$={handleToggle2$}
+				title={mutable(`${session.store.address}'s Store`)}
 			>
-				<div>My component goes here</div>
+				<Store />
+				{/* <div>My component goes here</div> */}
 			</Modal>
 			{/* <button class="border rounded bg-gray-200 p-2" onClick$={() => (modal2.show = true)} >Open new modal 2</button> */}
 
 			{/* {session.store.address !== "" && <Store address={mutable(session.store.address)} />} */}
-			<Store />
 
 			<Browse
 			// items={mutable(session.items.list)}

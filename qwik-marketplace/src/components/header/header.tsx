@@ -1,4 +1,4 @@
-import {$, component$, useContext, useStore, useStyles$} from "@builder.io/qwik";
+import {$, component$, useClientEffect$, useContext, useStore, useStyles$} from "@builder.io/qwik";
 import styles from "./header.css?inline";
 
 import {SessionContext} from "~/libs/context";
@@ -12,11 +12,26 @@ export default component$(() => {
 	const loc = useLocation();
 	const session = useContext(SessionContext);
 	useStyles$(styles);
-	const store = useStore({fullAddress: false});
+	const store = useStore({fullAddress: false, inFront: false,});
 	console.log({loc});
 
+
+	// const store = useStore({behind: false});
+
+
+	useClientEffect$(({track}) => {
+		track(session, "address");
+
+		if (session.address === "") return;
+		const timer = setTimeout(() => {
+			store.inFront = true;
+		}, 200);
+
+		return () => clearTimeout(timer);
+	})
+
 	return (
-		<header class="bg-qwikBlue-dark w-full h-20 backdrop-blur bg-opacity-70 fixed top-0">
+		<header class={`bg-qwikBlue-dark w-full h-20 backdrop-blur bg-opacity-70 fixed top-0 ${store.inFront && "inFront"}`}>
 			<div class="header-inner">
 				<div class="justify-self-start grid grid-flow-col h-full">
 					<Link href="/flower" class="p-2 transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end">
@@ -34,7 +49,7 @@ export default component$(() => {
 				{session.address && (
 					<div
 						onClick$={() => (store.fullAddress = !store.fullAddress)}
-						class="text-white text-lg justify-self-end pt-2 cursor-pointer"
+						class="text-white text-lg self-center cursor-pointer w-min text-right"
 					>
 						Welcome,{" "}
 						{store.fullAddress

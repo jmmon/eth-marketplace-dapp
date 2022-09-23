@@ -17,18 +17,18 @@ export default component$(() => {
 	const session = useContext(SessionContext);
 	useStylesScoped$(Styles);
 
-	const handleClose$ = $(() => {
-		console.log("closing store");
-		session.store = {
-			...session.store,
-			show: false,
-		}
-	});
+	// const handleClose$ = $(() => {
+	// 	console.log("closing store");
+	// 	session.store = {
+	// 		...session.store,
+	// 		show: false,
+	// 	}
+	// });
 
 	// used to stop propagation so I can detect outside clicks to close the modal
-	const clickStore = useStore({
-		inside: false,
-	})
+	// const clickStore = useStore({
+	// 	inside: false,
+	// })
 
 	useClientEffect$(async ({track}) => {
 		track(session, 'store');
@@ -40,32 +40,32 @@ export default component$(() => {
 	});
 
 	return (
-		<aside class={`store wrapper ${session.store.show && "showing"} ${session.store.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`} onClick$={(ev) => {
-			if (clickStore.inside) {
-				clickStore.inside = false;
-			} else {
-				console.log('wrapper click');
-				handleClose$()
-			}
-		}
-			}>
-			<div class={`store body ${session.store.show && "showing"}`} onClick$={(ev) => {
-				// ev.stopPropagation();
-				console.log('body click');
-				clickStore.inside = true;
-			}}>
-				<div class="flex bg-blue-100">
-					<button
-						onClick$={handleClose$}
-						class="bg-blue-200 p-4 text-lg w-[60px] h-[60px]"
-					>
-						X
-					</button>
-					<h1 class=" mx-auto text-md pr-[60px]">
-						Items From <br />
-						{session.store.address}
-					</h1>
-				</div>
+		// <aside class={`store wrapper ${session.store.show && "showing"} ${session.store.show ? "bg-black backdrop-blur bg-opacity-10" : "bg-transparent"}`} onClick$={(ev) => {
+		// 	if (clickStore.inside) {
+		// 		clickStore.inside = false;
+		// 	} else {
+		// 		console.log('wrapper click');
+		// 		handleClose$()
+		// 	}
+		// }
+		// 	}>
+		// 	<div class={`store body ${session.store.show && "showing"}`} onClick$={(ev) => {
+		// 		// ev.stopPropagation();
+		// 		console.log('body click');
+		// 		clickStore.inside = true;
+		// 	}}>
+		// 		<div class="flex bg-blue-100">
+		// 			<button
+		// 				onClick$={handleClose$}
+		// 				class="bg-blue-200 p-4 text-lg w-[60px] h-[60px]"
+		// 			>
+		// 				X
+		// 			</button>
+		// 			<h1 class=" mx-auto text-md pr-[60px]">
+		// 				Items From <br />
+		// 				{session.store.address}
+		// 			</h1>
+		// 		</div>
 				<div class="flex flex-wrap">
 					{session.store.items?.length === 0 ? (
 						<div>Looks like seller {session.store.address} has no items listed.</div>
@@ -78,8 +78,8 @@ export default component$(() => {
 						</>
 					)}
 				</div>
-				<div class="h-4 bg-gray-100 w-full"></div>
-			</div>
-		</aside>
+		// 		<div class="h-4 bg-gray-100 w-full"></div>
+		// 	</div>
+		// </aside>
 	);
 });
