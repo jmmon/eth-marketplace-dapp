@@ -34,19 +34,19 @@ export const Price = component$(
 
 		useWatch$(({track}) => {
 			track(state, "units");
-
 			if (props.price === " ") return;
 
 			//re calculate
-			
 			const price = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);
-			// limit decimal places
+
+			// limit decimal places to 8
 			const x = 8;
 			state.output = Math.round(price * Math.pow(10,x)) / Math.pow(10,x);
-			// show tilde if rounded to 0 but not 0
-			state.output = (state.output == '0' && +props.price > 0 && "~") + state.output
 
-			// TODO: show tilde if output converted to wei is not equal to wei!! to cover all "approximate" cases
+			const weiFromOutput = String(+state.output * ETH_CONVERSION_RATIOS[state.units]);
+
+			// show tilde if output converted to wei is not equal to wei!! to cover all "approximate" cases
+			state.output = (weiFromOutput !== props.price && "~") + state.output;
 		});
 
 		return (
@@ -54,8 +54,7 @@ export const Price = component$(
 				onClick$={cycleUnits}
 				class={`cursor-pointer ${props.class ?? ""}`}
 			>
-				{/* {state.output == '0' && +props.price > 0 && "~"} */}
-				{state.output} {state.units}
+				{state.output} {state.units} 
 			</span>
 		);
 	}

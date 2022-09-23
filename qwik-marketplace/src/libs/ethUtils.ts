@@ -472,6 +472,43 @@ export const getItems = async (): Promise<IContractItem[]> => {
   }
 };
 
+// export const newGetItems = async (): Promise<IContractItem[]> => {
+//   try {
+//     const contract = await getContract();
+
+//     const items = (await contract.getAllItems()) as Array<any>;
+//     // console.log("items from the smart contract!:", { items });
+
+//     const formattedItems = items.map((item) => formatItem(item));
+//   //   formattedItems.map(item => {
+
+//   //   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
+//   // const ipfsResponse = await fetch(url, {
+//   //   signal: controller?.signal,
+//   // });
+
+//   // const baseData = await ipfsResponse.json();
+//   // // console.log({baseData});
+//   // const imgUrl = `http://localhost:8080/ipfs/${baseData.imgHash}`;
+
+//   // const itemData = {
+//   //   ...baseData,
+//   //   owner: item.owner,
+//   //   ipfsHash: item.ipfsHash,
+//   //   id: item.id,
+//   //   imgUrl,
+//   // };
+//   // return itemData;
+//   //   })
+
+//     // console.log({ formattedItems });
+//     return formattedItems;
+//   } catch (error) {
+//     console.log("error getting items:", error);
+//     return Promise.resolve([]);
+//   }
+// };
+
 export const getItemsFromAddress = async (
   address: string
 ): Promise<IContractItem[]> => {
@@ -507,12 +544,10 @@ export const fetchItemDataFromIPFS = async (
   console.log('item missing ipfsHash?', !item.ipfsHash);
   if (!item.ipfsHash) return Promise.reject({});
   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
-  const ipfsResponse = await fetch(url, {
+  const baseData = await (await fetch(url, {
     signal: controller?.signal,
-  });
+  })).json();
 
-  const baseData = await ipfsResponse.json();
-  // console.log({baseData});
   const imgUrl = `http://localhost:8080/ipfs/${baseData.imgHash}`;
 
   const itemData = {
@@ -524,6 +559,7 @@ export const fetchItemDataFromIPFS = async (
   };
 
   if (itemData && typeof itemData === "object") return itemData;
+  console.log('rejected');
   return Promise.reject(itemData);
 };
 

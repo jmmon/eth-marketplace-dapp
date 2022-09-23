@@ -4,7 +4,6 @@
 	transition: all 0.2s ease;
 }
 
-
 .modal {
 	position: fixed;
 	top: 0;
@@ -46,30 +45,6 @@
 	padding: 1rem 60px 1rem 0;
 	font-size: 1.125rem;
 	line-height: 1.75rem;
-}
-
-.tab {
-	border: 1px solid gray;
-	background: #f0f0f0ff;
-	cursor: pointer;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.tab.showing {
-	background: #f0f0f0;
-}
-
-.tab-text {
-	flex-shrink: 0;
-	transform: rotate(90deg);
-}
-
-.spacer {
-	width: 60px;
-	height: 200px;
-	margin-left: auto;
 }
 
 .body {

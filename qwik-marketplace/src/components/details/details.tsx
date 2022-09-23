@@ -8,6 +8,7 @@ import {
 	useStylesScoped$,
 	useWatch$,
 	useStore,
+	mutable,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {
@@ -17,6 +18,7 @@ import {
 	getItem,
 	getItemsFromAddress,
 	handleDelete,
+	handleSell,
 	onDelete,
 	onPurchase,
 } from "~/libs/ethUtils";
@@ -29,8 +31,6 @@ import Styles from "./details.css?inline";
 export default component$(() => {
 	const session = useContext(SessionContext);
 	useStylesScoped$(Styles);
-
-	const clickStore = useStore({inside: false});
 
 	const itemDetailsResource = useResource$<IItemData>(
 		async ({track, cleanup}) => {
@@ -55,44 +55,18 @@ export default component$(() => {
 	});
 
 	return (
-		<aside
-			class={`details wrapper ${session.details.show && "showing"} ${
-				session.details.show
-					? "bg-black backdrop-blur bg-opacity-10"
-					: "bg-transparent"
-			}`}
-			onClick$={() => {
-				if (clickStore.inside) clickStore.inside = false;
-				else handleClose$();
-			}}
-		>
-			<div 
-			class={`details body`}
-			onClick$={() => clickStore.inside = true}
-			>
-				<div class="flex bg-blue-100">
-					<button
-						onClick$={handleClose$}
-						class="bg-blue-200 p-4 text-lg w-[60px] h-[60px]"
-					>
-						X
-					</button>
-					<h1 class="mx-auto text-lg py-4 pr-[60px] text-blue-500">Details</h1>
-				</div>
-				<Resource
-					value={itemDetailsResource}
-					onPending={() => <div>Loading...</div>}
-					onRejected={(error) => <div>Error: {error.message}</div>}
-					onResolved={(itemData) =>
-						Object.keys(itemData).length > 0 ? (
-							<ItemDetails itemData={itemData} handleClose$={handleClose$} />
-						) : (
-							<div>Loading...</div>
-						)
-					}
-				/>
-			</div>
-		</aside>
+		<Resource
+			value={itemDetailsResource}
+			onPending={() => <div>Loading...</div>}
+			onRejected={(error) => <div>Error: {error.message}</div>}
+			onResolved={(itemData) =>
+				Object.keys(itemData).length > 0 ? (
+					<ItemDetails itemData={itemData} handleClose$={handleClose$} />
+				) : (
+					<div>Loading...</div>
+				)
+			}
+		/>
 	);
 });
 
@@ -191,9 +165,37 @@ export const ItemDetails = component$(
 			};
 		});
 
+		const purchaseButtonData = {
+			text: {
+				ready: "Purchase",
+				loading: "Purchasing...",
+				error: "Error",
+				complete: "Complete!",
+				noAddress: "Log in to Purchase",
+			},
+			colors: {
+				base: "bg-amber-200",
+				hover: "bg-amber-50",
+			},
+		};
+
+		const deleteButtonData = {
+			text: {
+				ready: "Delete",
+				loading: "Deleting...",
+				error: "Error",
+				complete: "Complete!",
+				noAddress: "Only owners may Delete",
+			},
+			colors: {
+				base: "bg-red-200",
+				hover: "bg-red-50",
+			},
+		};
+
 		return (
 			<div class="detailsWrapper w-full p-4 bg-white flex flex-wrap gap-1 text-gray-700 p-2 flex-grow w-full overflow-y-auto">
-				<h1 class="text-4xl text-center text-gray-700 p-2 w-full bg-gray-100">
+				<h1 class="text-4xl text-center text-gray-700 p-2 w-full bg-amber-100">
 					{itemData.name}
 				</h1>
 				<div
@@ -205,38 +207,29 @@ export const ItemDetails = component$(
 					<p class="text-sm text-gray-500">Name:</p>
 					<span class="ml-2 text-md">{itemData.name}</span>
 				</div>
-				<button
-					class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-amber-200 shadow-md hover:shadow-sm hover:bg-amber-50"
-					onClick$={onPurchaseWrapper}
-					disabled={store.onPurchase === "loading"}
-				>
-					{store.onPurchase === "ready"
-						? "Purchase"
-						: store.onPurchase === "loading"
-						? "Purchasing..."
-						: store.onPurchase === "error"
-						? "Error"
-						: "Complete!"}
-				</button>
+				<Button
+					text={mutable(purchaseButtonData.text)}
+					colors={mutable(purchaseButtonData.colors)}
+					clickHandler={onPurchaseWrapper}
+					state={mutable(store.onPurchase)}
+					address={mutable(session.address)}
+					classes="w-3/12 m-1 p-1"
+					key={0}
+				/>
 				<div class="flex-grow w-8/12 bg-gray-100 p-2">
 					<p class="text-sm text-gray-500">Price:</p>
 					<Price price={itemData.price} class="ml-2 text-md" />
 				</div>
 				{session.address?.toLowerCase() === itemData.owner.toLowerCase() && (
-					<button
-						class="grow-0 w-3/12 m-1 p-1 border border-gray-400 rounded bg-red-200 shadow-md hover:shadow-sm hover:bg-red-50"
-						// class="grow-0 w-3/12 border rounded bg-white p-1 "
-						disabled={store.onDelete === "loading"}
-						onClick$={onDeleteWrapper}
-					>
-						{store.onDelete === "ready"
-							? "Delete"
-							: store.onDelete === "loading"
-							? "Deleting..."
-							: store.onDelete === "error"
-							? "Error"
-							: "Complete!"}
-					</button>
+					<Button
+						text={mutable(deleteButtonData.text)}
+						colors={mutable(deleteButtonData.colors)}
+						clickHandler={onDeleteWrapper}
+						state={mutable(store.onDelete)}
+						address={mutable(session.address)}
+						classes="w-3/12 m-1 p-1"
+						key={1}
+					/>
 				)}
 				<div class="w-full bg-gray-100 p-2">
 					<p class="text-sm text-gray-500">Owner's Address:</p>
@@ -258,23 +251,18 @@ export const ItemDetails = component$(
 						{"#".repeat(Math.floor(Math.random() * 10000))}
 					</span>
 				</div>
-				{/* </div>{" "} */}
-				<button
-					class="grow-0 w-6/12 mx-auto p-4 border border-gray-400 rounded bg-amber-200 shadow-md hover:shadow-sm hover:bg-amber-50"
-					// class="grow-0 w-6/12 border text-bold rounded bg-white p-2 mx-auto"
-					onClick$={onPurchaseWrapper}
-				>
-					{store.onPurchase === "ready"
-						? "Purchase"
-						: store.onPurchase === "loading"
-						? "Purchasing..."
-						: store.onPurchase === "error"
-						? "Error"
-						: "Complete!"}
-				</button>
+				<Button
+					text={mutable(purchaseButtonData.text)}
+					colors={mutable(purchaseButtonData.colors)}
+					clickHandler={onPurchaseWrapper}
+					state={mutable(store.onPurchase)}
+					address={mutable(session.address)}
+					classes="w-6/12 mx-auto p-4"
+					key={2}
+				/>
 				{session.address && (
 					<p
-						class="text-blue-400 cursor-pointer text-center mt-2 drop-shadow-md"
+						class="text-blue-400 w-full cursor-pointer text-center mt-2 drop-shadow-md"
 						onClick$={() => seeStore(itemData.owner, session)}
 					>
 						See more from this address
@@ -284,3 +272,28 @@ export const ItemDetails = component$(
 		);
 	}
 );
+
+export const Button = component$((props) => {
+	const {text, state, clickHandler, colors, address, classes} = props;
+	return (
+		<button
+			class={`${classes} grow-0 border border-gray-400 rounded ${
+				address === "" || state === "loading"
+					? `${colors.hover} text-gray-400 shadow-sm`
+					: `${colors.base} hover:${colors.hover} hover:shadow-sm shadow-md`
+			}`}
+			onClick$={clickHandler}
+			disabled={state === "loading" || address === ""}
+		>
+			{address === ""
+				? text.noAddress
+				: state === "ready"
+				? text.ready
+				: state === "loading"
+				? text.loading
+				: state === "error"
+				? text.error
+				: text.complete}
+		</button>
+	);
+});

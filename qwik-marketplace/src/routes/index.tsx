@@ -30,6 +30,14 @@ export default component$(() => {
 		console.log("items are stale, re-fetching items");
 		session.items.stale = false;
 
+
+		// const fetchedItems = await getItems();
+		// console.log({fetchedItems});
+		// const promiseItemsWithData = fetchedItems.map(async (item) => await fetchItemDataFromIPFS(item));
+		// console.log({promiseItemsWithData});
+		// const resolvedItemsWithData = await Promise.all(promiseItemsWithData);
+		// console.log({resolvedItemsWithData});
+
 		// const contractItems: IContractItem[] = await getItems();
 		// console.log({contractItems});
 		// if (contractItems.length > 0) {
@@ -107,21 +115,7 @@ export default component$(() => {
 		// or is the data already fetched??
 	});
 
-	//testing modal
-	// const modal = useStore({show: false});
-	// const handleClose$ = $(() => {
-	// 	modal.show = false;
-	// });
-	// const handleToggle$ = $(() => {
-	// 	modal.show = !modal.show;
-	// });
-	const handleClose$ = $(() => {
-		session.create.show = false;
-	});
-	const handleToggle$ = $(() => {
-		session.create.show = !session.create.show;
-	});
-
+	
 	//testing modal 2nd
 	const modal2 = useStore({show: false});
 	const handleClose2$ = $(() => {
@@ -143,17 +137,22 @@ export default component$(() => {
 			{session.address && (
 				<Modal
 					modal={mutable(session.create)}
-					// handleClose$={handleClose$}
-					// handleToggle$={handleToggle$}
 					index={1}
 					key={1}
 					tab={true}
+					title={"Add An Item"}
 				>
 					<CreateForm />
 				</Modal>
 			)}
-
+			<Modal
+				modal={mutable(session.details)}
+				index={3}
+				key={3}
+				title={"Details"}
+			>
 			<Details item={mutable(session.details.item)} />
+			</Modal>
 
 			<Modal
 				modal={modal2}
