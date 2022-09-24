@@ -50,7 +50,8 @@ export const removeNotification = $((session: ISessionContext, id: number ) => {
 
 export const generateNotification = $((session: ISessionContext) => {
 	const typeNum = Math.floor(Math.random() * 4);
-	const loremNum = Math.floor(Math.random() * 99);
+	let loremNum = Math.ceil(Math.random() * 4);
+	loremNum = loremNum ** 3;
 	const durationNum = (typeNum < 3) ? Math.floor(Math.random() * 10) * 1000 : 0;
 
 	// const type = types[typeNum];
@@ -106,7 +107,7 @@ export const Notification = component$(
 
 		return (
 			<div 
-				class={`p-2 mx-auto w-[600px] rounded ${notification.bgColor} border-2 ${notification.borderColor} flex flex-wrap bg-opacity-70 backdrop-blur pt-1`}
+				class={`p-2 rounded ${notification.bgColor} border-2 ${notification.borderColor} flex flex-wrap bg-opacity-70 backdrop-blur pt-1 shrink-1`}
 			>
 				<h3 
 					class={`${notification.color} text-lg flex-grow drop-shadow-xl`}
@@ -115,7 +116,7 @@ export const Notification = component$(
 				</h3>
 				<button
 					onClick$={() => remove$()}
-					class="justify-self-end text-xl text-red-700 opacity-50 hover:opacity-100 hover:text-black font-bold mt-[-6px]"
+					class="justify-self-end text-xl text-red-700 opacity-50 hover:opacity-100 hover:text-black font-bold mt-[-6px] ml-2"
 				>
 					X
 				</button>
@@ -129,7 +130,7 @@ export const Notification = component$(
 export default component$(() => {
 	const session = useContext(SessionContext);
 	return (
-		<div class="grid grid-cols-1 gap-2 justify-center w-full">
+		<div class="flex flex-col gap-1 items-end w-full max-w-[600px]">
 			{session.notifications.each?.map((thisNotification) => (
 				<Notification
 					key={thisNotification.id}

@@ -414,10 +414,17 @@ export const connect = async () => {
 
 export const getContract = async (withSigner: boolean = false) => {
   // console.log(`getContract: ${withSigner ? "with" : "without"} signer`);
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  let contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
-
+  let provider;
+  let contract;
+  try {
+    // Provider: should use Infura soon; want to make sure items display even if metamask is not installed for the user!!!
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
+  } catch (error) {
+    console.log('Error getting provider:', error.message);
+    return null;
+  }
+  
   if (!withSigner) {
     return contract;
   }
@@ -462,54 +469,16 @@ export const getItems = async (): Promise<IContractItem[]> => {
     const contract = await getContract();
 
     const items = (await contract.getAllItems()) as Array<any>;
-    // console.log("items from the smart contract!:", { items });
 
-    const formattedItems = items.map((item) => formatItem(item));
+    const formattedItems = items?.map((item) => formatItem(item));
 
     // console.log({ formattedItems });
-    return formattedItems;
+    return {items: formattedItems, error: null};
   } catch (error) {
     console.log("error getting items:", error);
-    return Promise.resolve([]);
+    return {items: Promise.resolve([]), error};
   }
 };
-
-// export const newGetItems = async (): Promise<IContractItem[]> => {
-//   try {
-//     const contract = await getContract();
-
-//     const items = (await contract.getAllItems()) as Array<any>;
-//     // console.log("items from the smart contract!:", { items });
-
-//     const formattedItems = items.map((item) => formatItem(item));
-//   //   formattedItems.map(item => {
-
-//   //   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
-//   // const ipfsResponse = await fetch(url, {
-//   //   signal: controller?.signal,
-//   // });
-
-//   // const baseData = await ipfsResponse.json();
-//   // // console.log({baseData});
-//   // const imgUrl = `http://localhost:8080/ipfs/${baseData.imgHash}`;
-
-//   // const itemData = {
-//   //   ...baseData,
-//   //   owner: item.owner,
-//   //   ipfsHash: item.ipfsHash,
-//   //   id: item.id,
-//   //   imgUrl,
-//   // };
-//   // return itemData;
-//   //   })
-
-//     // console.log({ formattedItems });
-//     return formattedItems;
-//   } catch (error) {
-//     console.log("error getting items:", error);
-//     return Promise.resolve([]);
-//   }
-// };
 
 export const getItemsFromAddress = async (
   address: string

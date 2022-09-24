@@ -9,6 +9,7 @@ import Browse from "~/components/browse/browse";
 import CreateForm from "~/components/create/create";
 import Details from "~/components/details/details";
 import {Modal} from "~/components/modal/modal";
+import {addNotification} from "~/components/notifications/notifications";
 import Store from "~/components/store/store";
 import {SessionContext} from "~/libs/context";
 import {getItems} from "~/libs/ethUtils";
@@ -22,7 +23,15 @@ export default component$(() => {
 		// track(session, 'items');
 		if (!session.items.stale) return;
 		console.log("items are stale, re-fetching items");
+
 		session.items.stale = false;
+		const {items, error} = await getItems();
+		if (error) {
+			console.log("error with getItems():", error?.message);
+			addNotification(session, `Error getting items: ${error?.message}`);
+			return;
+		}
+		session.items.list = items;
 
 		// const fetchedItems = await getItems();
 		// console.log({fetchedItems});
@@ -58,8 +67,6 @@ export default component$(() => {
 		// 		finalItems,
 		// 	});
 		// }
-
-		session.items.list = await getItems();
 
 		// // do diffing on the array, so we don't have a flash re-render??
 		// const oldItems = session.items.list;
@@ -112,16 +119,7 @@ export default component$(() => {
 		<div>
 			{/* instead, could hold an array of "pages/overlays/modals" and add and remove from that array, and then stack the display of modals based on the array  */}
 
-			{session.address && (
-				<Modal
-					modal={mutable(session.create)}
-					key={0}
-					tab={true}
-					title={"Add An Item"}
-				>
-					<CreateForm />
-				</Modal>
-			)}
+
 
 			<Modal modal={mutable(session.details)} key={1} title={"Details"}>
 				<Details item={mutable(session.details.item)} />
@@ -134,7 +132,16 @@ export default component$(() => {
 			>
 				<Store />
 			</Modal>
-
+			{session.address && (
+				<Modal
+					modal={mutable(session.create)}
+					key={0}
+					tab={true}
+					title={"Add An Item"}
+				>
+					<CreateForm />
+				</Modal>
+			)}
 			<Browse />
 		</div>
 	);

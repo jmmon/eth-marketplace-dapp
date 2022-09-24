@@ -24,37 +24,39 @@ export const Modal = component$(
 				class={`modal ${
 					props.modal.show
 						? "showing bg-black backdrop-blur bg-opacity-10"
-						: "bg-transparent"
+						: "bg-transparent backdrop-blur-0"
 				} ${!props.tab ? "noTab" : ""}`}
 				onClick$={() => {
 					if (click.inside) click.inside = false;
 					else handleClose();
 				}}
 			>
-				{props.tab ? (
-					<TabHandle modal={mutable(props.modal)} click={click} />
-				) : (
-					<div class={props.modal.show ? "spacer" : ""}></div>
-				)}
-				<div
-					class={`body`}
-					onClick$={() => {
-						click.inside = true;
-					}}
-				>
-					<div class="header-container">
-						<button
-							onClick$={() => {
-								handleClose();
-							}}
-							class="close"
-						>
-							X
-						</button>
-						<h1 class="header">{props.title}</h1>
+				{/* <div class="mx-auto"> */}
+					{props.tab ? (
+						<TabHandle modal={mutable(props.modal)} click={click} />
+					) : (
+						<div></div>
+					)}
+					<div
+						class={`body ${props.modal.show ? "opacity-100" : "opacity-0"}`}
+						onClick$={() => {
+							click.inside = true;
+						}}
+					>
+						<div class="header-container">
+							<button
+								onClick$={() => {
+									handleClose();
+								}}
+								class="close bg-blue-200 hover:bg-blue-300"
+							>
+								X
+							</button>
+							<h1 class="header">{props.title}</h1>
+						</div>
+						<Slot />
 					</div>
-					<Slot />
-				</div>
+				{/* </div> */}
 			</aside>
 		);
 	}
@@ -69,7 +71,9 @@ export const TabHandle = component$((props) => {
 
 	return (
 		<div
-			class={`spacer tab ${props.modal.show ? "showing" : ""}`}
+			class={`spacer tab bg-gray-50 backdrop-blur bg-opacity-70 ${
+				props.modal.show ? "bg-opacity-100 opacity-0 show" : ""
+			}`}
 			onClick$={() => {
 				props.click.inside = true; // for preventing bubbling
 				handleToggle();

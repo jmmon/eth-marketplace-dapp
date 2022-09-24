@@ -5,7 +5,6 @@ import {
 	useStore,
 	useStyles$,
 } from "@builder.io/qwik";
-import styles from "./header.css?inline";
 
 import {SessionContext} from "~/libs/context";
 import {closeAll, shortAddress} from "~/libs/utils";
@@ -16,7 +15,6 @@ import {Link, useLocation} from "@builder.io/qwik-city";
 export default component$(() => {
 	const loc = useLocation();
 	const session = useContext(SessionContext);
-	useStyles$(styles);
 	const store = useStore({fullAddress: false, inFront: false});
 	console.log({loc});
 
@@ -33,21 +31,21 @@ export default component$(() => {
 
 	return (
 		<header
-			class={`bg-qwikBlue-dark w-full h-20 backdrop-blur bg-opacity-70 fixed top-0 ${
-				store.inFront && "inFront"
+			class={`bg-qwikBlue-dark w-full flex items-center h-20 backdrop-blur bg-opacity-70 fixed top-0 ${
+				store.inFront && "z-10"
 			}`}
 		>
-			<div class="header-inner">
-				<div class="justify-self-start grid grid-flow-col h-full">
+			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] px-2 pt-1 md:px-0 md:pt-0">
+				<div class="justify-self-start grid grid-flow-row md:grid-flow-col h-full gap-0 md:gap-2">
 					<Link
 						href="/flower"
-						class="p-2 transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end"
+						class=" transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end mr-auto px-1 my-[-4px] md:my-0"
 					>
 						<QwikLogo />
 					</Link>
 					{loc.pathname === "/" ? (
 						<h1
-							class="font-bold text-white cursor-pointer p-2  transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
+							class="font-bold text-white cursor-pointer transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur px-1 my-[-4px] md:my-0"
 							onClick$={() => closeAll(session)}
 						>
 							Marketplace
@@ -55,7 +53,7 @@ export default component$(() => {
 					) : (
 						<Link
 							href="/"
-							class="font-bold text-white cursor-pointer text-[2rem] p-2 transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
+							class="font-bold text-white cursor-pointer text-[2rem] transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
 						>
 							Marketplace
 						</Link>
@@ -64,7 +62,7 @@ export default component$(() => {
 				{session.address && (
 					<div
 						onClick$={() => (store.fullAddress = !store.fullAddress)}
-						class="text-white text-lg self-center cursor-pointer w-min text-right"
+						class="text-white text-base self-center cursor-pointer w-min text-right"
 					>
 						Welcome,{" "}
 						{store.fullAddress

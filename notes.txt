@@ -63,3 +63,18 @@ TODO as of sept 18th:
 		Test Delete, Purchase, some more: 
 (DONE)			- should close details page when done
 		
+(done)		Bug: On first refresh: 330px screens, the Connect banner flows over the header. The header could be expanded 89,5 + 8px + 8px so bg flows around.
+		And no blue is on the left because the connect is too big, maybe smaller fonts on smaller screens for (everything? but at least) Browse Marketplace and Connect banner
+		
+		Error: Promise resolver not defined. from details page on first load. (not showing, just appearing in the html)
+		Details page does NOT work on 330px screens, it goes off the right side of the page and has a large left margin. small screens should only have a low margin.
+		Also details page wrapper should have a top padding accounting for the header so it stays below the header
+		And it does not expand downward on long screens, because it's set at 800px 
+		image, address (and all the rows) are overflowing the right side
+		Add An Item should be smaller on small screens; and your address disappears from the header, so could display it elsewhere. is metamask 
+		small screen, one column is not centered
+		address: make it smaller and just below the qwik Marketplace?
+
+		
+		So: details:
+			less left margin, top margin starts below the header, expand height for tall phones, 

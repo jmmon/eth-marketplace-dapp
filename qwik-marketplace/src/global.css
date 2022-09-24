@@ -16,6 +16,8 @@
   --qwik-light-purple: #ac7ff4;
   --qwik-dark-purple: #713fc2;
 }
+
+* {box-sizing: border-box;}
 /* 
 body {
   background-color: #fafafa;

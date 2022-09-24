@@ -37,10 +37,10 @@ export const ItemShell = component$(
 	(props: {itemData?: IItemData; error?: string}) => {
 		const session = useContext(SessionContext);
 		return (
-			<div class=" p-2 m-2 flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-400 gap-1 w-4/12 overflow-y-clip">
+			<div class=" p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 min-w-min max-w-[500px]">
 				{props?.itemData ? (
 					<h3
-						class={`text-4xl text-center bg-gray-100 text-gray-700 p-2 ${
+						class={`text-3xl md:text-4xl text-center bg-gray-100 text-gray-700 p-2 ${
 							props?.itemData?.name && "cursor-pointer"
 						}`}
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
@@ -64,7 +64,7 @@ export const ItemShell = component$(
 						background-size: cover; 
 						background-position: center; 
 						height: 200px; 
-						min-width: 300px;
+						min-width: 290px;
 						width: 100%;
 					`}
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
@@ -73,7 +73,7 @@ export const ItemShell = component$(
 					<div
 						class="bg-gray-100"
 						style={`height: 200px; 
-									min-width: 300px;
+									min-width: 290px;
 									width: 100%;
 								`}
 					></div>
@@ -109,7 +109,7 @@ export const ItemShell = component$(
 					<button
 						class={
 							props?.itemData?.id
-								? `m-1 p-2 border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-white`
+								? `m-1 p-2 border border-gray-400 rounded bg-gray-200 shadow-md hover:shadow-sm hover:bg-gray-300`
 								: `m-1 p-2 border-gray-300 rounded bg-gray-50 shadow-sm text-gray-400`
 						}
 						disabled={!props?.itemData?.id}

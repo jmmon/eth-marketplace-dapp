@@ -3,7 +3,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
-	gap: 1rem;
+	gap: 0.6rem;
 	top: 0.25rem;
 	right: 0.25rem;
-}
+	margin-left: 0.25rem;
+} 

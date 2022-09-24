@@ -14,27 +14,30 @@ export default component$(() => {
 	useStylesScoped$(Styles);
 
 	return (
-		<div class="w-full p-4 grid justify-center">
+		<div class="w-full p-2 md:p-4 grid gap-4 md:gap-6 justify-center">
 			<h1
-				class="text-center text-6xl text-blue-800 cursor-pointer mx-auto"
+				class="text-center text-3xl md:text-5xl lg:text-6xl text-blue-800 cursor-pointer mx-auto"
 				onClick$={() => generateNotification(session)}
 			>
 				Browse Marketplace
 			</h1>
-			<div class="itemsContainer">
-				{session.items.list.length === 0 ? (
-					<div
-						class="cursor-pointer"
-						onClick$={() => (session.create.show = true)}
-					>
-						No items were found on the blockchain. Try adding an item!
-					</div>
-				) : (
-					(console.log("rendering session items"),
-					session.items.list.map((item, index) => (
-						<ItemPreview key={item.id} item={mutable(item)} />
-					)))
-				)}
+			<div class="grid grid-cols-1 justify-items-center ">
+				<div class="flex flex-wrap justify-items-center items-center gap-4 text-xl my-auto max-w-[1200px]">
+
+					{session.items.list.length === 0 ? (
+						<div
+							class="cursor-pointer pt-4"
+							onClick$={() => (session.create.show = true)}
+						>
+							No items were found on the blockchain. Try adding an item!
+						</div>
+					) : (
+						(console.log("rendering session items"),
+						session.items.list.map((item, index) => (
+							<ItemPreview key={item.id} item={mutable(item)} />
+						)))
+					)}
+				</div>
 			</div>
 			<div class="w-full text-center text-gray-700">
 				{session.items.list.length} Items Total

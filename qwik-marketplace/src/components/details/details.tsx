@@ -26,7 +26,7 @@ export default component$(() => {
 		async ({track, cleanup}) => {
 			track(session, "details");
 
-			if (!session.details?.item?.id) return new Promise(); // return empty promise if no item id is sent
+			if (!session.details?.item?.id) return Promise.resolve({}); // return empty promise if no item id is sent
 
 			const controller = new AbortController();
 			cleanup(() => controller.abort());
@@ -191,8 +191,8 @@ export const ItemDetails = component$(
 		};
 
 		return (
-			<div class="detailsWrapper w-full p-4 bg-white flex flex-wrap gap-1 text-gray-700 p-2 flex-grow w-full overflow-y-auto">
-				<h1 class="text-4xl text-center text-gray-700 p-2 w-full bg-amber-100">
+			<div class="w-full bg-white flex flex-wrap gap-1 text-gray-700 p-2 flex-grow overflow-y-auto">
+				<h1 class="text-3xl md:text-4xl text-center text-gray-700 p-2 w-full bg-amber-100">
 					{itemData.name}
 				</h1>
 				<div
@@ -210,7 +210,7 @@ export const ItemDetails = component$(
 					clickHandler={onPurchaseWrapper}
 					state={mutable(store.onPurchase)}
 					address={mutable(session.address)}
-					classes="w-3/12 m-1 p-1"
+					classes="w-3/12 text-sm md:text-[1rem] p-1"
 					key={0}
 				/>
 				<div class="flex-grow w-8/12 bg-gray-100 p-2">
@@ -224,7 +224,7 @@ export const ItemDetails = component$(
 						clickHandler={onDeleteWrapper}
 						state={mutable(store.onDelete)}
 						address={mutable(session.address)}
-						classes="w-3/12 m-1 p-1"
+						classes="w-3/12 text-sm md:text-[1rem] p-1"
 						key={1}
 					/>
 				)}
@@ -254,7 +254,7 @@ export const ItemDetails = component$(
 					clickHandler={onPurchaseWrapper}
 					state={mutable(store.onPurchase)}
 					address={mutable(session.address)}
-					classes="w-6/12 mx-auto p-4"
+					classes="w-6/12 mx-auto text-sm md:text-base min-h-[58px]"
 					key={2}
 				/>
 				{session.address && (
