@@ -78,3 +78,14 @@ TODO as of sept 18th:
 		
 		So: details:
 			less left margin, top margin starts below the header, expand height for tall phones, 
+
+
+		STORE page:
+			Small screens should shrink to single column!! seems to change, but at the wrong point
+				right column gets cut off
+				Address gets cut off! Smaller text on small screens
+					Do we need to pass in class to modal so the store can have smaller header text?
+			Lots of blue on store page, maybe change it up?
+
+		header:
+			prevent address click on small screens? it overflows...

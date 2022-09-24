@@ -71,8 +71,8 @@ export const TabHandle = component$((props) => {
 
 	return (
 		<div
-			class={`spacer tab bg-gray-50 backdrop-blur bg-opacity-70 ${
-				props.modal.show ? "bg-opacity-100 opacity-0 show" : ""
+			class={`spacer tab bg-gray-100 backdrop-blur bg-opacity-60 ${
+				props.modal.show ? "bg-opacity-100 opacity-0 show" : "hover:bg-opacity-90"
 			}`}
 			onClick$={() => {
 				props.click.inside = true; // for preventing bubbling
@@ -80,7 +80,7 @@ export const TabHandle = component$((props) => {
 			}}
 		>
 			<div class="tab-text">
-				{props.modal.show ? "/\\ " : "\\/ "}Add An Item
+				Add An Item
 			</div>
 		</div>
 	);

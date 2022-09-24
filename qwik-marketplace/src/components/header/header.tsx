@@ -60,15 +60,23 @@ export default component$(() => {
 					)}
 				</div>
 				{session.address && (
-					<div
-						onClick$={() => (store.fullAddress = !store.fullAddress)}
-						class="text-white text-base self-center cursor-pointer w-min text-right"
-					>
-						Welcome,{" "}
-						{store.fullAddress
-							? session.address
-							: shortAddress(session.address)}
-					</div>
+					<>
+					{/* large screens */}
+						<div
+							key={0}
+							onClick$={() => (store.fullAddress = !store.fullAddress)}
+							class="text-white text-base self-center cursor-pointer w-min text-right hidden md:block md:z-0 z-10"
+						>
+							Welcome,{" "}
+							{store.fullAddress
+								? session.address
+								: shortAddress(session.address)}
+						</div>
+{/* small screens */}
+						<div key={1} class="text-white text-base self-center w-min text-right block md:hidden z-0 md:z-10">
+							Welcome,{" "}{shortAddress(session.address)}
+						</div>
+					</>
 				)}
 			</div>
 		</header>
