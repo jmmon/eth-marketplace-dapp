@@ -45,6 +45,7 @@
 	width: 100%;
 	filter: none;
 	align-items: center;
+	max-width: 100%;
 }
 
 .close {
@@ -63,6 +64,25 @@
 	font-size: min(1.5rem, max(5vw, 18px));
 	line-height: 1.75rem;
 	color: rgb(55 65 81);
+	max-width: 100%;
 }
 
 
+
+		.header.tooltiptext {
+			visibility: hidden;
+			background-color: #565656;
+			color: #eee;
+			text-align: color;	
+			padding: 5px 5px;
+			border-radius: 6px;
+			
+			postion: absolute;
+			z-index: 1;
+			top: calc(-100% - 20px);
+		}	
+
+		.header:hover .tooltiptext {
+			visibility: visible;
+		}
+		

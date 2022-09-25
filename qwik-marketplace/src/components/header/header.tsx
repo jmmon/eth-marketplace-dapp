@@ -72,9 +72,9 @@ export default component$(() => {
 								? session.address
 								: shortAddress(session.address)}
 						</div>
-{/* small screens */}
+					{/* small screens */}
 						<div key={1} class="text-white text-base self-center w-min text-right block md:hidden z-0 md:z-10">
-							Welcome,{" "}{shortAddress(session.address)}
+							Welcome,{" "} {shortAddress(session.address)}
 						</div>
 					</>
 				)}

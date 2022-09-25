@@ -97,12 +97,12 @@ export default component$(() => {
 					const {cid} = await ipfs.add(bufData);
 
 					formState.dataString = cid.toString();
-					// addNotification(
-					// 	session,
-					// 	`ItemData upload successful! ${formState.dataString}`,
-					// 	0,
-					// 	3000
-					// );
+					addNotification(
+						session,
+						`ItemData upload successful! ${formState.dataString}`,
+						0,
+						3000
+					);
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
@@ -148,7 +148,6 @@ export default component$(() => {
 					);
 
 					// close the create page
-					// maybe do this after a few seconds?
 					session.create.show = false;
 
 					// mark items as stale so it will refetch
@@ -182,12 +181,12 @@ export default component$(() => {
 					const {cid} = await ipfs.add(bufPhoto);
 					formState.imageString = cid.toString();
 
-					// addNotification(
-					// 	session,
-					// 	`Image file uploaded! Reference string: ${formState.imageString}`,
-					// 	3,
-					// 	3000
-					// );
+					addNotification(
+						session,
+						`Image file uploaded! Reference string: ${formState.imageString}`,
+						3,
+						3000
+					);
 
 					// trigger the next step
 					handleSubmitData();
@@ -208,9 +207,8 @@ export default component$(() => {
 		handleUploadPhoto();
 	});
 	return (
-		<div >
 		<form
-			class="flex flex-col gap-2 w-full max-w-[600px] mx-auto items-stretch px-[6px] pt-2 h-[calc(100%-160px)]"
+			class="flex flex-col gap-2 w-full h-[calc(100%-150px)] items-stretch px-[6px] pt-2"
 			preventdefault:submit
 			onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
 		>
@@ -252,12 +250,12 @@ export default component$(() => {
 				</label>
 			</fieldset>
 
-			<fieldset class="w-full flex-grow border rounded  mx-auto p-2 shadow">
-				<label class="text-gray-500 flex flex-col">
+			<fieldset class="w-full border rounded flex-grow mx-auto p-2 shadow">
+				<label class="text-gray-500">
 					Description:
 					<textarea
 						name="description"
-						class="block w-full min-h-[100px] flex-grow resize-none text-black placeholder-gray-300"
+						class="block h-full w-full text-black placeholder-gray-300"
 						placeholder="Description"
 						id="description"
 						required
@@ -282,7 +280,6 @@ export default component$(() => {
 			<button class=" w-full border rounded mx-auto py-4 bg-gray-100 text-gray-700  shadow-md hover:shadow hover:bg-gray-200 hover:border-gray-300">
 				Add Item To Blockchain Marketplace
 			</button>
-		</form>
 			{session.create.note.message !== "" && (
 				<p
 					class={`w-full text-center border rounded mx-auto p-4 text-gray-700 shadow-md ${session.create.note.class}`}
@@ -290,6 +287,6 @@ export default component$(() => {
 					{session.create.note.message}
 				</p>
 			)}
-			</div>
+		</form>
 	);
 });

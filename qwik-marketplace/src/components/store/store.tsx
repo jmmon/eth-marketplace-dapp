@@ -27,7 +27,7 @@ export default component$(() => {
 	});
 
 	return (
-		<div class="flex flex-wrap">
+		<div class="flex flex-wrap gap-2 p-2">
 			{session.store.items?.length === 0 ? (
 				<div>
 					Looks like seller {session.store.address} has no items listed.

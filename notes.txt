@@ -87,5 +87,9 @@ TODO as of sept 18th:
 					Do we need to pass in class to modal so the store can have smaller header text?
 			Lots of blue on store page, maybe change it up?
 
+		Create tab:
+(DONE)			maybe remove the \/;
+(DONE)			want it smaller... eh.
+
 		header:
-			prevent address click on small screens? it overflows...
+(DONE)	  	prevent address click on small screens? it overflows...

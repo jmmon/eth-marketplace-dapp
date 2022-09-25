@@ -52,6 +52,7 @@ export const Modal = component$(
 							>
 								X
 							</button>
+							<Slot name="header" />
 							<h1 class="header">{props.title}</h1>
 						</div>
 						<Slot />

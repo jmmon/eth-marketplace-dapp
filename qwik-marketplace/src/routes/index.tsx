@@ -3,6 +3,8 @@ import {
 	mutable,
 	useClientEffect$,
 	useContext,
+	useStyles$,
+	useStylesScoped$,
 } from "@builder.io/qwik";
 import type {DocumentHead} from "@builder.io/qwik-city";
 import Browse from "~/components/browse/browse";
@@ -115,33 +117,60 @@ export default component$(() => {
 	// 	// or is the data already fetched??
 	// });
 
+	useStyles$(`
+		.header.store .tooltiptext {
+			visibility: hidden;
+			background-color: #565656;
+			color: #eee;
+			text-align: color;	
+			padding: 5px 5px;
+			border-radius: 6px;
+			
+			position: absolute;
+			z-index: 1;
+			
+			bottom: 100%;
+			left: 50%;
+			margin-left: -6px;
+		}	
+
+		.header.store .tooltiptext::after {
+		}
+
+		.header.store:hover .tooltiptext {
+			visibility: visible;
+		}
+		
+	`);
 	return (
 		<div>
-			{/* instead, could hold an array of "pages/overlays/modals" and add and remove from that array, and then stack the display of modals based on the array  */}
-
-
-
-			<Modal modal={mutable(session.details)} key={1} title={"Details"}>
+			<Modal modal={mutable(session.details)} title={"Details"}>
 				<Details item={mutable(session.details.item)} />
+				<h1 q:slot="header" class="header">{session.details.item}</h1>
 			</Modal>
 
 			<Modal
 				modal={mutable(session.store)}
-				key={2}
-				title={mutable(`${session.store.address}'s Store`)}
 			>
 				<Store />
+				{/* 
+				<h1 q:slot="header" class="header">{session.store.address}</h1> 
+				*/}
+				<h1 q:slot="header" class="header store" >Store
+					<span class="tooltiptext">{session.store.address}</span>
+				</h1>
 			</Modal>
+
 			{session.address && (
 				<Modal
 					modal={mutable(session.create)}
-					key={0}
 					tab={true}
-					title={"Add An Item"}
 				>
 					<CreateForm />
+					<h1 q:slot="header" class="header">Add An Item</h1>
 				</Modal>
 			)}
+
 			<Browse />
 		</div>
 	);
