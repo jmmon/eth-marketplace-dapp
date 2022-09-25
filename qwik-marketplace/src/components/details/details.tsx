@@ -232,13 +232,13 @@ export const ItemDetails = component$(
 					<p class="text-sm text-gray-500">Owner's Address:</p>
 					{session.address ? (
 						<span
-							class="text-blue-400 cursor-pointer text-md"
+							class="text-blue-400 cursor-pointer text-md break-all"
 							onClick$={() => seeStore(itemData.owner, session)}
 						>
 							{itemData.owner}
 						</span>
 					) : (
-						<span class="text-md">{"#".repeat(42)}</span>
+						<span class="text-md break-all">{"#".repeat(42)}</span>
 					)}
 				</div>
 				<div class="w-full bg-gray-100 p-2">

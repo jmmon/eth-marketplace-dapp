@@ -15,6 +15,7 @@ import {addNotification} from "~/components/notifications/notifications";
 import Store from "~/components/store/store";
 import {SessionContext} from "~/libs/context";
 import {getItems} from "~/libs/ethUtils";
+import Styles from "./index.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext); // our connected/logged in state
@@ -117,48 +118,24 @@ export default component$(() => {
 	// 	// or is the data already fetched??
 	// });
 
-	useStyles$(`
-		.header.store .tooltiptext {
-			visibility: hidden;
-			background-color: #565656;
-			color: #eee;
-			text-align: color;	
-			padding: 5px 5px;
-			border-radius: 6px;
-			
-			position: absolute;
-			z-index: 1;
-			
-			bottom: 100%;
-			left: 50%;
-			margin-left: -6px;
-		}	
-
-		.header.store .tooltiptext::after {
-		}
-
-		.header.store:hover .tooltiptext {
-			visibility: visible;
-		}
-		
-	`);
+	useStylesScoped$(Styles);
 	return (
 		<div>
 			<Modal modal={mutable(session.details)} title={"Details"}>
 				<Details item={mutable(session.details.item)} />
-				<h1 q:slot="header" class="header">{session.details.item}</h1>
+				<h1 q:slot="header" class="header">Details</h1>
 			</Modal>
 
 			<Modal
 				modal={mutable(session.store)}
 			>
 				<Store />
-				{/* 
-				<h1 q:slot="header" class="header">{session.store.address}</h1> 
-				*/}
-				<h1 q:slot="header" class="header store" >Store
+				
+				<h1 q:slot="header" class="header">Store</h1> 
+				
+				{/* <h1 q:slot="header" class="header store" >Store
 					<span class="tooltiptext">{session.store.address}</span>
-				</h1>
+				</h1> */}
 			</Modal>
 
 			{session.address && (

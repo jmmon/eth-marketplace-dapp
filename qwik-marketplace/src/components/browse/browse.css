@@ -1,9 +1,0 @@
-.itemsContainer {
-	display: flex; 
-	flex-wrap: wrap;
-	align-items: center;
-	flex: 1;
-	gap: 1rem; 
-	font-size: 20px;
-	margin: 1.5rem;
-}

@@ -2,21 +2,18 @@ import {
 	component$,
 	mutable,
 	useContext,
-	useStylesScoped$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {ItemPreview} from "../itemPreview/itemPreview";
 import {generateNotification} from "../notifications/notifications";
-import Styles from "./browse.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
-	useStylesScoped$(Styles);
 
 	return (
 		<div class="w-full p-2 md:p-4 grid gap-4 md:gap-6 justify-center">
 			<h1
-				class="text-center text-3xl md:text-5xl lg:text-6xl text-blue-800 cursor-pointer mx-auto"
+				class="header text-center text-3xl md:text-5xl lg:text-6xl text-blue-800 cursor-pointer mx-auto"
 				onClick$={() => generateNotification(session)}
 			>
 				Browse Marketplace

@@ -10,7 +10,7 @@ import {fetchItemDataFromIPFS} from "~/libs/ethUtils";
 import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
-export const ItemPreview = component$((props: {item: IContractItem | null; index?: number; test: any;}) => {
+export const ItemPreview = component$((props: {item: IContractItem | null; index?: number; smaller?: boolean;}) => {
 	const session = useContext(SessionContext);
 	const resource = useResource$<IItemData>(async ({track, cleanup}) => {
 		track(props);
@@ -27,7 +27,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 			onPending={() => <ItemShell />}
 			onRejected={(error) => <ItemShell error={mutable(error.message)} />}
 			onResolved={(itemData: IItemData) => (
-				<ItemShell itemData={mutable(itemData)} key={itemData.id} />
+				<ItemShell itemData={mutable(itemData)} key={itemData.id} smaller={props?.smaller}/>
 			)}
 		/>
 	);
@@ -36,12 +36,12 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 
 
 export const ItemShell = component$(
-	(props: {itemData?: IItemData; error?: string}) => {
+	(props: {itemData?: IItemData; error?: string, smaller?: boolean;}) => {
 		const session = useContext(SessionContext);
 
-		const header = `h-[56px] text-3xl text-center bg-gray-100 p-2`;
+		const header = `max-h-[56px] ${props?.smaller? "text-xl" : "text-3xl"} text-center bg-gray-100 p-2 w-full self-center`;
 		return (
-			<div class=" p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 min-w-[310px] max-w-[500px]">
+			<div class={`p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 ${props?.smaller ? "min-w-[260px]" : "min-w-[310px]"} max-w-[500px]`}>
 				{props?.itemData ? (
 					<h3
 						class={`${header} text-gray-700 ${

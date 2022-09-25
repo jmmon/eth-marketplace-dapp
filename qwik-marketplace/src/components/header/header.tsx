@@ -16,7 +16,7 @@ export default component$(() => {
 	const loc = useLocation();
 	const session = useContext(SessionContext);
 	const state = useStore({fullAddress: false, inFront: false});
-	console.log({loc});
+	// console.log({loc});
 
 	// 
 	useClientEffect$(({track}) => {

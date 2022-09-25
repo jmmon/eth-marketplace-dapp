@@ -43,7 +43,7 @@ export const Modal = component$(
 							click.inside = true;
 						}}
 					>
-						<div class="header-container">
+						<div class="header-container overflow-x-hidden">
 							<button
 								onClick$={() => {
 									handleClose();
@@ -53,7 +53,6 @@ export const Modal = component$(
 								X
 							</button>
 							<Slot name="header" />
-							<h1 class="header">{props.title}</h1>
 						</div>
 						<Slot />
 					</div>
