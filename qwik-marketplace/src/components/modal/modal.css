@@ -69,7 +69,7 @@
 
 
 
-		.header.tooltiptext {
+		/* .header.tooltiptext {
 			visibility: hidden;
 			background-color: #565656;
 			color: #eee;
@@ -84,5 +84,5 @@
 
 		.header:hover .tooltiptext {
 			visibility: visible;
-		}
+		} */
 		
