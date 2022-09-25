@@ -33,49 +33,47 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 	);
 });
 
+
+
 export const ItemShell = component$(
 	(props: {itemData?: IItemData; error?: string}) => {
 		const session = useContext(SessionContext);
+
+		const header = `h-[56px] text-3xl text-center bg-gray-100 p-2`;
 		return (
-			<div class=" p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 min-w-min max-w-[500px]">
+			<div class=" p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 min-w-[310px] max-w-[500px]">
 				{props?.itemData ? (
 					<h3
-						class={`text-3xl md:text-4xl text-center bg-gray-100 text-gray-700 p-2 ${
+						class={`${header} text-gray-700 ${
 							props?.itemData?.name && "cursor-pointer"
 						}`}
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
 					>
-						{shortText(props.itemData?.name, 17)}
+						{shortText(props.itemData?.name, 20)}
 					</h3>
 				) : props?.error ? (
-					<h3 class="text-4xl text-center bggray-100 text-gray-700 p-2">
+					<h3 class={`${header} text-gray-700`}>
 						{props.error}
 					</h3>
 				) : (
-					<h3 class={`text-4xl text-center bg-gray-100 text-gray-100 p-2`}>
+					<h3 class={`${header} text-gray-100`}>
 						Loading...
 					</h3>
 				)}
 				{props?.itemData?.imgUrl ? (
 					<div
-						class=" cursor-pointer"
+						class=" cursor-pointer h-[200px] w-full"
 						style={`background: url(${props.itemData.imgUrl}); 
 						background-repeat: no-repeat; 
 						background-size: cover; 
 						background-position: center; 
-						height: 200px; 
-						min-width: 290px;
-						width: 100%;
-					`}
+						`}
+						// min-width: 290px;
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
 					></div>
 				) : (
 					<div
-						class="bg-gray-100"
-						style={`height: 200px; 
-									min-width: 290px;
-									width: 100%;
-								`}
+						class="bg-gray-100 h-[200px] w-full"
 					></div>
 				)}
 				<div class="grid gap-1 bg-gray-100 text-gray-700 p-2">
