@@ -1,33 +1,16 @@
 import {
 	component$,
 	mutable,
-	useClientEffect$,
 	useContext,
-	useStylesScoped$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {getItemsFromAddress} from "~/libs/ethUtils";
 import {ItemPreview} from "../itemPreview/itemPreview";
-import Styles from "./store.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
-	useStylesScoped$(Styles);
-
-	useClientEffect$(async ({track}) => {
-		track(session, "store");
-		if (session.store.address === "") return;
-
-		console.log(
-			"store useClientEffect: getting items for address",
-			session.store.address
-		);
-		session.store.items = await getItemsFromAddress(session.store.address);
-		session.store.stale = false;
-	});
 
 	return (
-		<div class="flex flex-wrap gap-2 p-2">
+		<div class="flex flex-wrap gap-2 p-2 overflow-y-auto">
 			{session.store.items?.length === 0 ? (
 				<div>
 					Looks like seller {session.store.address} has no items listed.
