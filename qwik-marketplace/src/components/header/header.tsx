@@ -15,15 +15,16 @@ import {Link, useLocation} from "@builder.io/qwik-city";
 export default component$(() => {
 	const loc = useLocation();
 	const session = useContext(SessionContext);
-	const store = useStore({fullAddress: false, inFront: false});
+	const state = useStore({fullAddress: false, inFront: false});
 	console.log({loc});
 
+	// 
 	useClientEffect$(({track}) => {
 		track(session, "address");
 
 		if (session.address === "") return;
 		const timer = setTimeout(() => {
-			store.inFront = true;
+			state.inFront = true;
 		}, 200);
 
 		return () => clearTimeout(timer);
@@ -31,11 +32,11 @@ export default component$(() => {
 
 	return (
 		<header
-			class={`bg-qwikBlue-dark w-full flex items-center h-20 backdrop-blur bg-opacity-70 fixed top-0 ${
-				store.inFront && "z-10"
+			class={`bg-qwikBlue-dark w-full flex items-center h-20 backdrop-blur bg-opacity-70 fixed top-0 px-2 ${
+				state.inFront && "z-10"
 			}`}
 		>
-			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] px-2 pt-1 md:px-0 md:pt-0">
+			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] pt-1 md:pt-0">
 				<div class="justify-self-start grid grid-flow-row md:grid-flow-col h-full gap-0 md:gap-2">
 					<Link
 						href="/flower"
@@ -64,11 +65,11 @@ export default component$(() => {
 					{/* large screens */}
 						<div
 							key={0}
-							onClick$={() => (store.fullAddress = !store.fullAddress)}
+							onClick$={() => (state.fullAddress = !state.fullAddress)}
 							class="text-white text-base self-center cursor-pointer w-min text-right hidden md:block md:z-0 z-10"
 						>
 							Welcome,{" "}
-							{store.fullAddress
+							{state.fullAddress
 								? session.address
 								: shortAddress(session.address)}
 						</div>
