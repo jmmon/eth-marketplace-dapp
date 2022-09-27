@@ -1,8 +1,4 @@
-import {
-	component$,
-	mutable,
-	useContext,
-} from "@builder.io/qwik";
+import {component$, mutable, useContext} from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {ItemPreview} from "../itemPreview/itemPreview";
 import {generateNotification} from "../notifications/notifications";
@@ -20,14 +16,17 @@ export default component$(() => {
 			</h1>
 			<div class="grid grid-cols-1 justify-items-center ">
 				<div class="flex flex-wrap justify-items-center items-center gap-4 text-xl my-auto max-w-[1200px]">
-
 					{session.items.list.length === 0 ? (
-						<div
-							class="cursor-pointer pt-4"
-							onClick$={() => (session.create.show = true)}
-						>
-							No items were found on the blockchain. Try adding an item!
-						</div>
+						session.items.stale === false ? (
+							<div
+								class="cursor-pointer pt-4"
+								onClick$={() => (session.create.show = true)}
+							>
+								No items were found on the blockchain. Try adding an item!
+							</div>
+						) : (
+							<div class="pt-4">Loading items...</div>
+						)
 					) : (
 						(console.log("rendering session items"),
 						session.items.list.map((item, index) => (
