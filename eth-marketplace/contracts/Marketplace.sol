@@ -253,16 +253,16 @@ contract Marketplace {
 		return items;
 	}
     
-	function getItemIdsLength() external view returns (uint256) {
-		return arrOfItemIds.length;
-	}
+	// function getItemIdsLength() external view returns (uint256) {
+	// 	return arrOfItemIds.length;
+	// }
 
-	function getItemIdsFromSeller(address _sellerAddress)
-	  view external
-		returns (bytes32[] memory)
-	{
-		return itemIdsFromSeller[_sellerAddress];
-	}
+	// function getItemIdsFromSeller(address _sellerAddress)
+	//   view external
+	// 	returns (bytes32[] memory)
+	// {
+	// 	return itemIdsFromSeller[_sellerAddress];
+	// }
 
 	// events
 	event eventAddItem(
