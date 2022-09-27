@@ -26,15 +26,15 @@ export const seeDetails = (id: string, session: ISessionContext) => {
   session.store.show = false;
 
   // search our already fetched items for the matching one
-  const prevItem = session.details.item;
+  // const prevItem = session.details.item;
   const item = session.items.list.find((item) => item?.id === id);
-  let stale: boolean = false;
+  let stale: boolean = false; // probably don't need this...
 
-  if (prevItem?.id !== item.id) {
-    stale = true;
-  }
+  // if (prevItem?.id !== item.id) {
+  //   stale = true;
+  // }
 
-  console.log('details item is now', {item}, 'and was it stale?', {stale});
+  // console.log('details item is now', {item}, 'and was it stale?', {stale});
 
   session.details = {
     item, 

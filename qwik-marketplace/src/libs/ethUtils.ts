@@ -447,22 +447,22 @@ export const formatItem = (item: Array<any>): IContractItem => {
   };
 };
 
-export const getItem = async (id: string): Promise<IContractItem | any> => {
-  try {
-    const contract = await getContract();
+// export const getItem = async (id: string): Promise<IContractItem | any> => {
+//   try {
+//     const contract = await getContract();
 
-    const item = (await contract.itemFromId(id)) as Array<any>;
-    // console.log("item from the smart contract!:", { item });
+//     const item = (await contract.itemFromId(id)) as Array<any>;
+//     // console.log("item from the smart contract!:", { item });
 
-    const formattedItem = formatItem(item);
+//     const formattedItem = formatItem(item);
 
-    // console.log({ formattedItem });
-    return formattedItem;
-  } catch (error) {
-    console.log("error getting item:", error.message);
-    return Promise.reject(error);
-  }
-};
+//     // console.log({ formattedItem });
+//     return formattedItem;
+//   } catch (error) {
+//     console.log("error getting item:", error.message);
+//     return Promise.reject(error);
+//   }
+// };
 
 export const getItems = async (): Promise<{items: IContractItem[]; error?: any;}> => {
   try {
@@ -480,38 +480,36 @@ export const getItems = async (): Promise<{items: IContractItem[]; error?: any;}
   }
 };
 
-export const getItemsFromAddress = async (
-  address: string
-): Promise<IContractItem[]> => {
-  try {
-    const contract = await getContract();
+// export const getItemsFromAddress = async (
+//   address: string
+// ): Promise<IContractItem[]> => {
+//   try {
+//     const contract = await getContract();
 
-    const itemIds = (await contract.getItemIdsFromSeller(
-      address
-    )) as Array<any>;
-    console.log("itemIds from the smart contract!:", { itemIds });
+//     const itemIds = (await contract.getItemIdsFromSeller(
+//       address
+//     )) as Array<any>;
+//     console.log("itemIds from the smart contract!:", { itemIds });
 
-    // fetch each item from contract and format it
-    const formattedItemsPromises = itemIds.map(async (thisId) =>
-      formatItem((await contract.itemFromId(thisId)) as Array<any>)
-    );
-    console.log({ formattedItemsPromises });
-    const formattedItems = await Promise.all(formattedItemsPromises);
-    console.log({ formattedItems });
-    return formattedItems;
-  } catch (error) {
-    console.log("error getting items:", error);
-    return Promise.resolve([]);
-  }
-};
+//     // fetch each item from contract and format it
+//     const formattedItemsPromises = itemIds.map(async (thisId) =>
+//       formatItem((await contract.itemFromId(thisId)) as Array<any>)
+//     );
+//     console.log({ formattedItemsPromises });
+//     const formattedItems = await Promise.all(formattedItemsPromises);
+//     console.log({ formattedItems });
+//     return formattedItems;
+//   } catch (error) {
+//     console.log("error getting items:", error);
+//     return Promise.resolve([]);
+//   }
+// };
 
 export const fetchItemDataFromIPFS = async (
   item: IContractItem | null,
   controller?: AbortController
 ): Promise<IItemData> => {
-  console.log("item is null?", item === null);
   if (item === null) return Promise.reject({});
-  console.log("item missing ipfsHash?", !item.ipfsHash);
   if (!item.ipfsHash) return Promise.reject({});
   const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
   const baseData = await (
@@ -574,7 +572,6 @@ export const maintainSameAddress = async (session: ISessionContext) => {
   console.log("initial address:", session.address);
 
   const accountInterval = setInterval(async () => {
-    console.log("account interval");
     // every second, check address again
     const address = (
       await window.ethereum.request({ method: "eth_accounts" })
@@ -582,9 +579,9 @@ export const maintainSameAddress = async (session: ISessionContext) => {
 
     // while we have an initial address, if the address changes save our new address (and reload if needed);
     if (address !== session.address && session.address !== "undefined") {
-      console.log("new address:", address);
+      console.log("New address:", address);
       if (address === "undefined") {
-        console.log("no address now, clearing address from context");
+        console.log("Address undefined, clearing address from context");
       }
       // set to undefined or new address
       session.address = address;

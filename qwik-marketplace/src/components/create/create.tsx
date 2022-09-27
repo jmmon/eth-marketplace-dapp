@@ -15,23 +15,26 @@ import {addNotification} from "~/components/notifications/notifications";
 
 export const ipfsOptions = {url: "http://127.0.0.1:5001"};
 export const ipfs = create(ipfsOptions);
+// export const Buffer = import('buffer/').Buffer  // note: the trailing slash is important!
 
 export default component$(() => {
 	const session = useContext(SessionContext);
 	const photoInputRef = useRef<HTMLInputElement>();
 	const formState = useStore<ICreateFormState>({
-		// price: undefined,
 		imageString: "",
 		dataString: "",
 	});
+
 	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
-		// import("~/libs/wzrdin_buffer_polyfill.js");
-		var Buffer = require('buffer/').Buffer  // note: the trailing slash is important!
+		import("~/libs/wzrdin_buffer_polyfill.js");
+		// import('buffer/').Buffer  // note: the trailing slash is important!
 	});
 
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
 		let handleSubmitData: () => void;
+		// var Buffer = await import('buffer/').Buffer  // note: the trailing slash is important!
+		// console.log('buffer is imported:', Buffer);
 		try {
 			// step 2
 			// the data upload (after image uploads)
@@ -50,14 +53,14 @@ export default component$(() => {
 					[...formData.entries()]
 						.filter(([key, value]) => key !== "photo")
 						.forEach(([key, value]) => (formattedFormData[key] = value));
-					console.log({formDataObject: formattedFormData});
+					// console.log({formDataObject: formattedFormData});
 
 					// handle price conversion
 					formattedFormData.price = convertPrice(formattedFormData);
 
 					// add imageString from image upload step
 					formattedFormData.imgHash = formState.imageString;
-					console.log("final formDataObject:", formattedFormData);
+					// console.log("final formDataObject:", formattedFormData);
 
 					const validateForm = (
 						formDataObject: ICreateFormDataObject
@@ -86,11 +89,12 @@ export default component$(() => {
 
 					// return buffer of JSON of data
 					const formDataJson = JSON.stringify(formattedFormData);
-					const oldBuf = window.buffer.Buffer(formDataJson);
-					const newBuf = Buffer.from(formDataJson);
-					console.log('data buffs equal?', oldBuf == newBuf, {oldBuf, newBuf});
-					return newBuf;
-					// return window.buffer.Buffer(formDataJson);
+					// const oldBuf = window.buffer.Buffer(formDataJson);
+					// const newBuf = cBuffer.from(formDataJson);
+					// const newBuf = Buffer.from(formDataJson);
+					// console.log('data buffs equal?', oldBuf == newBuf, {oldBuf, newBuf});
+					// return newBuf;
+					return window.buffer.Buffer(formDataJson);
 				};
 				const bufData = formatFormDataToBuffer();
 
@@ -180,10 +184,12 @@ export default component$(() => {
 
 			const reader = new FileReader();
 			reader.onloadend = async () => {
-				const oldBuf = window.buffer.Buffer(reader.result);
-				const newBuf = Buffer.from(reader.result);
-				const bufPhoto = newBuf;
-				console.log('photo buffs equal?', oldBuf == newBuf, {oldBuf, newBuf})
+				const bufPhoto = window.buffer.Buffer(reader.result);
+				// const oldBuf = window.buffer.Buffer(reader.result);
+				// const newBuf = Buffer.from(reader.result);
+				// const newBuf = cBuffer.from(reader.result);
+				// const bufPhoto = newBuf;
+				// console.log('photo buffs equal?', oldBuf == newBuf, {oldBuf, newBuf})
 
 				try {
 					const {cid} = await ipfs.add(bufPhoto);

@@ -31,7 +31,6 @@ export const Modal = component$(
 					else handleClose();
 				}}
 			>
-				{/* <div class="mx-auto"> */}
 					{props.tab ? (
 						<TabHandle modal={mutable(props.modal)} click={click} />
 					) : (
@@ -56,7 +55,6 @@ export const Modal = component$(
 						</div>
 						<Slot />
 					</div>
-				{/* </div> */}
 			</aside>
 		);
 	}

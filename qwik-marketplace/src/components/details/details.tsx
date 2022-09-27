@@ -31,13 +31,12 @@ export default component$(() => {
 			const controller = new AbortController();
 			cleanup(() => controller.abort());
 
-			const item = await getItem(session.details?.item?.id ?? "");
-			return await fetchItemDataFromIPFS(item, controller);
+			// already have the item in our session, just need to fetch the extra details/photo from IPFS
+			return await fetchItemDataFromIPFS(session.details.item, controller);
 		}
 	);
 
 	const handleClose$ = $(() => {
-		console.log("closing details");
 		session.details = {
 			...session.details,
 			show: false,
@@ -73,7 +72,7 @@ export const ItemDetails = component$(
 		//timers to reset states back to "ready"
 		useWatch$(({track, cleanup}) => {
 			track(store, "onPurchase");
-			console.log({"store.onPurchase": store.onPurchase});
+			// console.log({"store.onPurchase": store.onPurchase});
 			if (store.onPurchase !== "done" && store.onPurchase !== "error") return;
 			const timer = setTimeout(() => {
 				store.onPurchase = "ready";
@@ -91,7 +90,7 @@ export const ItemDetails = component$(
 		});
 		useWatch$(({track, cleanup}) => {
 			track(store, "onDelete");
-			console.log({"store.onDelete": store.onDelete});
+			// console.log({"store.onDelete": store.onDelete});
 			if (store.onDelete !== "done" && store.onDelete !== "error") return;
 			const timer = setTimeout(() => {
 				store.onDelete = "ready";
