@@ -11,7 +11,7 @@ import Styles from "./modal.css?inline";
 import TabStyles from "./tabStyles.css?inline";
 
 export const Modal = component$(
-	(props: {modal: any; tab?: boolean; title: any}) => {
+	(props: {modal: any; tab?: boolean;}) => {
 		useStylesScoped$(Styles);
 		const click = useStore({inside: false});
 

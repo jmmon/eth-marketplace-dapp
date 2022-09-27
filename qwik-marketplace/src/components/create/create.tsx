@@ -26,7 +26,8 @@ export default component$(() => {
 	});
 	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
-		import("~/libs/wzrdin_buffer_polyfill.js");
+		// import("~/libs/wzrdin_buffer_polyfill.js");
+		var Buffer = require('buffer/').Buffer  // note: the trailing slash is important!
 	});
 
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
@@ -85,7 +86,11 @@ export default component$(() => {
 
 					// return buffer of JSON of data
 					const formDataJson = JSON.stringify(formattedFormData);
-					return window.buffer.Buffer(formDataJson);
+					const oldBuf = window.buffer.Buffer(formDataJson);
+					const newBuf = Buffer.from(formDataJson);
+					console.log('data buffs equal?', oldBuf == newBuf, {oldBuf, newBuf});
+					return newBuf;
+					// return window.buffer.Buffer(formDataJson);
 				};
 				const bufData = formatFormDataToBuffer();
 
@@ -175,7 +180,10 @@ export default component$(() => {
 
 			const reader = new FileReader();
 			reader.onloadend = async () => {
-				const bufPhoto = window.buffer.Buffer(reader.result);
+				const oldBuf = window.buffer.Buffer(reader.result);
+				const newBuf = Buffer.from(reader.result);
+				const bufPhoto = newBuf;
+				console.log('photo buffs equal?', oldBuf == newBuf, {oldBuf, newBuf})
 
 				try {
 					const {cid} = await ipfs.add(bufPhoto);

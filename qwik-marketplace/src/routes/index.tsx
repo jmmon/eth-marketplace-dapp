@@ -37,16 +37,6 @@ export default component$(() => {
 		session.items.list = items;
 	});
 
-	// useClientEffect$(({track}) => {
-	// 	track(session, "details");
-
-	// 	if (!session.details.stale) return;
-
-	// 	console.log("details item changed");
-	// 	// do a fetch and set our item?
-	// 	// or is the data already fetched??
-	// });
-
 	useStylesScoped$(Styles);
 	return (
 		<div>

@@ -447,7 +447,7 @@ export const formatItem = (item: Array<any>): IContractItem => {
   };
 };
 
-export const getItem = async (id: string): Promise<IContractItem> => {
+export const getItem = async (id: string): Promise<IContractItem | any> => {
   try {
     const contract = await getContract();
 
@@ -464,7 +464,7 @@ export const getItem = async (id: string): Promise<IContractItem> => {
   }
 };
 
-export const getItems = async (): Promise<IContractItem[]> => {
+export const getItems = async (): Promise<{items: IContractItem[]; error?: any;}> => {
   try {
     const contract = await getContract();
 
