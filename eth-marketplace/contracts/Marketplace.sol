@@ -6,6 +6,7 @@ function toString(uint256 value) pure returns (string memory) {
 	// Inspired by OraclizeAPI's implementation - MIT licence
 	// https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
 
+	// next condition has not been touched by test. If I add an item with price==0, it should hit this line!
 	if (value == 0) {
 		return "0";
 	}
@@ -44,11 +45,12 @@ contract Marketplace {
 
 	// register item to the sender/seller's address:
 	function addItem(string memory _dataHash, uint256 _price) external returns (bool success) {
-		// making an id for the item: hash the IPFS data hash, price, and sender address
-        string memory price = toString(_price);
-        string memory addr = toString(uint256(uint160(msg.sender)));
+		// making a unique id for the item: hash the IPFS data hash, price, sender address, and block timestamp to add a bit of "randomness" (so that creating two items with the same data result in unique ids)
+		string memory price = toString(_price);
+		string memory addr = toString(uint256(uint160(msg.sender)));
+		string memory timestamp = toString(block.timestamp);
 
-		bytes32 itemHashId = keccak256(abi.encodePacked(_dataHash, price, addr));
+		bytes32 itemHashId = keccak256(abi.encodePacked(_dataHash, price, addr, timestamp));
 
 		// create a new item
 		Item memory item = Item({
@@ -253,17 +255,6 @@ contract Marketplace {
 		return items;
 	}
     
-	// function getItemIdsLength() external view returns (uint256) {
-	// 	return arrOfItemIds.length;
-	// }
-
-	// function getItemIdsFromSeller(address _sellerAddress)
-	//   view external
-	// 	returns (bytes32[] memory)
-	// {
-	// 	return itemIdsFromSeller[_sellerAddress];
-	// }
-
 	// events
 	event eventAddItem(
 		Item _item,

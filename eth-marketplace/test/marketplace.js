@@ -32,8 +32,8 @@ contract("Marketplace", function (accounts) {
   // })
   it("should start with no items", async function () {
     const instance = await Marketplace.deployed();
-    const itemIdsLength = await instance.getItemIdsLength();
-
+    const itemIdsLength = await instance.getAllItems();
+    // const itemIdsLength = await instance.arrOfItemIds().length;
     assert.equal(itemIdsLength, 0, "should start with no items");
   });
 
@@ -47,10 +47,9 @@ contract("Marketplace", function (accounts) {
       from: accounts[0],
     });
 
-    const itemIdsFromSeller =
-      await instance.getItemIdsFromSeller(accounts[0]);
+    const itemIdFromSeller = await instance.itemIdsFromSeller(accounts[0], 0);
     await expectRevert(
-      instance.sell(itemIdsFromSeller[0], { from: accounts[0] }),
+      instance.sell(itemIdFromSeller, { from: accounts[0] }),
       "Owner cannot buy their own items!"
     );
   });
@@ -87,12 +86,11 @@ contract("Marketplace", function (accounts) {
       "should have account 0 as the owner of the item"
     );
 
-    const itemIdsFromAddress =
-      await instance.getItemIdsFromSeller(accounts[0]);
+    const itemFromAddress = await instance.itemIdsFromSeller(accounts[0], 0);
     assert.equal(
-      itemIdsFromAddress[0],
+      itemFromAddress,
       items[0].id,
-      "get item id should match"
+      "seller's first item should be the added item"
     );
   });
 
@@ -104,24 +102,24 @@ contract("Marketplace", function (accounts) {
       ipfsHash: "some data hash to ipfs",
       price: 100,
     };
+
+    // add item
     await instance.addItem(item.ipfsHash, item.price, { from: accounts[2] });
 
-    const itemIdsFromAddress =
-      await instance.getItemIdsFromSeller(accounts[2]);
+    const itemIdFromAddress = await instance.itemIdsFromSeller(accounts[2], 0);
 
-    await instance.sell(itemIdsFromAddress[0], {
+    await instance.sell(itemIdFromAddress, {
       from: accounts[1],
-      value: '1000000000',
+      value: "100",
+      gasLimit: "3000000",
     });
 
     // after sold, that means the seller should no longer hold the item;
 
     //also getItemFromId should return a "deleted" item, so could check that the properties don't match the item
-    const itemIdsFromSeller =
-      await instance.getItemIdsFromSeller(accounts[2]);
+    // const newItemIdFromSeller = await instance.itemIdsFromSeller(accounts[2], 0);
 
-    const itemIdZero = itemIdsFromSeller[0];
-    const itemFromIds = await instance.itemFromId(itemIdZero);
+    const itemFromIds = await instance.itemFromId(itemIdFromAddress);
     assert.notEqual(
       item.ipfsHash,
       itemFromIds.ipfsHash,
@@ -134,7 +132,6 @@ contract("Marketplace", function (accounts) {
     );
   });
 
-  
   // it("should give seller the proceeds and retain 5%", async function () {
   //   const instance = await Marketplace.deployed();
   //   const item = {
@@ -169,7 +166,7 @@ contract("Marketplace", function (accounts) {
   //     itemFromIds.price,
   //     "the price should be different because it's deleted"
   //   );
-    
+
   //   const contractBalance = await web3.eth.getBalance(Marketplace.address);
   //   const expectedBalance = item.price * 5 / 100;
   //   assert.equal(
@@ -177,7 +174,6 @@ contract("Marketplace", function (accounts) {
   //   );
   // });
 
-  
   it("should revert sell from not enough funds", async function () {
     const instance = await Marketplace.deployed();
     const item = {
@@ -186,13 +182,12 @@ contract("Marketplace", function (accounts) {
     };
     await instance.addItem(item.ipfsHash, item.price, { from: accounts[2] });
 
-    const itemIdsFromAddress =
-      await instance.getItemIdsFromSeller(accounts[2]);
+    const itemIdFromAddress = await instance.itemIdsFromSeller(accounts[2], 0);
 
     await expectRevert(
-      instance.sell(itemIdsFromAddress[0], {
+      instance.sell(itemIdFromAddress, {
         from: accounts[1],
-        value: '100',
+        value: "100",
       }),
       "Not sent enough money to buy the item"
     );
@@ -206,14 +201,13 @@ contract("Marketplace", function (accounts) {
     };
     await instance.addItem(item.ipfsHash, item.price, { from: accounts[0] });
 
-    const itemIdsFromAddress =
-      await instance.getItemIdsFromSeller(accounts[0]);
+    const itemIdFromAddress = await instance.itemIdsFromSeller(accounts[0], 0);
 
-    await instance.deleteItem(itemIdsFromAddress[0], {
+    await instance.deleteItem(itemIdFromAddress, {
       from: accounts[0],
     });
 
-    const receivedItem = await instance.itemFromId(itemIdsFromAddress[0]);
+    const receivedItem = await instance.itemFromId(itemIdFromAddress);
 
     assert.notEqual(
       item.ipfsHash,
@@ -239,7 +233,7 @@ contract("Marketplace", function (accounts) {
   //   const itemIdsFromAddress =
   //     await instance.getItemIdsFromSeller(accounts[0]);
 
-  //   const receipt = await instance.sell(itemIdsFromAddress[0], {
+
   //     from: accounts[1],
   //     value: '1000000000000000',
   //   });

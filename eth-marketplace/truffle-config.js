@@ -108,6 +108,7 @@ module.exports = {
     // }
   },
 
+  // <truffle run coverage>
   plugins: ['solidity-coverage'],
 
   // Set default mocha options here, use special reporters, etc.

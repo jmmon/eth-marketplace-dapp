@@ -9,15 +9,16 @@ import "../contracts/Marketplace.sol";
 
 contract TestMarketplace {
 
-	function testSomething() public {
-		Marketplace market = Marketplace(DeployedAddresses.Marketplace());
-		// do something
-	}
+	// function testSomething() public {
+	// 	Marketplace market = Marketplace(DeployedAddresses.Marketplace()); // looks up deploy address and casts it to the contract
 
-	function testSomethingElse() public {
-		Marketplace market = new Marketplace();
-		// do something
-	}
+	// 	// do something
+	// }
+
+	// function testSomethingElse() public {
+	// 	Marketplace market = new Marketplace();
+	// 	// do something
+	// }
 
   // function testInitialBalanceUsingDeployedContract() public {
   //   MetaCoin meta = MetaCoin(DeployedAddresses.MetaCoin());

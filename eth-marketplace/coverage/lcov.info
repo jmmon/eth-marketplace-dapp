@@ -1,5 +1,5 @@
 TN:
-SF:C:\users\jmmon\documents\VS-2019\KU\MI\Advanced Projects\dapp-project\eth-marketplace\contracts\Marketplace.sol
+SF:C:\Users\jmmon\Documents\VS-2019\KU\MI\Advanced Projects\dapp-project\eth-marketplace\contracts\Marketplace.sol
 FN:5,toString
 FN:41,constructor
 FN:46,addItem
@@ -12,10 +12,8 @@ FN:180,removeFromItemIds
 FN:204,removeFromSeller
 FN:234,getSellerItemIndex
 FN:245,getAllItems
-FN:256,getItemIdsLength
-FN:260,getItemIdsFromSeller
-FNF:14
-FNH:14
+FNF:12
+FNH:12
 FNDA:10,toString
 FNDA:3,constructor
 FNDA:5,addItem
@@ -27,9 +25,7 @@ FNDA:2,getItemIndex
 FNDA:2,removeFromItemIds
 FNDA:2,removeFromSeller
 FNDA:2,getSellerItemIndex
-FNDA:1,getAllItems
-FNDA:1,getItemIdsLength
-FNDA:6,getItemIdsFromSeller
+FNDA:2,getAllItems
 DA:9,10
 DA:10,0
 DA:12,10
@@ -104,17 +100,15 @@ DA:236,2
 DA:237,2
 DA:238,2
 DA:241,2
-DA:246,1
-DA:247,1
-DA:248,1
+DA:246,2
+DA:247,2
+DA:248,2
 DA:249,2
 DA:250,2
 DA:251,2
-DA:253,1
-DA:257,1
-DA:264,6
-LF:83
-LH:82
+DA:253,2
+LF:81
+LH:80
 BRDA:9,1,0,0
 BRDA:9,1,1,10
 BRDA:81,2,0,3
