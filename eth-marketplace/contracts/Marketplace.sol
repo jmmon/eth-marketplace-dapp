@@ -7,6 +7,7 @@ function toString(uint256 value) pure returns (string memory) {
 	// https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
 
 	// next condition has not been touched by test. If I add an item with price==0, it should hit this line!
+	// TODO: make a test test this. Should be done.
 	if (value == 0) {
 		return "0";
 	}
@@ -43,8 +44,21 @@ contract Marketplace {
 		contractOwner = payable(msg.sender);
 	}
 
+	function withdraw(uint256 amount) external {
+		require(payable(msg.sender) == contractOwner, "Not permitted to withdraw");
+		
+		require(address(this).balance >= amount, "can only withdraw balance that is available");
+		(bool success,) = payable(msg.sender).call{value: amount}(""); // needs testing?
+		require(success == true, "amount was not withdrawn" ); // needs testing?
+	}
+
+	function balance() view public returns (uint256){
+		require(payable(msg.sender) == contractOwner, "Not permitted to view balance");
+    return payable(address(this)).balance;
+  }
+
 	// register item to the sender/seller's address:
-	function addItem(string memory _dataHash, uint256 _price) external returns (bool success) {
+	function addItem(string memory _dataHash, uint256 _price) external {
 		// making a unique id for the item: hash the IPFS data hash, price, sender address, and block timestamp to add a bit of "randomness" (so that creating two items with the same data result in unique ids)
 		string memory price = toString(_price);
 		string memory addr = toString(uint256(uint160(msg.sender)));
@@ -71,7 +85,6 @@ contract Marketplace {
 			itemIdsFromSeller[msg.sender].length
 		);
 
-		return true;
 	}
 
 
@@ -92,6 +105,7 @@ contract Marketplace {
 			itemOwner,
 			_itemId
 		);
+		// require below never fails with the tests, wonder if we can make it fail?
 		require(
 			removeSuccess,
 			"Error removing item from seller's list"
@@ -101,6 +115,7 @@ contract Marketplace {
 		uint256 sellerProceeds = itemPrice * 95 / 100;
 		address payable sellerAddr = payable(itemOwner);
 		(bool success, ) = sellerAddr.call{value: sellerProceeds}("");
+		// require below never fails... can we make it fail?
 		require(success, "failed to send ether");
 
 		emit eventSell(
@@ -114,6 +129,7 @@ contract Marketplace {
 
 	function deleteItem(bytes32 _itemId) external {
 		Item memory foundItem = itemFromId[_itemId];
+		// require here never fails in tests.. can we make it fail? I thought we did do this one.. (TODO: try to delete someone else's item)
 		require(foundItem.owner == msg.sender, "Only owner can delete their item!");
 
 		// remove ids or items from our variables
@@ -121,6 +137,7 @@ contract Marketplace {
 			foundItem.owner,
 			_itemId
 		);
+		// TODO: make this require fail in a test
 		require(
 			removeSuccess,
 			"Error removing item from seller's list"
@@ -142,6 +159,7 @@ contract Marketplace {
 		bool successRemoveFromStockMap = removeFromStock(_itemId);
 		bool successRemoveFromItemIdList = removeFromItemIds(_itemId);
 
+		// TODO: make these requires fail in a test
 		require(
 			successRemoveFromSellerList,
 			"Error removing item from seller's list"
@@ -236,6 +254,8 @@ contract Marketplace {
 	function getSellerItemIndex(bytes32 _itemId, address _owner, uint256 _length) internal view returns (uint256) {
 		uint256 i = 0;
 		for (i; i < _length; i++) {
+			// this if statement never runs???
+			// TODO: make a test that tests the below if statement...
 			if (itemIdsFromSeller[_owner][i] == _itemId) {
 				break; // saves the state of i for our return
 			}
