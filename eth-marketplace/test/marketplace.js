@@ -258,4 +258,16 @@ contract("Marketplace", function (accounts) {
 
     assert.equal(itemIds.length, 8, "should end with 8 items remaining");
   });
+
+  it("testing getting receipt data", async function () {
+    const instance = await Marketplace.deployed();
+    const item = {
+      ipfsHash: "some data hash to ipfs",
+      price: 1_000_000_000,
+    };
+    const receipt = await instance.addItem(item.ipfsHash, item.price, { from: accounts[1] });
+
+    const itemCount = receipt.logs[0]["args"]["_itemsForSaleCount"];
+    assert.equal(itemCount, 9, "should end with 9 items remaining");
+  })
 });
