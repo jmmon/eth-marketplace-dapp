@@ -35,7 +35,7 @@ contract Marketplace {
 	}
 
 	mapping(address => bytes32[]) public itemIdsFromSeller; // for getting IDs from a seller
-	mapping(bytes32 => Item) public itemFromId;	// for getting item from ID
+	mapping(bytes32 => Item) public itemFromId; // for getting item from ID
 	bytes32[] public arrOfItemIds; // for getting all item IDS
 
 	constructor() {
@@ -58,7 +58,7 @@ contract Marketplace {
 	event eventItemRemoved(bytes32 _removedItemId);
 	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
 	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
-		event eventDeleteItem(
+	event eventDeleteItem(
 		bytes32 _itemId,
 		address _owner,
 		uint256 _newItemListLength
@@ -69,11 +69,11 @@ contract Marketplace {
 	// helpers / getters
 	//
 	//////////////////////////////////////////////////////
-	
-	function getAllItems() view external returns (Item[] memory) {
-		uint length = arrOfItemIds.length;
+
+	function getAllItems() external view returns (Item[] memory) {
+		uint256 length = arrOfItemIds.length;
 		Item[] memory items = new Item[](length);
-		for (uint i = 0; i < length; i++) {
+		for (uint256 i = 0; i < length; i++) {
 			bytes32 itemId = arrOfItemIds[i];
 			Item memory foundItem = itemFromId[itemId];
 			items[i] = foundItem;
@@ -83,23 +83,29 @@ contract Marketplace {
 
 	function withdraw(uint256 amount) external {
 		require(payable(msg.sender) == contractOwner, "Not permitted to withdraw");
-		
-		require(address(this).balance >= amount, "can only withdraw balance that is available");
+
+		require(
+			address(this).balance >= amount,
+			"can only withdraw balance that is available"
+		);
 
 		// TODO: cover this branch with test
-		(bool success,) = payable(msg.sender).call{value: amount}("");
-		require(success == true, "amount was not withdrawn" );
+		(bool success, ) = payable(msg.sender).call{value: amount}("");
+		require(success == true, "amount was not withdrawn");
 	}
 
 	// probably not needed except for easier access
-	function balance() view public returns (uint256){
-		require(payable(msg.sender) == contractOwner, "Not permitted to view balance");
-    return payable(address(this)).balance;
-  }
+	function balance() public view returns (uint256) {
+		require(
+			payable(msg.sender) == contractOwner,
+			"Not permitted to view balance"
+		);
+		return payable(address(this)).balance;
+	}
 
 	//////////////////////////////////////////////////////
 	//
-	// main functions 
+	// main functions
 	//
 	//////////////////////////////////////////////////////
 
@@ -109,8 +115,10 @@ contract Marketplace {
 		string memory addr = toString(uint256(uint160(msg.sender)));
 		string memory timestamp = toString(block.timestamp); //for uniqueness
 
-		// hashing to make a unique id for the item: 
-		bytes32 itemUniqueHashId = keccak256(abi.encodePacked(_dataHash, price, addr, timestamp));
+		// hashing to make a unique id for the item:
+		bytes32 itemUniqueHashId = keccak256(
+			abi.encodePacked(_dataHash, price, addr, timestamp)
+		);
 
 		Item memory item = Item({
 			owner: msg.sender,
@@ -129,7 +137,6 @@ contract Marketplace {
 			arrOfItemIds.length,
 			itemIdsFromSeller[msg.sender].length
 		);
-
 	}
 
 	function sell(bytes32 _itemId) external payable {
@@ -145,17 +152,14 @@ contract Marketplace {
 		);
 
 		// remove ids or items from our variables
-		_removeFromAll(
-			itemOwner,
-			_itemId
-		);
-		
+		_removeFromAll(itemOwner, _itemId);
+
 		// handle money transaction // not yet tsested because sale is not workingggg
-		uint256 sellerProceeds = itemPrice * 95 / 100;
+		uint256 sellerProceeds = (itemPrice * 95) / 100;
 		address payable sellerAddr = payable(itemOwner);
 		(bool success, ) = sellerAddr.call{value: sellerProceeds}("");
-		
-		// TODO: cover this branch with a test 
+
+		// TODO: cover this branch with a test
 		require(success, "failed to send ether");
 
 		emit eventSell(
@@ -172,16 +176,9 @@ contract Marketplace {
 		require(foundItem.owner == msg.sender, "Only owner can delete their item!");
 
 		// remove ids or items from our variables
-		_removeFromAll(
-			foundItem.owner,
-			_itemId
-		);
+		_removeFromAll(foundItem.owner, _itemId);
 
-		emit eventDeleteItem(
-			_itemId,
-			foundItem.owner,
-			arrOfItemIds.length
-		);
+		emit eventDeleteItem(_itemId, foundItem.owner, arrOfItemIds.length);
 	}
 
 	//////////////////////////////////////////////////////
@@ -192,10 +189,7 @@ contract Marketplace {
 
 	// remove ids or items from our variables
 	function _removeFromAll(address _owner, bytes32 _itemId) internal {
-		_removeFromSeller(
-			_owner,
-			_itemId
-		);
+		_removeFromSeller(_owner, _itemId);
 		_removeFromStock(_itemId);
 		_removeFromItemIds(_itemId);
 	}
@@ -208,19 +202,23 @@ contract Marketplace {
 	}
 
 	// helper for _removeFromItemIds
-	function _getItemIndex(bytes32 _itemId, uint256 _length) internal view returns (uint256) {
+	function _getItemIndex(
+		bytes32 _itemId,
+		uint256 _length,
+		bytes32[] memory itemIds
+	) internal pure returns (uint256) {
 		uint256 i = 0;
 		for (i; i < _length; i++) {
-			if (arrOfItemIds[i] == _itemId) {
+			if (itemIds[i] == _itemId) {
 				break; // saves the state of i for our return (skips increment)
 			}
 		}
-		return i; //1 more than last index since that's what broke the loop 
+		return i; //1 more than last index since that's what broke the loop
 	}
 
 	function _removeFromItemIds(bytes32 _itemId) internal {
 		uint256 length = arrOfItemIds.length;
-		uint256 index = _getItemIndex(_itemId, length);
+		uint256 index = _getItemIndex(_itemId, length, arrOfItemIds);
 
 		// once found, shuffle our item list forward
 		for (uint256 i = index; i < length - 1; i++) {
@@ -229,29 +227,32 @@ contract Marketplace {
 		// remove the last item to reduce the length
 		arrOfItemIds.pop();
 
-		emit eventItemRemovedFromIdList(
-			index,
-			_itemId
-		);
+		emit eventItemRemovedFromIdList(index, _itemId);
 	}
 
 	// helper for _removeFromSeller
-	function _getSellerItemIndex(bytes32 _itemId, address _owner, uint256 _length) internal view returns (uint256) {
+	function _getSellerItemIndex(
+		bytes32 _itemId,
+		bytes32[] memory _ownerIds,
+		uint256 _length
+	) internal pure returns (uint256) {
 		uint256 i = 0;
 		for (i; i < _length; i++) {
-			// TODO: cover this branch with a test 
-			if (itemIdsFromSeller[_owner][i] == _itemId) {
+			// TODO: cover this branch with a test
+			if (_ownerIds[i] == _itemId) {
 				break; // saves the state of i for our return
 			}
 		}
-		return i; // 1 more than last index since that's what broke the loop 
+		return i; // 1 more than last index since that's what broke the loop
 	}
-	
-	function _removeFromSeller(address _owner, bytes32 _itemId)
-		internal
-	{
+
+	function _removeFromSeller(address _owner, bytes32 _itemId) internal {
 		uint256 length = itemIdsFromSeller[_owner].length;
-		uint256 index = _getSellerItemIndex(_itemId, _owner, length);
+		uint256 index = _getSellerItemIndex(
+			_itemId,
+			itemIdsFromSeller[_owner],
+			length
+		);
 
 		// reshuffle our seller's item list so we remove the item
 		for (uint256 i = index; i < length - 1; i++) {
