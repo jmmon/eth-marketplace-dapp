@@ -10,6 +10,20 @@ const {
 const Marketplace = artifacts.require("Marketplace");
 
 contract("Marketplace", function (accounts) {
+
+  // initialization
+
+
+  // add items
+
+  
+  // sell items
+
+
+  // delete items
+
+
+  // owner
   it("should block withdrawal if balance is less than amount", async function () {
     const instance = await Marketplace.deployed();
 
@@ -19,6 +33,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+
+  // owner
   it("should block balance viewing if not owner", async function () {
     const instance = await Marketplace.deployed();
 
@@ -28,6 +44,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+
+  // owner
   it("should allow balance check from owner", async function () {
     const instance = await Marketplace.deployed();
 
@@ -35,12 +53,16 @@ contract("Marketplace", function (accounts) {
     assert.equal(balance, 0, "initial balance should be 0");
   });
 
+
+  // initialization
   it("should start with no items", async function () {
     const instance = await Marketplace.deployed();
     const itemIdsLength = await instance.getAllItems();
     assert.equal(itemIdsLength, 0, "should start with no items");
   });
 
+
+  // sell item
   it("reverts when seller tries to buy their own item", async function () {
     const instance = await Marketplace.deployed();
     const item = {
@@ -58,6 +80,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+
+  // register items:
   it("should register an item", async function () {
     const instance = await Marketplace.deployed();
     const item = {
@@ -103,7 +127,9 @@ contract("Marketplace", function (accounts) {
       "should have the same ipfs hash"
     );
   });
+  
 
+  // sell items:
   it("should sell an item", async function () {
     const instance = await Marketplace.deployed();
     const item = {
@@ -135,7 +161,9 @@ contract("Marketplace", function (accounts) {
       "the price should be different because it's deleted"
     );
   });
+  
 
+  // sell items
   it("should revert sell from not enough funds", async function () {
     const instance = await Marketplace.deployed();
     const item = {
@@ -155,6 +183,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+  
+  // delete item
   it("should delete item if owner", async function () {
     const instance = await Marketplace.deployed();
     // add an item so we can track it to compare to make sure it worked
@@ -184,7 +214,9 @@ contract("Marketplace", function (accounts) {
     );
   });
   
-  it("should force seller items to shuffle", async function () {
+
+  // delete item
+  it("should force owner items to shuffle", async function () {
     const instance = await Marketplace.deployed();
     const item = {
       ipfsHash: "some data hash to ipfs",
@@ -217,7 +249,7 @@ contract("Marketplace", function (accounts) {
   });
 
 
-
+  // owner
   it("should not allow withdrawal from other than contract owner", async function () {
     const instance = await Marketplace.deployed();
 
@@ -229,6 +261,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+
+  // owner
   it("should allow withdrawal from contract owner", async function () {
     const instance = await Marketplace.deployed();
 
@@ -239,6 +273,8 @@ contract("Marketplace", function (accounts) {
     assert.notEqual(balance, newBalance);
   });
 
+
+  // delete
   it("reverts when trying to delete someone else's item", async function () {
     const instance = await Marketplace.deployed();
 
@@ -252,6 +288,8 @@ contract("Marketplace", function (accounts) {
     );
   });
 
+
+  // getAllItems
   it("should run getAllItems loop and count correctly", async function () {
     const instance = await Marketplace.deployed();
     const itemIds = Array.from(await instance.getAllItems());
@@ -259,6 +297,8 @@ contract("Marketplace", function (accounts) {
     assert.equal(itemIds.length, 8, "should end with 8 items remaining");
   });
 
+  
+  // add item
   it("testing getting receipt data", async function () {
     const instance = await Marketplace.deployed();
     const item = {

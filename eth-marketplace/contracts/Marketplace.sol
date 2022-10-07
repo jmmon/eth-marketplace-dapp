@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
 
+// import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
 // convert number to string
 function toString(uint256 value) pure returns (string memory) {
 	// Inspired by OraclizeAPI's implementation - MIT licence
@@ -55,7 +57,7 @@ contract Marketplace {
 		uint256 _sellerProceeds,
 		uint256 _remainingItemsForSale
 	);
-	event eventItemRemoved(bytes32 _removedItemId);
+	event eventItemRemovedFromStock(bytes32 _removedItemId);
 	event eventItemRemovedFromSeller(uint256 _index, bytes32 _itemId);
 	event eventItemRemovedFromIdList(uint256 _index, bytes32 _itemId);
 	event eventDeleteItem(
@@ -122,6 +124,7 @@ contract Marketplace {
 
 		Item memory item = Item({
 			owner: msg.sender,
+			// owner: _msgSender(),
 			ipfsHash: _dataHash,
 			price: _price,
 			id: itemUniqueHashId
@@ -146,7 +149,6 @@ contract Marketplace {
 
 		require(itemOwner != msg.sender, "Owner cannot buy their own items!");
 		require(
-			// msg.value >= foundItem.price,
 			msg.value >= 0 && itemPrice <= msg.value,
 			"Not sent enough money to buy the item"
 		);
@@ -198,7 +200,7 @@ contract Marketplace {
 	function _removeFromStock(bytes32 _itemId) internal {
 		delete itemFromId[_itemId];
 
-		emit eventItemRemoved(_itemId);
+		emit eventItemRemovedFromStock(_itemId);
 	}
 
 	// helper for _removeFromItemIds
