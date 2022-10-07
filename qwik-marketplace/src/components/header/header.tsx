@@ -11,6 +11,7 @@ import {closeAll, shortAddress} from "~/libs/utils";
 
 import {QwikLogo} from "../icons/qwik";
 import {Link, useLocation} from "@builder.io/qwik-city";
+import { EthLogo } from "../icons/eth";
 
 export default component$(() => {
 	const loc = useLocation();
@@ -36,17 +37,21 @@ export default component$(() => {
 				state.inFront && "z-10"
 			}`}
 		>
-			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] pt-1 md:pt-0">
-				<div class="justify-self-start grid grid-flow-row md:grid-flow-col h-full gap-0 md:gap-2">
-					<Link
+			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] pt-1">
+				<div class="justify-self-start grid grid-flow-col h-full gap-2 md:gap-6">
+					{/* <Link
 						href="/flower"
 						class=" transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end mr-auto px-1 my-[-4px] md:my-0"
 					>
 						<QwikLogo />
-					</Link>
+					</Link> */}
+					<div class="h-[60px]">
+						<EthLogo />
+					</div>
 					{loc.pathname === "/" ? (
 						<h1
-							class="font-bold text-white cursor-pointer transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur px-1 my-[-4px] md:my-0"
+							// class="font-bold text-white cursor-pointer transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur px-1 my-[-4px] md:my-0"
+							class="font-bold text-white cursor-pointer pt-1"
 							onClick$={() => closeAll(session)}
 						>
 							Marketplace
@@ -54,8 +59,8 @@ export default component$(() => {
 					) : (
 						<Link
 							href="/"
-							class="font-bold text-white cursor-pointer text-[2rem] transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
-						>
+							// class="font-bold text-white cursor-pointer text-[2rem] transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
+							class="font-bold text-white cursor-pointer text-[2rem] pt-1" >
 							Marketplace
 						</Link>
 					)}
