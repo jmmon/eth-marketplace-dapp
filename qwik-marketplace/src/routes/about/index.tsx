@@ -48,6 +48,11 @@ export default component$(() => {
 						lightning-fast user experience.
 					</p>
 				</div>
+				<div class="grid gap-4">
+					<h2 class="text-center text-2xl md:text-3xl">Note on IPFS data</h2>
+					<p>Because this currently only maintains an IPFS node on the client, the item data stored in IPFS may become lost when changing sessions.</p>
+
+				</div>
 			</div>
 		</section>
 	);

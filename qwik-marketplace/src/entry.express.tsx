@@ -15,6 +15,8 @@ const { router, notFound } = qwikCity(render);
 // https://expressjs.com/
 const app = express();
 
+
+
 // Static asset handlers
 // https://expressjs.com/en/starter/static-files.html
 app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: '1y' }));

@@ -10,10 +10,10 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {
-	fetchItemDataFromIPFS,
+	itemDataFromIPFS,
 	getItem,
-	handleDelete,
-	handleSell,
+	deleteItem,
+	sellItem,
 } from "~/libs/ethUtils";
 import {seeStore} from "~/libs/utils";
 import {addNotification} from "../notifications/notifications";
@@ -32,7 +32,7 @@ export default component$(() => {
 			cleanup(() => controller.abort());
 
 			// already have the item in our session, just need to fetch the extra details/photo from IPFS
-			return await fetchItemDataFromIPFS(session.details.item, controller);
+			return await itemDataFromIPFS(session.details.item, controller);
 		}
 	);
 
@@ -72,7 +72,6 @@ export const ItemDetails = component$(
 		//timers to reset states back to "ready"
 		useWatch$(({track, cleanup}) => {
 			track(store, "onPurchase");
-			// console.log({"store.onPurchase": store.onPurchase});
 			if (store.onPurchase !== "done" && store.onPurchase !== "error") return;
 			const timer = setTimeout(() => {
 				store.onPurchase = "ready";
@@ -88,6 +87,7 @@ export const ItemDetails = component$(
 				clearTimeout(timer);
 			};
 		});
+
 		useWatch$(({track, cleanup}) => {
 			track(store, "onDelete");
 			// console.log({"store.onDelete": store.onDelete});
@@ -110,7 +110,7 @@ export const ItemDetails = component$(
 		const onPurchaseWrapper = $(async () => {
 			store.onPurchase = "loading";
 			let notification = {message: "Purchase successful!", type: 0, time: 5000};
-			const response = await handleSell(itemData);
+			const response = await sellItem(itemData);
 
 			if (response.error) {
 				store.onPurchase = "error";
@@ -137,7 +137,7 @@ export const ItemDetails = component$(
 		const onDeleteWrapper = $(async () => {
 			store.onDelete = "loading";
 			let notification = {message: "Delete successful!", type: 0, time: 5000};
-			const response = await handleDelete(itemData);
+			const response = await deleteItem(itemData);
 
 			if (response.error) {
 				store.onDelete = "error";
@@ -161,7 +161,86 @@ export const ItemDetails = component$(
 			};
 		});
 
-		const purchaseButtonData = {
+		const ownerIsLoggedIn =
+			session.address?.toLowerCase() === itemData.owner.toLowerCase();
+
+		return (
+			<div class="flex w-full flex-grow flex-wrap gap-1 overflow-y-auto bg-white p-2 text-gray-700">
+				<h1 class="w-full bg-amber-100 p-2 text-center text-3xl text-gray-700 md:text-4xl">
+					{itemData.name}
+				</h1>
+				<div
+					class="h-96 w-full bg-gray-200 p-2"
+					style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center;`}
+					onClick$={() => console.log("TODO: image modal (popup)?")}
+				></div>
+				<div class="w-8/12 flex-grow bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Price:</p>
+					<Price price={itemData.price} class="text-md ml-2" />
+				</div>
+				<Button
+					type="purchase"
+					show={mutable(!ownerIsLoggedIn)}
+					clickHandler={onPurchaseWrapper}
+					state={mutable(store.onPurchase)}
+					address={mutable(session.address)}
+					classes="w-3/12 text-sm md:text-[1rem] p-1"
+					key={0}
+				/>
+				<Button
+					type="delete"
+					show={mutable(ownerIsLoggedIn)}
+					clickHandler={onDeleteWrapper}
+					state={mutable(store.onDelete)}
+					address={mutable(session.address)}
+					classes="w-3/12 text-sm md:text-[1rem] p-1"
+					key={1}
+				/>
+				<div class="w-full bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Listed By:</p>
+					{session.address ? (
+						<span
+							class="text-md cursor-pointer break-all text-blue-400"
+							onClick$={() => seeStore(itemData.owner, session)}
+						>
+							{itemData.owner}
+						</span>
+					) : (
+						<span class="text-md break-all">{"#".repeat(42)}</span>
+					)}
+				</div>
+				<div class="w-full bg-gray-100 p-2">
+					<p class="text-sm text-gray-500">Description:</p>
+					{/* <span class=" text-md z-50 ml-2 overflow-y-scroll break-all rounded border-solid border-gray-600 p-2"> */}
+					<span class=" text-md z-50 ml-2 overflow-y-scroll rounded border-solid border-gray-600 p-2">
+						{itemData.description}
+						{/* {"(fake long comment)".repeat(2 ** Math.floor(Math.random() * 5 ) - 1 )} */}
+					</span>
+				</div>
+				<Button
+					type="purchase"
+					show={mutable(!ownerIsLoggedIn)}
+					clickHandler={onPurchaseWrapper}
+					state={mutable(store.onPurchase)}
+					address={mutable(session.address)}
+					classes="w-6/12 mx-auto text-sm md:text-base min-h-[58px]"
+					key={2}
+				/>
+				{session.address && (
+					<p
+						class="mt-2 w-full cursor-pointer text-center text-blue-400 drop-shadow-md"
+						onClick$={() => seeStore(itemData.owner, session)}
+					>
+						See more from this address
+					</p>
+				)}
+			</div>
+		);
+	}
+);
+
+export const BUTTON_DATA = {
+		purchase: {
 			text: {
 				ready: "Purchase",
 				loading: "Purchasing...",
@@ -173,9 +252,8 @@ export const ItemDetails = component$(
 				base: "bg-amber-200",
 				hover: "bg-amber-50",
 			},
-		};
-
-		const deleteButtonData = {
+		},
+		delete: {
 			text: {
 				ready: "Delete",
 				loading: "Deleting...",
@@ -187,96 +265,22 @@ export const ItemDetails = component$(
 				base: "bg-red-200",
 				hover: "bg-red-50",
 			},
-		};
-
-		return (
-			<div class="w-full bg-white flex flex-wrap gap-1 text-gray-700 p-2 flex-grow overflow-y-auto">
-				<h1 class="text-3xl md:text-4xl text-center text-gray-700 p-2 w-full bg-amber-100">
-					{itemData.name}
-				</h1>
-				<div
-					class="w-full h-96 bg-gray-200"
-					style={`background: url(${itemData.imgUrl}); background-repeat: no-repeat; background-size: cover; background-position: center;`}
-					onClick$={() => console.log("TODO: image modal (popup)?")}
-				></div>
-				<div class="flex-grow w-8/12 bg-gray-100 p-2">
-					<p class="text-sm text-gray-500">Name:</p>
-					<span class="ml-2 text-md">{itemData.name}</span>
-				</div>
-				<Button
-					text={mutable(purchaseButtonData.text)}
-					colors={mutable(purchaseButtonData.colors)}
-					clickHandler={onPurchaseWrapper}
-					state={mutable(store.onPurchase)}
-					address={mutable(session.address)}
-					classes="w-3/12 text-sm md:text-[1rem] p-1"
-					key={0}
-				/>
-				<div class="flex-grow w-8/12 bg-gray-100 p-2">
-					<p class="text-sm text-gray-500">Price:</p>
-					<Price price={itemData.price} class="ml-2 text-md" />
-				</div>
-				{session.address?.toLowerCase() === itemData.owner.toLowerCase() && (
-					<Button
-						text={mutable(deleteButtonData.text)}
-						colors={mutable(deleteButtonData.colors)}
-						clickHandler={onDeleteWrapper}
-						state={mutable(store.onDelete)}
-						address={mutable(session.address)}
-						classes="w-3/12 text-sm md:text-[1rem] p-1"
-						key={1}
-					/>
-				)}
-				<div class="w-full bg-gray-100 p-2">
-					<p class="text-sm text-gray-500">Owner's Address:</p>
-					{session.address ? (
-						<span
-							class="text-blue-400 cursor-pointer text-md break-all"
-							onClick$={() => seeStore(itemData.owner, session)}
-						>
-							{itemData.owner}
-						</span>
-					) : (
-						<span class="text-md break-all">{"#".repeat(42)}</span>
-					)}
-				</div>
-				<div class="w-full bg-gray-100 p-2">
-					<p class="text-sm text-gray-500">Description:</p>
-					<span class=" text-md ml-2 border-solid rounded border-gray-600 p-2 break-all overflow-y-scroll z-50">
-						{itemData.description}
-						{"#".repeat(Math.floor(Math.random() * 10000))}
-					</span>
-				</div>
-				<Button
-					text={mutable(purchaseButtonData.text)}
-					colors={mutable(purchaseButtonData.colors)}
-					clickHandler={onPurchaseWrapper}
-					state={mutable(store.onPurchase)}
-					address={mutable(session.address)}
-					classes="w-6/12 mx-auto text-sm md:text-base min-h-[58px]"
-					key={2}
-				/>
-				{session.address && (
-					<p
-						class="text-blue-400 w-full cursor-pointer text-center mt-2 drop-shadow-md"
-						onClick$={() => seeStore(itemData.owner, session)}
-					>
-						See more from this address
-					</p>
-				)}
-			</div>
-		);
-	}
-);
+		},
+	};
 
 export const Button = component$((props) => {
-	const {text, state, clickHandler, colors, address, classes} = props;
+	const {type, show, classes, clickHandler, state, address} = props;
+
+	const {text, colors} = BUTTON_DATA[type];
+
 	return (
 		<button
-			class={`${classes} grow-0 border border-gray-400 rounded ${
+			class={`${
+				show ? "block" : "hidden"
+			} ${classes} grow-0 rounded border border-gray-400 ${
 				address === "" || state === "loading"
 					? `${colors.hover} text-gray-400 shadow-sm`
-					: `${colors.base} hover:${colors.hover} hover:shadow-sm shadow-md`
+					: `${colors.base} hover:${colors.hover} shadow-md hover:shadow-sm`
 			}`}
 			onClick$={clickHandler}
 			disabled={state === "loading" || address === ""}

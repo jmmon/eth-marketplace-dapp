@@ -6,7 +6,7 @@ import {
 	useResource$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {fetchItemDataFromIPFS} from "~/libs/ethUtils";
+import {itemDataFromIPFS} from "~/libs/ethUtils";
 import {seeDetails, seeStore, shortAddress, shortText} from "~/libs/utils";
 import {Price} from "../price/price";
 
@@ -18,7 +18,7 @@ export const ItemPreview = component$((props: {item: IContractItem | null; index
 		const controller = new AbortController();
 		cleanup(() => controller.abort());
 
-		return await fetchItemDataFromIPFS(props.item, controller);
+		return await itemDataFromIPFS(props.item, controller);
 	});
 
 	return (
@@ -39,12 +39,13 @@ export const ItemShell = component$(
 	(props: {itemData?: IItemData; error?: string, smaller?: boolean;}) => {
 		const session = useContext(SessionContext);
 
-		const header = `max-h-[56px] ${props?.smaller? "text-xl" : "text-3xl"} text-center bg-gray-100 p-2 w-full self-center`;
+		const headerStyles = `max-h-[56px] ${props?.smaller? "text-xl" : "text-3xl"} text-center bg-white p-2 w-full self-center`;
+		const imageStyles = `h-[240px] w-full bg-gray-100`;
 		return (
-			<div class={`p-2 mx-auto flex flex-wrap flex-col flex-1 text-lg text-left bg-blue-100 gap-1 w-4/12 overflow-y-clip shrink-0 ${props?.smaller ? "min-w-[260px]" : "min-w-[310px]"} max-w-[500px]`}>
+			<div class={`flex-1 p-2 mx-auto flex flex-wrap flex-col text-lg text-left bg-blue-100 gap-1 overflow-y-clip shrink-0 ${props?.smaller ? "min-w-[260px]" : "min-w-[310px]"} max-w-[500px]`}>
 				{props?.itemData ? (
 					<h3
-						class={`${header} text-gray-700 ${
+						class={`${headerStyles} text-gray-700 ${
 							props?.itemData?.name && "cursor-pointer"
 						}`}
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
@@ -52,47 +53,40 @@ export const ItemShell = component$(
 						{shortText(props.itemData?.name, 20)}
 					</h3>
 				) : props?.error ? (
-					<h3 class={`${header} text-gray-700`}>
+					<h3 class={`${headerStyles} text-gray-700`}>
 						{props.error}
 					</h3>
 				) : (
-					<h3 class={`${header} text-gray-100`}>
+					<h3 class={`${headerStyles} text-white`}>
 						Loading...
 					</h3>
 				)}
 				{props?.itemData?.imgUrl ? (
 					<div
-						class=" cursor-pointer h-[200px] w-full"
+						class={`cursor-pointer ${imageStyles}`}
 						style={`background: url(${props.itemData.imgUrl}); 
 						background-repeat: no-repeat; 
 						background-size: cover; 
 						background-position: center; 
 						`}
-						// min-width: 290px;
 						onClick$={() => seeDetails(props?.itemData?.id, session)}
 					></div>
 				) : (
 					<div
-						class="bg-gray-100 h-[200px] w-full"
+						class={imageStyles}
 					></div>
 				)}
 				<div class="grid gap-1 bg-gray-100 text-gray-700 p-2">
-					<div>
-						<p class="text-sm text-gray-500">Name:</p>
-						<span class="ml-2">{props?.itemData?.name ?? " "}</span>
-					</div>
-					<div>
-						<p class="text-sm text-gray-500">Price:</p>
+					<div class="flex justify-end">
 						<Price
-							price={props?.itemData?.price ?? " "}
-							class="ml-2"
-							class={!props?.itemData ? `ml-2 text-gray-400` : "ml-2"}
+							price={props?.itemData?.price ?? ""}
+							class={`ml-2 ${!props?.itemData ? `text-gray-400` : ""} `}
 						/>
 					</div>
 					<div>
-						<p class="text-sm text-gray-500">Owner's Address:</p>
+						<p class="text-sm text-gray-500">Listed by:</p>
 						{session.address && props?.itemData?.owner ? (
-							<span
+							<span 
 								class="text-blue-400 cursor-pointer"
 								onClick$={() => seeStore(props?.itemData?.owner, session)}
 							>

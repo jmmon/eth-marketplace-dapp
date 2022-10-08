@@ -1,20 +1,17 @@
 declare var window: any;
-import {
-	component$,
-	Slot,
-	useContextProvider,
-	useStore,
-} from "@builder.io/qwik";
+import {component$, Slot, useClientEffect$, useContextProvider, useStore} from "@builder.io/qwik";
 import Header from "../components/header/header";
 import {SessionContext} from "~/libs/context";
 import Overlay from "~/components/overlay/overlay";
+import {Link} from "@builder.io/qwik-city";
+import Footer from "~/components/footer/footer";
+import { metamaskInit } from "~/libs/ethUtils";
 
 export default component$(() => {
 	const session = useStore(
 		{
 			address: "", // address of the connected wallet
-			// isBrowser: false, // set to true in useClientEffect... needed??
-			create: { // create page
+			create: {
 				show: false,
 				note: {
 					message: "",
@@ -22,20 +19,22 @@ export default component$(() => {
 				},
 			},
 			items: {
+				all: [],
+				filtered: [],
 				stale: true,
-				list: [],
+				showMissing: false,
 			},
-			details: { // details page
+			details: {
 				show: false,
 				item: null,
-				stale: false,
 			},
-			store: { // store page for particular address
+			store: { // a particular address's items
 				show: false,
 				address: "",
 				items: [],
 			},
-			notifications: { // notifications for various actions
+			notifications: {
+				// notifications for various actions
 				each: [],
 				nextIndex: 0,
 			},
@@ -45,15 +44,22 @@ export default component$(() => {
 
 	useContextProvider(SessionContext, session);
 
+	useClientEffect$(() => {
+		metamaskInit(session);
+	})
+
 	return (
-		<div>
-			<main>
-				<div class="pt-20">
-				<Slot />
-				</div>
-			</main>
-			<Header />
-			<Overlay />
-		</div>
+		<>
+			{/* min-height pushes footer down */}
+			<div class="min-h-[90vh]">
+				<main class="pt-20">
+					<Slot />
+				</main>
+				{/* header and overlay are below so they stay above the content (z-index) */}
+				<Header />
+				<Overlay />
+			</div>
+			<Footer />
+		</>
 	);
 });

@@ -20,22 +20,38 @@ import Styles from "./index.css?inline";
 export default component$(() => {
 	const session = useContext(SessionContext); // our connected/logged in state
 
-	// fetch items when stale
 	useClientEffect$(async ({track}) => {
-		track(session, "items");
-		// track(session, 'items');
+		track(session.items, "stale");
 		if (!session.items.stale) return;
-		console.log("items are stale, re-fetching items");
 
-		session.items.stale = false;
 		const {items, error} = await getItems();
+
 		if (error) {
-			console.log("error with getItems():", error?.message);
+			// console.log("error with getItems():", error?.message);
 			addNotification(session, `Error getting items: ${error?.message}`);
+			session.items.stale = false;
 			return;
 		}
-		session.items.list = items;
-	});
+
+		session.items.all = items;
+
+		session.items.filtered = items.filter(
+				(item) =>
+					item.owner &&
+					item.owner !== "" &&
+					item.imgUrl &&
+					item.imgUrl !== "" &&
+					item.name &&
+					item.name !== "" &&
+					item.description &&
+					item.description !== "" &&
+					item.price &&
+					item.price !== ""
+			);
+
+
+		session.items.stale = false;
+	})
 
 	useStylesScoped$(Styles);
 	return (
@@ -50,7 +66,7 @@ export default component$(() => {
 					</h1>
 				</Modal>
 			)}
-			
+
 			{session.store.address !== "" && (
 				<Modal modal={mutable(session.store)}>
 					<Store />

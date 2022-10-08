@@ -11,7 +11,7 @@ export const shortAddress = (address: string) =>
 
 export const seeStore = (address: string, session: ISessionContext) => {
   // filter our items to find all created by a given address
-  const items = session.items.list.filter((item) => item?.owner === address);
+  const items = session.items.all.filter((item) => item?.owner === address);
   
   // hide details page, and set and show store page
   session.details.show = false;
@@ -26,20 +26,11 @@ export const seeDetails = (id: string, session: ISessionContext) => {
   session.store.show = false;
 
   // search our already fetched items for the matching one
-  // const prevItem = session.details.item;
-  const item = session.items.list.find((item) => item?.id === id);
-  let stale: boolean = false; // probably don't need this...
-
-  // if (prevItem?.id !== item.id) {
-  //   stale = true;
-  // }
-
-  // console.log('details item is now', {item}, 'and was it stale?', {stale});
+  const item = session.items.all.find((item) => item?.id === id);
 
   session.details = {
     item, 
     show: true,
-    stale,
   };
 };
 

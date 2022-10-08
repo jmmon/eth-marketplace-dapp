@@ -93,3 +93,18 @@ TODO as of sept 18th:
 
 		header:
 (DONE)	  	prevent address click on small screens? it overflows...
+
+
+
+
+TODO (Oct 8th):
+	Create sends form data and photo to the server. 
+		Server can receive file when new file is chosen, while waiting to upload it to IPFS until the "Add Item" button is clicked.
+	On submit, the latest photo is uploaded to IPFS, all photos are deleted from the file system, and then the rest of the item data is uploaded to IPFS. Now it's ready for the smart contract, so it can be added on the server or the client.
+
+	This way, at least we have a persistent server to keep our IPFS data for a while (until it upgrades). 
+
+	Bonus: add server-side auto-pinning on IPFS for any files the client sees that are not yet pinned on the server.
+	Story: I want to upgrade the server while keeping all of the previous data.
+	How: Run a client and get all items in the client IPFS node. Then upgrade and restart the server. Now (need to make a request to the server somehow somewhen?) the client can post to the server (when?? On create new item?) and post all IPFS hash data for the client items, so the server can pin them all again.
+	Or? Some handshake: When client refetches items, some check to update server items?????? 

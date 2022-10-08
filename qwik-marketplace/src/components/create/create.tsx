@@ -5,17 +5,15 @@ import {
 	useClientEffect$,
 	useContext,
 	useRef,
+	useServerMount$,
 	useStore,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {create} from "ipfs-http-client";
 
-import {addItemToMarket, convertPrice} from "~/libs/ethUtils";
+import {addItemToMarket, convertPriceFromWei, connect} from "~/libs/ethUtils";
 import {addNotification} from "~/components/notifications/notifications";
 
-export const ipfsOptions = {url: "http://127.0.0.1:5001"};
-export const ipfs = create(ipfsOptions);
-// export const Buffer = import('buffer/').Buffer  // note: the trailing slash is important!
+import { ipfsClient as ipfs } from "~/libs/ipfs";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
@@ -28,13 +26,10 @@ export default component$(() => {
 	// import polyfill, adds window.buffer.Buffer() method
 	useClientEffect$(() => {
 		import("~/libs/wzrdin_buffer_polyfill.js");
-		// import('buffer/').Buffer  // note: the trailing slash is important!
 	});
 
 	const handleSubmitForm = $(async (target: HTMLFormElement) => {
 		let handleSubmitData: () => void;
-		// var Buffer = await import('buffer/').Buffer  // note: the trailing slash is important!
-		// console.log('buffer is imported:', Buffer);
 		try {
 			// step 2
 			// the data upload (after image uploads)
@@ -53,14 +48,12 @@ export default component$(() => {
 					[...formData.entries()]
 						.filter(([key, value]) => key !== "photo")
 						.forEach(([key, value]) => (formattedFormData[key] = value));
-					// console.log({formDataObject: formattedFormData});
 
 					// handle price conversion
-					formattedFormData.price = convertPrice(formattedFormData);
+					formattedFormData.price = convertPriceFromWei(formattedFormData);
 
 					// add imageString from image upload step
 					formattedFormData.imgHash = formState.imageString;
-					// console.log("final formDataObject:", formattedFormData);
 
 					const validateForm = (
 						formDataObject: ICreateFormDataObject
@@ -89,11 +82,6 @@ export default component$(() => {
 
 					// return buffer of JSON of data
 					const formDataJson = JSON.stringify(formattedFormData);
-					// const oldBuf = window.buffer.Buffer(formDataJson);
-					// const newBuf = cBuffer.from(formDataJson);
-					// const newBuf = Buffer.from(formDataJson);
-					// console.log('data buffs equal?', oldBuf == newBuf, {oldBuf, newBuf});
-					// return newBuf;
 					return window.buffer.Buffer(formDataJson);
 				};
 				const bufData = formatFormDataToBuffer();
@@ -106,12 +94,7 @@ export default component$(() => {
 					const {cid} = await ipfs.add(bufData);
 
 					formState.dataString = cid.toString();
-					addNotification(
-						session,
-						`ItemData upload successful! ${formState.dataString}`,
-						0,
-						3000
-					);
+
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
@@ -185,25 +168,16 @@ export default component$(() => {
 			const reader = new FileReader();
 			reader.onloadend = async () => {
 				const bufPhoto = window.buffer.Buffer(reader.result);
-				// const oldBuf = window.buffer.Buffer(reader.result);
-				// const newBuf = Buffer.from(reader.result);
-				// const newBuf = cBuffer.from(reader.result);
-				// const bufPhoto = newBuf;
-				// console.log('photo buffs equal?', oldBuf == newBuf, {oldBuf, newBuf})
+				console.log('filereader onLoadEnd');
 
 				try {
 					const {cid} = await ipfs.add(bufPhoto);
 					formState.imageString = cid.toString();
-
-					addNotification(
-						session,
-						`Image file uploaded! Reference string: ${formState.imageString}`,
-						3,
-						3000
-					);
+					console.log('after adding photo to IPFS');
 
 					// trigger the next step
 					handleSubmitData();
+
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading image to IPFS: ${err.message}`;
@@ -217,7 +191,7 @@ export default component$(() => {
 
 			reader.readAsArrayBuffer(photoInputRef.current.files[0] as Blob);
 		};
-
+		// connect();
 		handleUploadPhoto();
 	});
 	return (
@@ -229,7 +203,7 @@ export default component$(() => {
 			<h1 class="mx-auto text-lx md:text-2xl text-gray-500">
 				Add Item to Marketplace
 			</h1>
-			<fieldset class="w-full border rounded mx-auto p-2 shadow">
+			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow">
 				<label class="text-gray-500 flex-grow">
 					Name:
 					<input
@@ -242,7 +216,7 @@ export default component$(() => {
 					/>
 				</label>
 			</fieldset>
-			<fieldset class="w-full border rounded mx-auto p-2 shadow flex">
+			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow flex">
 				<label class="text-gray-500 flex-grow">
 					Price:
 					<input
@@ -264,19 +238,19 @@ export default component$(() => {
 				</label>
 			</fieldset>
 
-			<fieldset class="w-full border rounded flex-grow mx-auto p-2 shadow">
+			<fieldset class="w-full max-w-[600px] border rounded flex-grow mx-auto p-2 shadow">
 				<label class="text-gray-500">
 					Description:
 					<textarea
 						name="description"
-						class="block h-full w-full text-black placeholder-gray-300"
+						class="block w-full h-[calc(100%-1.5rem)] text-black placeholder-gray-300"
 						placeholder="Description"
 						id="description"
 						required
 					/>
 				</label>
 			</fieldset>
-			<fieldset class="w-full border rounded mx-auto p-2 shadow">
+			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow">
 				<label class="text-gray-500">
 					Upload a Photo:
 					<input
@@ -291,12 +265,13 @@ export default component$(() => {
 					</input>
 				</label>
 			</fieldset>
-			<button class=" w-full border rounded mx-auto py-4 bg-gray-100 text-gray-700  shadow-md hover:shadow hover:bg-gray-200 hover:border-gray-300">
+			<button class=" w-full max-w-[600px] border rounded mx-auto py-4 bg-gray-100 text-gray-700  shadow-md hover:shadow hover:bg-gray-200 hover:border-gray-300">
 				Add Item To Blockchain Marketplace
 			</button>
 			{session.create.note.message !== "" && (
 				<p
-					class={`w-full text-center border rounded mx-auto p-4 text-gray-700 shadow-md ${session.create.note.class}`}
+					class={`w-full max-w-[600px] 
+					text-center border rounded mx-auto p-4 text-gray-700 shadow-md ${session.create.note.class}`}
 				>
 					{session.create.note.message}
 				</p>

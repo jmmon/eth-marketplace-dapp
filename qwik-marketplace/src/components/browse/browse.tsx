@@ -7,16 +7,68 @@ export default component$(() => {
 	const session = useContext(SessionContext);
 
 	return (
-		<div class="w-full p-2 md:p-4 grid gap-4 md:gap-6 justify-center">
+		<div class="grid w-full justify-center gap-4 p-2 md:gap-6 md:p-4">
 			<h1
-				class="header text-center text-3xl md:text-5xl lg:text-6xl text-blue-800 cursor-pointer mx-auto"
+				class="mx-auto cursor-pointer text-center text-3xl text-blue-800 md:text-5xl lg:text-6xl"
 				onClick$={() => generateNotification(session)}
 			>
 				Browse Marketplace
 			</h1>
+			<div class="flex w-full flex-col items-center justify-center text-gray-500">
+				<label class="flex gap-1 cursor-pointer">
+					<input
+						type="checkbox"
+						value="show"
+						onChange$={() =>
+							(session.items.showMissing = !session.items.showMissing)
+						}
+					/>
+					Show items missing data
+				</label>
+				{session.items.showMissing && (
+					<p>(Showing items that may no longer exist on IPFS)</p>
+				)}
+			</div>
 			<div class="grid grid-cols-1 justify-items-center ">
-				<div class="flex flex-wrap justify-items-center items-center gap-4 text-xl my-auto max-w-[1200px]">
-					{session.items.list.length === 0 ? (
+				<div class="my-auto flex max-w-[1200px] flex-wrap items-center justify-items-center gap-4 text-xl">
+					{session.items.showMissing ? (
+						session.items.all.length === 0 && session.items.stale === false ? (
+							<div
+								class="cursor-pointer pt-4"
+								onClick$={() => (session.create.show = true)}
+							>
+								No items were found on the blockchain. Try adding an item!
+							</div>
+						) : session.items.all.length > 0 ?
+						(
+						(console.log("rendering all items"),
+						session.items.all.map((item, index) => (
+							<ItemPreview key={item.id} item={mutable(item)} />
+						)))
+						) : (
+							<div class="pt-4">Loading items...</div>
+						)
+
+					) : (
+						session.items.filtered.length === 0 && session.items.stale === false ? (
+							<div
+								class="cursor-pointer pt-4"
+								onClick$={() => (session.create.show = true)}
+							>
+								No items were found on the blockchain. Try adding an item!
+							</div>
+						) : session.items.filtered.length > 0 ?
+						(
+						(console.log("rendering filtered items"),
+						session.items.filtered.map((item, index) => (
+							<ItemPreview key={item.id} item={mutable(item)} />
+						)))
+						) : (
+							<div class="pt-4">Loading items...</div>
+						)
+					)}
+
+					{/* {session.items.show.length === 0 ? (
 						session.items.stale === false ? (
 							<div
 								class="cursor-pointer pt-4"
@@ -29,14 +81,14 @@ export default component$(() => {
 						)
 					) : (
 						(console.log("rendering session items"),
-						session.items.list.map((item, index) => (
+						session.items.show.map((item, index) => (
 							<ItemPreview key={item.id} item={mutable(item)} />
 						)))
-					)}
+					)} */}
 				</div>
 			</div>
 			<div class="w-full text-center text-gray-700">
-				{session.items.list.length} Items Total
+				{session.items.showMissing ? session.items.all.length : session.items.filtered.length} Items Total
 			</div>
 		</div>
 	);

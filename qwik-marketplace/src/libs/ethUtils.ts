@@ -1,396 +1,24 @@
 declare var window: any;
+import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
+import { CONTRACT, ETH_CONVERSION_RATIOS } from "./constants";
+import { IPFS_FETCH_URL } from "./ipfs";
 
-export const CONTRACT = {
-  address: "0x45a1009F5FFe45eFE8436A43c02137Fcd940CcBC",
-  abi: [
-    {
-      inputs: [],
-      stateMutability: "nonpayable",
-      type: "constructor",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          components: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "string",
-              name: "ipfsHash",
-              type: "string",
-            },
-            {
-              internalType: "uint256",
-              name: "price",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes32",
-              name: "id",
-              type: "bytes32",
-            },
-          ],
-          indexed: false,
-          internalType: "struct Marketplace.Item",
-          name: "_item",
-          type: "tuple",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_itemsForSaleCount",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_sellersItemsLength",
-          type: "uint256",
-        },
-      ],
-      name: "eventAddItem",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "bytes32",
-          name: "_itemId",
-          type: "bytes32",
-        },
-        {
-          indexed: false,
-          internalType: "address",
-          name: "_owner",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_newItemListLength",
-          type: "uint256",
-        },
-      ],
-      name: "eventDeleteItem",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "bytes32",
-          name: "_removedItemId",
-          type: "bytes32",
-        },
-      ],
-      name: "eventItemRemoved",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_index",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "bytes32",
-          name: "_itemId",
-          type: "bytes32",
-        },
-      ],
-      name: "eventItemRemovedFromIdList",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_index",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "bytes32",
-          name: "_itemId",
-          type: "bytes32",
-        },
-      ],
-      name: "eventItemRemovedFromSeller",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_valueSent",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_itemPrice",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_contractBalance",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_sellerProceeds",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "_remainingItemsForSale",
-          type: "uint256",
-        },
-      ],
-      name: "eventSell",
-      type: "event",
-    },
-    {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "arrOfItemIds",
-      outputs: [
-        {
-          internalType: "bytes32",
-          name: "",
-          type: "bytes32",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "bytes32",
-          name: "",
-          type: "bytes32",
-        },
-      ],
-      name: "itemFromId",
-      outputs: [
-        {
-          internalType: "address",
-          name: "owner",
-          type: "address",
-        },
-        {
-          internalType: "string",
-          name: "ipfsHash",
-          type: "string",
-        },
-        {
-          internalType: "uint256",
-          name: "price",
-          type: "uint256",
-        },
-        {
-          internalType: "bytes32",
-          name: "id",
-          type: "bytes32",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      name: "itemIdsFromSeller",
-      outputs: [
-        {
-          internalType: "bytes32",
-          name: "",
-          type: "bytes32",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "string",
-          name: "_dataHash",
-          type: "string",
-        },
-        {
-          internalType: "uint256",
-          name: "_price",
-          type: "uint256",
-        },
-      ],
-      name: "addItem",
-      outputs: [
-        {
-          internalType: "bool",
-          name: "success",
-          type: "bool",
-        },
-      ],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "bytes32",
-          name: "_itemId",
-          type: "bytes32",
-        },
-      ],
-      name: "sell",
-      outputs: [],
-      stateMutability: "payable",
-      type: "function",
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "bytes32",
-          name: "_itemId",
-          type: "bytes32",
-        },
-      ],
-      name: "deleteItem",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "getAllItems",
-      outputs: [
-        {
-          components: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "string",
-              name: "ipfsHash",
-              type: "string",
-            },
-            {
-              internalType: "uint256",
-              name: "price",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes32",
-              name: "id",
-              type: "bytes32",
-            },
-          ],
-          internalType: "struct Marketplace.Item[]",
-          name: "",
-          type: "tuple[]",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [],
-      name: "getItemIdsLength",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "_sellerAddress",
-          type: "address",
-        },
-      ],
-      name: "getItemIdsFromSeller",
-      outputs: [
-        {
-          internalType: "bytes32[]",
-          name: "",
-          type: "bytes32[]",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-  ],
+export const convertPriceFromWei = (
+  units: String,
+  price: String,
+): string => {
+  // console.log('convertPriceFromWei:', {units, price});
+  return String(+price / ETH_CONVERSION_RATIOS[units])
 };
 
-export const ETH_CONVERSION_RATIOS: {
-  eth: number;
-  gwei: number;
-  wei: number;
-  [key: string]: number;
-} = {
-  eth: 10 ** 18,
-  gwei: 10 ** 9,
-  wei: 1,
-};
-
-export const convertPrice = ({
-  units,
-  price,
-}: {
-  units: string;
-  price: string;
-}): string => String(+price * ETH_CONVERSION_RATIOS[units]);
+export const convertPriceToWei = (
+  units: String,
+  price: String,
+): string => {
+  // console.log('convertPriceToWei:', {units, price});
+  return String(+price * ETH_CONVERSION_RATIOS[units]);
+}
 
 export const connect = async () => {
   let provider;
@@ -405,7 +33,7 @@ export const connect = async () => {
     console.log('connect ethUtils: sending "eth_requestAccounts"');
     address = (await provider.send("eth_requestAccounts", []))[0];
   } catch (error) {
-    console.log("error getting items:", error.message);
+    console.log("Error connecting to Metamask:", error.message);
     return Promise.reject(error);
   }
 
@@ -421,13 +49,14 @@ export const getContract = async (withSigner: boolean = false) => {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
   } catch (error) {
-    console.log('Error getting provider:', error.message);
+    console.log("Error getting provider:", error.message);
     return null;
   }
-  
+
   if (!withSigner) {
     return contract;
   }
+
   try {
     contract = await contract.connect(await provider.getSigner());
   } catch (error) {
@@ -447,78 +76,49 @@ export const formatItem = (item: Array<any>): IContractItem => {
   };
 };
 
-// export const getItem = async (id: string): Promise<IContractItem | any> => {
-//   try {
-//     const contract = await getContract();
+export const getItems = async (): Promise<{
+  items: IContractItem[];
+  error?: any;
+}> => {
+  let contract;
 
-//     const item = (await contract.itemFromId(id)) as Array<any>;
-//     // console.log("item from the smart contract!:", { item });
-
-//     const formattedItem = formatItem(item);
-
-//     // console.log({ formattedItem });
-//     return formattedItem;
-//   } catch (error) {
-//     console.log("error getting item:", error.message);
-//     return Promise.reject(error);
-//   }
-// };
-
-export const getItems = async (): Promise<{items: IContractItem[]; error?: any;}> => {
   try {
-    const contract = await getContract();
+    contract = await getContract();
 
+  } catch (error) {
+    console.log("error getting contract:", error);
+    return { items: Promise.resolve([]), error };
+  }
+
+  try {
     const items = (await contract.getAllItems()) as Array<any>;
 
     const formattedItems = items?.map((item) => formatItem(item));
 
-    // console.log({ formattedItems });
-    return {items: formattedItems, error: null};
+    return { items: formattedItems, error: null };
+
   } catch (error) {
-    console.log("error getting items:", error);
-    return {items: Promise.resolve([]), error};
+    console.log("error running getAllItems method on contract:", error);
+    return { items: Promise.resolve([]), error };
   }
 };
 
-// export const getItemsFromAddress = async (
-//   address: string
-// ): Promise<IContractItem[]> => {
-//   try {
-//     const contract = await getContract();
-
-//     const itemIds = (await contract.getItemIdsFromSeller(
-//       address
-//     )) as Array<any>;
-//     console.log("itemIds from the smart contract!:", { itemIds });
-
-//     // fetch each item from contract and format it
-//     const formattedItemsPromises = itemIds.map(async (thisId) =>
-//       formatItem((await contract.itemFromId(thisId)) as Array<any>)
-//     );
-//     console.log({ formattedItemsPromises });
-//     const formattedItems = await Promise.all(formattedItemsPromises);
-//     console.log({ formattedItems });
-//     return formattedItems;
-//   } catch (error) {
-//     console.log("error getting items:", error);
-//     return Promise.resolve([]);
-//   }
-// };
-
-export const fetchItemDataFromIPFS = async (
+export const itemDataFromIPFS = async (
   item: IContractItem | null,
   controller?: AbortController
 ): Promise<IItemData> => {
   if (item === null) return Promise.reject({});
   if (!item.ipfsHash) return Promise.reject({});
-  const url = `http://localhost:8080/ipfs/${item.ipfsHash}`;
+
+  const url = `${IPFS_FETCH_URL}${item.ipfsHash}`;
+
   const baseData = await (
     await fetch(url, {
       signal: controller?.signal,
     })
   ).json();
 
-  const imgUrl = `http://localhost:8080/ipfs/${baseData.imgHash}`;
+  const imgUrl = `${IPFS_FETCH_URL}${baseData.imgHash}`;
 
   const itemData = {
     ...baseData,
@@ -533,7 +133,7 @@ export const fetchItemDataFromIPFS = async (
   return Promise.reject(itemData);
 };
 
-export const handleSell = async (
+export const sellItem = async (
   itemData: IItemData
 ): Promise<{ success: boolean; error: { message: string } | null }> => {
   try {
@@ -549,7 +149,7 @@ export const handleSell = async (
   }
 };
 
-export const handleDelete = async (
+export const deleteItem = async (
   itemData: IItemData
 ): Promise<{ success: boolean; error: { message: string } | null }> => {
   try {
@@ -564,35 +164,27 @@ export const handleDelete = async (
   }
 };
 
-// watches for metamask address changes
-export const maintainSameAddress = async (session: ISessionContext) => {
-  session.address = (
-    await window?.ethereum.request({ method: "eth_accounts" })
-  )[0];
-  console.log("initial address:", session.address);
+// // watches for metamask address changes
+// export const maintainSameAddress = async (session: ISessionContext) => {
+//   // every second, check address again
+//   const accountInterval = setInterval(async () => {
+//     const newAddress = (
+//       await window.ethereum.request({ method: "eth_accounts" })
+//     )[0];
 
-  const accountInterval = setInterval(async () => {
-    // every second, check address again
-    const address = (
-      await window.ethereum.request({ method: "eth_accounts" })
-    )[0];
+//     if (newAddress !== session.address) {
+//       console.log("New address:", newAddress);
 
-    // while we have an initial address, if the address changes save our new address (and reload if needed);
-    if (address !== session.address && session.address !== "undefined") {
-      console.log("New address:", address);
-      if (address === "undefined") {
-        console.log("Address undefined, clearing address from context");
-      }
-      // set to undefined or new address
-      session.address = address;
-    }
-  }, 1000);
-};
+//       session.address = newAddress;
+//       session.items.stale = true; // refetch in case
+//     }
+//   }, 1000);
+// };
 
-export const handleConnect = async (session: ISessionContext) => {
+export const connectMetamask = async (session: ISessionContext) => {
   try {
     // check if unlocked
-    console.log("checking if unlocked from handleConnect");
+    console.log("checking if unlocked from connectMetamask");
     const address = (
       await window?.ethereum.request({
         method: "eth_requestAccounts",
@@ -601,8 +193,9 @@ export const handleConnect = async (session: ISessionContext) => {
 
     //save address to our store
     session.address = address;
+    console.log("initial address:", session.address);
 
-    maintainSameAddress(session);
+    // maintainSameAddress(session);
   } catch (error) {
     console.log("Error connecting metamask:", error.message);
     return error;
@@ -628,5 +221,53 @@ export const addItemToMarket = async (
     return { data: jsonTx, error: null };
   } catch (error) {
     return { data: null, error };
+  }
+};
+
+// new metamask connections function:
+// useClientEffect:
+
+export const metamaskInit = async (session: ISessionContext) => {
+  const provider = await detectEthereumProvider();
+  console.log({ provider });
+
+  if (provider) {
+    /************************************************ */
+    /* detect chainID, handle change chainId          */
+    /************************************************ */
+    let chainId = await ethereum.request({ method: "eth_chainId" });
+    console.log("Connected to chainId:", chainId);
+
+    ethereum.on("chainChanged", function (networkId) {
+      console.log(
+        "Metamask network has changed! Old network:",
+        chainId,
+        "\nNew network ID:",
+        networkId
+      );
+      chainId = networkId;
+      session.items.stale = true; // refetch in case
+    });
+
+    /************************************************ */
+    /* handle change accounts                         */
+    /************************************************ */
+
+    console.log("checking if unlocked from connectMetamask");
+
+    ethereum.on("accountsChanged", function (accounts) {
+      if (accounts.length === 0) {
+        session.address = "";
+        console.log("Please connect metamask");
+      } else if (accounts[0] !== session.address) {
+        console.log("switching accounts to ", accounts[0] + "...");
+        session.address = accounts[0];
+        session.items.stale = true; // refetch in case
+      }
+    });
+  } else {
+    // could connect to fallback network;
+    console.warn("No web3 detected, please install Metamask!");
+    return new Error("Error detecting Metamask: Please install Metamask!");
   }
 };

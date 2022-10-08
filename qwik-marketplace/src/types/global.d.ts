@@ -29,8 +29,7 @@ declare interface INotificationsEach {
 }
 
 declare interface ISessionContext {
-	address?: string;
-	// isBrowser?: boolean;
+	address: string;
 	create: {
 		show: boolean;
 		note: {
@@ -39,8 +38,10 @@ declare interface ISessionContext {
 		};
 	};
 	items: {
+		all: IContractItem[];
+		filtered: IContractItem[];
 		stale: boolean;
-		list: IContractItem[];
+		showMissing: boolean;
 	}
 	details: {
 		show: boolean;

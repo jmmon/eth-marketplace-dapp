@@ -5,7 +5,7 @@ import {
 	useStore,
 	useWatch$,
 } from "@builder.io/qwik";
-import { ETH_CONVERSION_RATIOS } from "~/libs/ethUtils";
+import { convertPriceFromWei, convertPriceToWei } from "~/libs/ethUtils";
 
 interface IPriceState {
 	units: string;
@@ -20,7 +20,7 @@ export const Price = component$(
 	}) => {
 		const state = useStore<IPriceState>({
 			units: props.default ?? 'eth',
-			output: " ",
+			output: "",
 		});
 
 		const cycleUnits = $(() => {
@@ -34,27 +34,30 @@ export const Price = component$(
 
 		useWatch$(({track}) => {
 			track(state, "units");
-			if (props.price === " ") return;
+			if (props.price === "") return;
 
 			//re calculate
-			const price = String(+props.price / ETH_CONVERSION_RATIOS[state.units]);
 
-			// limit decimal places to 8
-			const x = 8;
-			state.output = Math.round(price * Math.pow(10,x)) / Math.pow(10,x);
+			// Price component: takes price in wei, and displays converted price based on which units is in state.
+			// console.log({propsPrice: props.price, units: state.units});
+			const newOutputPrice = convertPriceFromWei(state.units, props.price);
+			// console.log('converting price from wei:', {newOutputPrice, units: state.units});
 
-			const weiFromOutput = String(+state.output * ETH_CONVERSION_RATIOS[state.units]);
+			// take output price and round to 8 decimal places
+			const roundedOutputPrice = Math.round(newOutputPrice * Math.pow(10, 8)) / Math.pow(10, 8);
 
-			// show tilde if output converted to wei is not equal to wei!! to cover all "approximate" cases
-			state.output = (weiFromOutput !== props.price && "~") + state.output;
+			// next, we need to see if props.price is equal to convertToWei(roundedOutputPrice)
+			const weiFromRoundedOutputPrice = convertPriceToWei(state.units, roundedOutputPrice);
+
+			state.output = (props.price !== weiFromRoundedOutputPrice) ? '~'+roundedOutputPrice : roundedOutputPrice;
 		});
 
 		return (
 			<span
 				onClick$={cycleUnits}
-				class={`cursor-pointer ${props.class ?? ""}`}
+				class={`w-full cursor-pointer ${props.class ?? ""}`}
 			>
-				{state.output} {state.units} 
+				{state.output} {state.units.toUpperCase()} 
 			</span>
 		);
 	}
