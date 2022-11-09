@@ -8,8 +8,8 @@ Connects to a marketplace smart contract on the Ethereum Goerli testnet, and sto
 - `cd qwik-marketplace` and `npm start` to start the qwik client in dev mode
 - Note: Since Qwik is new and in beta, there is a bug preventing production builds of this app due to the Buffer polyfill used on the client. Once that bug is fixe
 
-![Marketplace Homepage](https://user-images.githubusercontent.com/67028427/200962692-9afde788-90ea-413d-8214-47e4579f590f.png =500x500)
-
+![Marketplace Homepage](https://user-images.githubusercontent.com/67028427/200962692-9afde788-90ea-413d-8214-47e4579f590f.png)
+<img src="[https://github.com/favicon.ico](https://user-images.githubusercontent.com/67028427/200962692-9afde788-90ea-413d-8214-47e4579f590f.png)" width="500px">
 You'll see a toggle to show items with missing data. If this is connected to the Goerli testnet, the IPFS data is always stored locally so some items that were added previously may not have a valid IPFS data link anymore, so they are hidden by default.
 
 If starting all locally, the toggle should do nothing since the local deployed smart contract should not have any items stored yet.
