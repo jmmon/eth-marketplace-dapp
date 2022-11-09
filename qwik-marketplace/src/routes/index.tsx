@@ -54,6 +54,7 @@ export default component$(() => {
 	})
 
 	useStylesScoped$(Styles);
+
 	return (
 		<div>
 			{session.details.item && (
