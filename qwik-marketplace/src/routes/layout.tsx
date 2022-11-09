@@ -23,6 +23,7 @@ export default component$(() => {
 				filtered: [],
 				stale: true,
 				showMissing: false,
+				refetch: false,
 			},
 			details: {
 				show: false,

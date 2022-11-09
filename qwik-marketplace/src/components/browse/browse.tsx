@@ -64,27 +64,12 @@ export default component$(() => {
 							<ItemPreview key={item.id} item={mutable(item)} />
 						)))
 						) : (
-							<div class="pt-4">Loading items...</div>
+							<div 
+							class="pt-4"
+							onClick$={() => null}
+							>Loading items...</div>
 						)
 					)}
-
-					{/* {session.items.show.length === 0 ? (
-						session.items.stale === false ? (
-							<div
-								class="cursor-pointer pt-4"
-								onClick$={() => (session.create.show = true)}
-							>
-								No items were found on the blockchain. Try adding an item!
-							</div>
-						) : (
-							<div class="pt-4">Loading items...</div>
-						)
-					) : (
-						(console.log("rendering session items"),
-						session.items.show.map((item, index) => (
-							<ItemPreview key={item.id} item={mutable(item)} />
-						)))
-					)} */}
 				</div>
 			</div>
 			<div class="w-full text-center text-gray-700">

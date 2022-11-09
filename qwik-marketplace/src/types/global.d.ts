@@ -42,7 +42,8 @@ declare interface ISessionContext {
 		filtered: IContractItem[];
 		stale: boolean;
 		showMissing: boolean;
-	}
+		refetch: boolean;
+	};
 	details: {
 		show: boolean;
 		item: IContractItem | null;

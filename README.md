@@ -48,7 +48,7 @@ This project was created to complete my Advanced dApp project as part of Kingsla
 
 ---
 
-## Why Qwik?
+### Why Qwik?
 
 Qwik is a new javascript framework that promises lightning-fast time-to-interaction (TTI) speed. Other modern frameworks are surprisingly slow at first page load, especially on slow networks or slow devices. Qwik serializes all the necessary data (listeners, state) into the HTML on the server, so when the client loads it does not need to download the entire client to hydrate it to discover the listeners. 
 

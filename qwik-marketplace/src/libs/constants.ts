@@ -1,4 +1,4 @@
-
+// 0.249 eth * conversion[eth] == wei
 export const ETH_CONVERSION_RATIOS: {
   [key: string]: number;
   eth: number;

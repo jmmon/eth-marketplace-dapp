@@ -8,16 +8,20 @@ export const convertPriceFromWei = (
   units: String,
   price: String,
 ): string => {
-  // console.log('convertPriceFromWei:', {units, price});
-  return String(+price / ETH_CONVERSION_RATIOS[units])
+  const result = String(+price / ETH_CONVERSION_RATIOS[units])
+  console.log('convertPriceFromWei:', {units, price, result});
+  return result;
 };
 
+// e.g. eth, 0.249 => 249 000 000 000 000 000
 export const convertPriceToWei = (
   units: String,
   price: String,
 ): string => {
-  // console.log('convertPriceToWei:', {units, price});
-  return String(+price * ETH_CONVERSION_RATIOS[units]);
+  // 0.249 * (10 ** 18) == 249 000 000 000 000 000
+  const result = String(+price * ETH_CONVERSION_RATIOS[units]);
+  console.log('convertPriceToWei:', {units, price, result});
+  return result;
 }
 
 export const connect = async () => {
@@ -65,8 +69,10 @@ export const getContract = async (withSigner: boolean = false) => {
   return contract;
 };
 
+// format bigInt to number
 export const formatItem = (item: Array<any>): IContractItem => {
   const bigNum = item[2];
+//   console.log({item});
 
   return {
     owner: item[0],
@@ -94,6 +100,7 @@ export const getItems = async (): Promise<{
     const items = (await contract.getAllItems()) as Array<any>;
 
     const formattedItems = items?.map((item) => formatItem(item));
+	console.log('getItems:', {formattedItems});
 
     return { items: formattedItems, error: null };
 

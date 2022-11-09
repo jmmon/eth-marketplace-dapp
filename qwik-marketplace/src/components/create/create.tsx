@@ -10,7 +10,7 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 
-import {addItemToMarket, convertPriceFromWei, connect} from "~/libs/ethUtils";
+import {addItemToMarket, convertPriceFromWei, connect, convertPriceToWei} from "~/libs/ethUtils";
 import {addNotification} from "~/components/notifications/notifications";
 
 import { ipfsClient as ipfs } from "~/libs/ipfs";
@@ -48,9 +48,11 @@ export default component$(() => {
 					[...formData.entries()]
 						.filter(([key, value]) => key !== "photo")
 						.forEach(([key, value]) => (formattedFormData[key] = value));
+					// console.log({formattedFormData});
 
 					// handle price conversion
-					formattedFormData.price = convertPriceFromWei(formattedFormData);
+					// i.e. 'eth', 0.249 => 249_000_000_000_000_000 wei
+					formattedFormData.price = convertPriceToWei(formattedFormData.units, formattedFormData.price);
 
 					// add imageString from image upload step
 					formattedFormData.imgHash = formState.imageString;
@@ -68,6 +70,8 @@ export default component$(() => {
 								errors.push(`${value} is null`);
 							} else if (value === "") {
 								errors.push(`${value} is empty`);
+							} else if (value === "NaN") {
+								errors.push(`${value} is NaN`)
 							}
 						});
 						if (errors.length > 0) return errors;
@@ -82,12 +86,14 @@ export default component$(() => {
 
 					// return buffer of JSON of data
 					const formDataJson = JSON.stringify(formattedFormData);
+					console.log('formatting form data to buffer:', {formattedFormData})
 					return window.buffer.Buffer(formDataJson);
 				};
-				const bufData = formatFormDataToBuffer();
 
 				// const handleUploadData = async () => {
 				try {
+					const bufData = formatFormDataToBuffer();
+
 					session.create.note.class = "bg-green-200";
 					session.create.note.message = "Uploading data to IPFS...";
 
@@ -110,6 +116,8 @@ export default component$(() => {
 				const addToMarket = async () => {
 					session.create.note.class = "bg-green-200";
 					session.create.note.message = `Initiating transaction to add item...`;
+
+					console.log("fn addItemToMarket:", {formState, formattedFormData});
 
 					const {data, error} = await addItemToMarket(
 						formState,
@@ -143,10 +151,13 @@ export default component$(() => {
 					session.create.show = false;
 
 					// mark items as stale so it will refetch
-					session.items = {
-						...session.items,
-						stale: true,
-					};
+					// session.items = {
+					// 	...session.items,
+					// 	stale: true,
+					// 	refetch: true,
+					// };
+					session.items.refetch = true;
+					session.items.stale = true;
 				};
 				addToMarket();
 			};
@@ -222,7 +233,8 @@ export default component$(() => {
 					<input
 						name="price"
 						class="block w-full text-black placeholder-gray-300"
-						type="text"
+						type="number"
+						step="any"
 						placeholder="...and select your units"
 						id="price"
 						required
