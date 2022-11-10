@@ -14,18 +14,7 @@ import {Link, useLocation} from "@builder.io/qwik-city";
 import { EthLogo } from "../icons/eth";
 
 export default component$(() => {
-	useStyles$(`
-.header {
-	--height: min(60px, 12vw);
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 var(--height) 0 0;
-  font-size: min(1.5rem, max(5vw, 18px));
-  line-height: 1.75rem;
-  color: rgb(55 65 81);
-  max-width: 100%;
-}
-	`)
+
 	const loc = useLocation();
 	const session = useContext(SessionContext);
 	const state = useStore({fullAddress: false, inFront: false});

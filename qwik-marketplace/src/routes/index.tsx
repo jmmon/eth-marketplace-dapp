@@ -74,7 +74,18 @@ export default component$(() => {
 		// return () => clearTimeout(timer);
 	});
 
-	useStylesScoped$(Styles);
+	useStylesScoped$(`
+.headerContainer {
+	--height: min(60px, 12vw);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 var(--height) 0 0;
+  font-size: min(1.5rem, max(5vw, 18px));
+  line-height: 1.75rem;
+  color: rgb(55 65 81);
+  max-width: 100%;
+}
+	`)
 
 	return (
 		<div>
@@ -84,7 +95,7 @@ export default component$(() => {
 					{/* {session.details.item &&  */}
 					<Details />
 					{/* } */}
-					<h1 q:slot="header" class="header">
+					<h1 q:slot="header" class="headerContainer">
 						Details
 					</h1>
 				</Modal>
@@ -95,7 +106,7 @@ export default component$(() => {
 			session.store.address !== "" && (
 				<Modal modal={session.store}>
 					<Store />
-					<h1 q:slot="header" class="header">
+					<h1 q:slot="header" class="headerContainer">
 						Store
 					</h1>
 				</Modal>
@@ -105,7 +116,7 @@ export default component$(() => {
 			{session.address && (
 				<Modal modal={session.create} tab={true}>
 					<CreateForm />
-					<h1 q:slot="header" class="header">
+					<h1 q:slot="header" class="headerContainer">
 						Add An Item
 					</h1>
 				</Modal>
