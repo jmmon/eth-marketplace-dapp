@@ -78,8 +78,9 @@ export default component$(() => {
 
 	return (
 		<div>
-			{session.details.item && (
-				<Modal modal={mutable(session.details)}>
+			{
+			session.details.item && (
+				<Modal modal={session.details}>
 					{/* {session.details.item &&  */}
 					<Details />
 					{/* } */}
@@ -87,19 +88,22 @@ export default component$(() => {
 						Details
 					</h1>
 				</Modal>
-			)}
+			)
+			}
 
-			{session.store.address !== "" && (
-				<Modal modal={mutable(session.store)}>
+			{
+			session.store.address !== "" && (
+				<Modal modal={session.store}>
 					<Store />
 					<h1 q:slot="header" class="header">
 						Store
 					</h1>
 				</Modal>
-			)}
+			)
+			}
 
 			{session.address && (
-				<Modal modal={mutable(session.create)} tab={true}>
+				<Modal modal={session.create} tab={true}>
 					<CreateForm />
 					<h1 q:slot="header" class="header">
 						Add An Item

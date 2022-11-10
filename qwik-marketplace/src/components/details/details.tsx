@@ -6,7 +6,6 @@ import {
 	useResource$,
 	useStore,
 	useWatch$,
-	mutable,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {
@@ -180,19 +179,19 @@ export const ItemDetails = component$(
 				</div>
 				<Button
 					type="purchase"
-					show={mutable(!ownerIsLoggedIn)}
+					show={!ownerIsLoggedIn}
 					clickHandler={onPurchaseWrapper}
-					state={mutable(store.onPurchase)}
-					address={mutable(session.address)}
+					state={store.onPurchase}
+					address={session.address}
 					classes="w-3/12 text-sm md:text-[1rem] p-1"
 					key={0}
 				/>
 				<Button
 					type="delete"
-					show={mutable(ownerIsLoggedIn)}
+					show={ownerIsLoggedIn}
 					clickHandler={onDeleteWrapper}
-					state={mutable(store.onDelete)}
-					address={mutable(session.address)}
+					state={store.onDelete}
+					address={session.address}
 					classes="w-3/12 text-sm md:text-[1rem] p-1"
 					key={1}
 				/>
@@ -219,10 +218,10 @@ export const ItemDetails = component$(
 				</div>
 				<Button
 					type="purchase"
-					show={mutable(!ownerIsLoggedIn)}
+					show={!ownerIsLoggedIn}
 					clickHandler={onPurchaseWrapper}
-					state={mutable(store.onPurchase)}
-					address={mutable(session.address)}
+					state={store.onPurchase}
+					address={session.address}
 					classes="w-6/12 mx-auto text-sm md:text-base min-h-[58px]"
 					key={2}
 				/>

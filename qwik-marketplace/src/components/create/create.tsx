@@ -10,10 +10,15 @@ import {
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 
-import {addItemToMarket, convertPriceFromWei, connect, convertPriceToWei} from "~/libs/ethUtils";
+import {
+	addItemToMarket,
+	convertPriceFromWei,
+	connect,
+	convertPriceToWei,
+} from "~/libs/ethUtils";
 import {addNotification} from "~/components/notifications/notifications";
 
-import { ipfsClient as ipfs } from "~/libs/ipfs";
+import {ipfsClient as ipfs} from "~/libs/ipfs";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
@@ -52,7 +57,10 @@ export default component$(() => {
 
 					// handle price conversion
 					// i.e. 'eth', 0.249 => 249_000_000_000_000_000 wei
-					formattedFormData.price = convertPriceToWei(formattedFormData.units, formattedFormData.price);
+					formattedFormData.price = convertPriceToWei(
+						formattedFormData.units,
+						formattedFormData.price
+					);
 
 					// add imageString from image upload step
 					formattedFormData.imgHash = formState.imageString;
@@ -71,7 +79,7 @@ export default component$(() => {
 							} else if (value === "") {
 								errors.push(`${value} is empty`);
 							} else if (value === "NaN") {
-								errors.push(`${value} is NaN`)
+								errors.push(`${value} is NaN`);
 							}
 						});
 						if (errors.length > 0) return errors;
@@ -86,7 +94,7 @@ export default component$(() => {
 
 					// return buffer of JSON of data
 					const formDataJson = JSON.stringify(formattedFormData);
-					console.log('formatting form data to buffer:', {formattedFormData})
+					console.log("formatting form data to buffer:", {formattedFormData});
 					return window.buffer.Buffer(formDataJson);
 				};
 
@@ -100,7 +108,6 @@ export default component$(() => {
 					const {cid} = await ipfs.add(bufData);
 
 					formState.dataString = cid.toString();
-
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
@@ -179,16 +186,15 @@ export default component$(() => {
 			const reader = new FileReader();
 			reader.onloadend = async () => {
 				const bufPhoto = window.buffer.Buffer(reader.result);
-				console.log('filereader onLoadEnd');
+				console.log("filereader onLoadEnd");
 
 				try {
 					const {cid} = await ipfs.add(bufPhoto);
 					formState.imageString = cid.toString();
-					console.log('after adding photo to IPFS');
+					console.log("after adding photo to IPFS");
 
 					// trigger the next step
 					handleSubmitData();
-
 				} catch (err) {
 					session.create.note.class = "bg-red-200";
 					session.create.note.message = `Error uploading image to IPFS: ${err.message}`;
@@ -207,15 +213,15 @@ export default component$(() => {
 	});
 	return (
 		<form
-			class="flex flex-col gap-2 w-full h-[calc(100%-150px)] items-stretch px-[6px] pt-2"
+			class="flex h-[calc(100%-150px)] w-full flex-col items-stretch gap-2 px-[6px] pt-2"
 			preventdefault:submit
 			onSubmit$={(e) => handleSubmitForm(e.target as HTMLFormElement)}
 		>
-			<h1 class="mx-auto text-lx md:text-2xl text-gray-500">
+			<h1 class="text-lx mx-auto text-gray-500 md:text-2xl">
 				Add Item to Marketplace
 			</h1>
-			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow">
-				<label class="text-gray-500 flex-grow">
+			<fieldset class="mx-auto w-full max-w-[600px] rounded border p-2 shadow">
+				<label class="flex-grow text-gray-500">
 					Name:
 					<input
 						name="name"
@@ -227,8 +233,8 @@ export default component$(() => {
 					/>
 				</label>
 			</fieldset>
-			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow flex">
-				<label class="text-gray-500 flex-grow">
+			<fieldset class="mx-auto flex w-full max-w-[600px] rounded border p-2 shadow">
+				<label class="flex-grow text-gray-500">
 					Price:
 					<input
 						name="price"
@@ -250,19 +256,19 @@ export default component$(() => {
 				</label>
 			</fieldset>
 
-			<fieldset class="w-full max-w-[600px] border rounded flex-grow mx-auto p-2 shadow">
+			<fieldset class="mx-auto w-full max-w-[600px] flex-grow rounded border p-2 shadow">
 				<label class="text-gray-500">
 					Description:
 					<textarea
 						name="description"
-						class="block w-full h-[calc(100%-1.5rem)] text-black placeholder-gray-300"
+						class="block h-[calc(100%-1.5rem)] w-full text-black placeholder-gray-300"
 						placeholder="Description"
 						id="description"
 						required
 					/>
 				</label>
 			</fieldset>
-			<fieldset class="w-full max-w-[600px] border rounded mx-auto p-2 shadow">
+			<fieldset class="mx-auto w-full max-w-[600px] rounded border p-2 shadow">
 				<label class="text-gray-500">
 					Upload a Photo:
 					<input
@@ -277,13 +283,13 @@ export default component$(() => {
 					</input>
 				</label>
 			</fieldset>
-			<button class=" w-full max-w-[600px] border rounded mx-auto py-4 bg-gray-100 text-gray-700  shadow-md hover:shadow hover:bg-gray-200 hover:border-gray-300">
+			<button class=" mx-auto w-full max-w-[600px] rounded border bg-gray-100 py-4 text-gray-700  shadow-md hover:border-gray-300 hover:bg-gray-200 hover:shadow">
 				Add Item To Blockchain Marketplace
 			</button>
 			{session.create.note.message !== "" && (
 				<p
-					class={`w-full max-w-[600px] 
-					text-center border rounded mx-auto p-4 text-gray-700 shadow-md ${session.create.note.class}`}
+					class={`mx-auto w-full 
+					max-w-[600px] rounded border p-4 text-center text-gray-700 shadow-md ${session.create.note.class}`}
 				>
 					{session.create.note.message}
 				</p>

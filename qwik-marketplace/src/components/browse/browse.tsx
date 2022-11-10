@@ -1,4 +1,4 @@
-import {component$, mutable, useContext} from "@builder.io/qwik";
+import {component$, useContext} from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 import {ItemPreview} from "../itemPreview/itemPreview";
 import {generateNotification} from "../notifications/notifications";
@@ -43,13 +43,16 @@ export default component$(() => {
 						(
 						(console.log("rendering all items"),
 						session.items.all.map((item, index) => (
-							<ItemPreview key={item.id} item={mutable(item)} />
+							<ItemPreview key={item.id} item={item} />
 						)))
 						) : (
 							<div class="pt-4">Loading items...</div>
 						)
 
+
+					// ) : ( <div>test</div>)}
 					) : (
+						
 						session.items.filtered.length === 0 && session.items.stale === false ? (
 							<div
 								class="cursor-pointer pt-4"
@@ -61,7 +64,8 @@ export default component$(() => {
 						(
 						(console.log("rendering filtered items"),
 						session.items.filtered.map((item, index) => (
-							<ItemPreview key={item.id} item={mutable(item)} />
+							<ItemPreview key={item.id} item={item} />
+							// <div>Test</div>
 						)))
 						) : (
 							<div 
