@@ -44,7 +44,8 @@ export const ItemShell = component$(
 		const headerStyles = `max-h-[56px] ${
 			props?.smaller ? "text-xl" : "text-3xl"
 		} text-center bg-white p-2 w-full self-center`;
-		const imageStyles = `h-[240px] w-full bg-gray-100`;
+		const imageStyles = `h-[240px] w-full bg-gray-100 flex-grow`;
+		
 		return (
 			<div
 				class={`mx-auto flex flex-1 shrink-0 flex-col flex-wrap gap-1 overflow-y-clip bg-blue-100 p-2 text-left text-lg ${

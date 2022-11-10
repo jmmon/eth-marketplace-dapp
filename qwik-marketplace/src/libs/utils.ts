@@ -12,11 +12,11 @@ export const shortAddress = (address: string) =>
 export const seeStore = (address: string, session: ISessionContext) => {
   session.details.show = false;
   // filter our items to find all created by a given address
-  const items = session.items.all.filter((item) => item?.owner === address);
+  const filteredItems = session.items.all.filter((item) => item?.owner === address);
   
   // hide details page, and set and show store page
   session.store = {
-    items, 
+    items: filteredItems, 
     address, 
     show: true
   };
@@ -27,10 +27,10 @@ export const seeDetails = (id: string, session: ISessionContext) => {
   session.store.show = false;
 
   // search our already fetched items for the matching one
-  const item = session.items.all.find((item) => item?.id === id);
+  const foundItem = session.items.all.find((item) => item?.id === id);
 
   session.details = {
-    item, 
+    item: foundItem, 
     show: true,
   };
 };

@@ -9,10 +9,8 @@ export default component$(() => {
 		<div class="flex flex-wrap gap-2 pt-2 px-[4px] overflow-y-auto overflow-x-hidden">
 			<div class="w-full flex justify-items-center text-gray-500 text-sm md:text-base">
 				<div class="flex flex-wrap mx-auto justify-items-center w-min md:w-auto">
-				{/* <span class="flex-grow"></span> */}
 					<span >{session.store.address.substring(0, 24)}</span>
 					<span >{session.store.address.substring(24)}'s Items</span>
-{/* <span class="flex-grow"></span> */}
 				</div>
 			</div>
 			{session.store.items?.length === 0 ? (
