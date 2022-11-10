@@ -9,7 +9,7 @@ export const convertPriceFromWei = (
   price: String,
 ): string => {
   const result = String(+price / ETH_CONVERSION_RATIOS[units])
-  console.log('convertPriceFromWei:', {units, price, result});
+//   console.log('convertPriceFromWei:', {units, price, result});
   return result;
 };
 
@@ -20,7 +20,7 @@ export const convertPriceToWei = (
 ): string => {
   // 0.249 * (10 ** 18) == 249 000 000 000 000 000
   const result = String(+price * ETH_CONVERSION_RATIOS[units]);
-  console.log('convertPriceToWei:', {units, price, result});
+//   console.log('convertPriceToWei:', {units, price, result});
   return result;
 }
 

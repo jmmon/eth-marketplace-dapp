@@ -22,8 +22,12 @@ export default component$(() => {
 
 	useClientEffect$(async ({track}) => {
 		track(session.items, "stale");
+		let timer;
 		// console.log("session.items.stale changed:", session.items.stale);
-		console.log('fetching items:', {stale: session.items.stale, refetch: session.items.refetch});
+		console.log("fetching items:", {
+			stale: session.items.stale,
+			refetch: session.items.refetch,
+		});
 		if (!session.items.stale) return;
 
 		const {items, error} = await getItems();
@@ -35,19 +39,19 @@ export default component$(() => {
 			return;
 		}
 
-		let timer;
-		const newItemsLengthIsSameAsOld  = session.items.all.length === items.length;
+		const newItemsLengthIsSameAsOld = session.items.all.length === items.length;
 		// after creating an item, the items are marked stale so this clientEffect runs. But if the created item has not been confirmed on the network, the newly added item won't appear yet.
 		// To remedy this, creating an item now also sets "refetch" to true, indicating that we want to attempt another fetch of items if the item list length is the same as last time.
 		// so this should run once, then run again as long as the item lengths are the same. When the length changes, this will stop refetching items.
-		if (session.items.refetch && newItemsLengthIsSameAsOld ) {
-			console.log('fetching items: count should be different, setting refetch timer...')
+		if (session.items.refetch && newItemsLengthIsSameAsOld) {
+			console.log(
+				"fetching items: count should be different, setting refetch timer..."
+			);
 			timer = setTimeout(() => {
-				console.log('refetch timer is up, should attempt to refetch items');
-				session.items.stale = true;
+				console.log("refetch timer is up, should attempt to refetch items");
 				session.items.refetch = true;
-			}, 5000);
-
+				session.items.stale = true;
+			}, 6000);
 		} else if (session.items.refetch && !newItemsLengthIsSameAsOld) {
 			// if length is different, we should be good to stop the refetch!
 			session.items.refetch = false;
@@ -85,12 +89,11 @@ export default component$(() => {
   color: rgb(55 65 81);
   max-width: 100%;
 }
-	`)
+	`);
 
 	return (
 		<div>
-			{
-			session.details.item && (
+			{session.details.item && (
 				<Modal modal={session.details}>
 					{/* {session.details.item &&  */}
 					<Details />
@@ -99,19 +102,16 @@ export default component$(() => {
 						Details
 					</h1>
 				</Modal>
-			)
-			}
+			)}
 
-			{
-			session.store.address !== "" && (
+			{session.store.address !== "" && (
 				<Modal modal={session.store}>
 					<Store />
 					<h1 q:slot="header" class="headerContainer">
 						Store
 					</h1>
 				</Modal>
-			)
-			}
+			)}
 
 			{session.address && (
 				<Modal modal={session.create} tab={true}>

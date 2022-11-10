@@ -8,12 +8,7 @@ import {
 	useWatch$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {
-	itemDataFromIPFS,
-	getItem,
-	deleteItem,
-	sellItem,
-} from "~/libs/ethUtils";
+import {itemDataFromIPFS, getItem, deleteItem, sellItem} from "~/libs/ethUtils";
 import {seeStore} from "~/libs/utils";
 import {addNotification} from "../notifications/notifications";
 import {Price} from "../price/price";
@@ -127,10 +122,14 @@ export const ItemDetails = component$(
 				notification.type,
 				notification.time
 			);
-			session.items = {
-				...session.items,
-				stale: true,
-			};
+			// session.items = {
+			// 	...session.items,
+			// 	stale: true,
+			// 	refetch: true,
+			// };
+
+			session.items.refetch = true;
+			session.items.stale = true;
 		});
 
 		const onDeleteWrapper = $(async () => {
@@ -154,10 +153,14 @@ export const ItemDetails = component$(
 				notification.type,
 				notification.time
 			);
-			session.items = {
-				...session.items,
-				stale: true,
-			};
+			// session.items = {
+			// 	...session.items,
+			// 	stale: true,
+			// 	refetch: true,
+			// };
+
+			session.items.refetch = true;
+			session.items.stale = true;
 		});
 
 		const ownerIsLoggedIn =
@@ -239,33 +242,33 @@ export const ItemDetails = component$(
 );
 
 export const BUTTON_DATA = {
-		purchase: {
-			text: {
-				ready: "Purchase",
-				loading: "Purchasing...",
-				error: "Error",
-				complete: "Complete!",
-				noAddress: "Log in to Purchase",
-			},
-			colors: {
-				base: "bg-amber-200",
-				hover: "bg-amber-50",
-			},
+	purchase: {
+		text: {
+			ready: "Purchase",
+			loading: "Purchasing...",
+			error: "Error",
+			complete: "Complete!",
+			noAddress: "Log in to Purchase",
 		},
-		delete: {
-			text: {
-				ready: "Delete",
-				loading: "Deleting...",
-				error: "Error",
-				complete: "Complete!",
-				noAddress: "Only owners may Delete",
-			},
-			colors: {
-				base: "bg-red-200",
-				hover: "bg-red-50",
-			},
+		colors: {
+			base: "bg-amber-200",
+			hover: "bg-amber-50",
 		},
-	};
+	},
+	delete: {
+		text: {
+			ready: "Delete",
+			loading: "Deleting...",
+			error: "Error",
+			complete: "Complete!",
+			noAddress: "Only owners may Delete",
+		},
+		colors: {
+			base: "bg-red-200",
+			hover: "bg-red-50",
+		},
+	},
+};
 
 export const Button = component$((props) => {
 	const {type, show, classes, clickHandler, state, address} = props;

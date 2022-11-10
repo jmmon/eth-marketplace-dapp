@@ -11,16 +11,15 @@ import {closeAll, shortAddress} from "~/libs/utils";
 
 import {QwikLogo} from "../icons/qwik";
 import {Link, useLocation} from "@builder.io/qwik-city";
-import { EthLogo } from "../icons/eth";
+import {EthLogo} from "../icons/eth";
 
 export default component$(() => {
-
 	const loc = useLocation();
 	const session = useContext(SessionContext);
 	const state = useStore({fullAddress: false, inFront: false});
 	// console.log({loc});
 
-	// 
+	//
 	useClientEffect$(({track}) => {
 		track(session, "address");
 
@@ -34,12 +33,12 @@ export default component$(() => {
 
 	return (
 		<header
-			class={`bg-qwikBlue-dark w-full flex items-center h-20 backdrop-blur bg-opacity-70 fixed top-0 px-2 ${
+			class={`bg-qwikBlue-dark fixed top-0 flex h-20 w-full items-center bg-opacity-70 px-2 backdrop-blur ${
 				state.inFront && "z-10"
 			}`}
 		>
-			<div class="flex justify-between items-end m-auto w-full max-w-[800px] text-[2rem] pt-1">
-				<div class="justify-self-start grid grid-flow-col h-full gap-2 md:gap-6">
+			<div class="m-auto flex w-full max-w-[800px] items-end justify-between pt-1 text-[2rem]">
+				<div class="grid h-full grid-flow-col gap-2 justify-self-start md:gap-6">
 					{/* <Link
 						href="/flower"
 						class=" transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur flex items-end mr-auto px-1 my-[-4px] md:my-0"
@@ -52,7 +51,7 @@ export default component$(() => {
 					{loc.pathname === "/" ? (
 						<h1
 							// class="font-bold text-white cursor-pointer transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur px-1 my-[-4px] md:my-0"
-							class="font-bold text-white cursor-pointer pt-1"
+							class="cursor-pointer pt-1 font-bold text-white"
 							onClick$={() => closeAll(session)}
 						>
 							Marketplace
@@ -61,27 +60,31 @@ export default component$(() => {
 						<Link
 							href="/"
 							// class="font-bold text-white cursor-pointer text-[2rem] transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur"
-							class="font-bold text-white cursor-pointer text-[2rem] pt-1" >
+							class="cursor-pointer pt-1 text-[2rem] font-bold text-white"
+						>
 							Marketplace
 						</Link>
 					)}
 				</div>
 				{session.address && (
 					<>
-					{/* large screens */}
+						{/* large screens */}
 						<div
 							key={0}
 							onClick$={() => (state.fullAddress = !state.fullAddress)}
-							class="text-white text-base self-center cursor-pointer w-min text-right hidden md:block md:z-0 z-10"
+							class="z-10 hidden w-min cursor-pointer self-center text-right text-base text-white md:z-0 md:block"
 						>
 							Welcome,{" "}
 							{state.fullAddress
 								? session.address
 								: shortAddress(session.address)}
 						</div>
-					{/* small screens */}
-						<div key={1} class="text-white text-base self-center w-min text-right block md:hidden z-0 md:z-10">
-							Welcome,{" "} {shortAddress(session.address)}
+						{/* small screens */}
+						<div
+							key={1}
+							class="z-0 block w-min self-center text-right text-base text-white md:z-10 md:hidden"
+						>
+							Welcome, {shortAddress(session.address)}
 						</div>
 					</>
 				)}
