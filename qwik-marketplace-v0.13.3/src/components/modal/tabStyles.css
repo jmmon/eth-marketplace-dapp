@@ -1,0 +1,26 @@
+.tab {
+	border: 1px solid gray;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: all 0.15s ease;
+	z-index: 1;
+
+}
+
+.tab-text {
+	flex-shrink: 0;
+	transform: rotate(90deg);
+}
+
+.spacer {
+	width: min(60px, 10vw);
+	height: min(200px, max(35vw, 120px));
+	margin-left: auto;
+}
+
+.tab.show {
+	width: 0px;
+	border: none;
+}
