@@ -1,18 +1,24 @@
-import { component$, useClientEffect$, useStore, useStylesScoped$ } from '@builder.io/qwik';
+import { component$, useVisibleTask$, useStore, useStylesScoped$ } from '@builder.io/qwik';
 import { DocumentHead, useLocation } from '@builder.io/qwik-city';
 import styles from './flower.css?inline';
+
+interface FlowerState {
+  count: number;
+  number: number;
+  pride: boolean;
+}
 
 export default component$(() => {
   useStylesScoped$(styles);
   const loc = useLocation();
 
-  const state = useStore({
+  const state = useStore<FlowerState>({
     count: 0,
     number: 20,
     pride: false,
   });
 
-  useClientEffect$(({ cleanup }) => {
+  useVisibleTask$(({ cleanup }) => {
     const timeout = setTimeout(() => (state.count = 1), 500);
     cleanup(() => clearTimeout(timeout));
 

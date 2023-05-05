@@ -1,14 +1,15 @@
 import {
 	$,
 	component$,
+	PropFunction,
 	Resource,
 	useContext,
 	useResource$,
 	useStore,
-	useWatch$,
+	useTask$,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {itemDataFromIPFS, getItem, deleteItem, sellItem} from "~/libs/ethUtils";
+import {itemDataFromIPFS, deleteItem, sellItem} from "~/libs/ethUtils";
 import {seeStore} from "~/libs/utils";
 import {addNotification} from "../notifications/notifications";
 import {Price} from "../price/price";
@@ -16,9 +17,9 @@ import {Price} from "../price/price";
 export default component$(() => {
 	const session = useContext(SessionContext);
 
-	const itemDetailsResource = useResource$<IItemData>(
+	const itemDetailsResource = useResource$<IItemData | {}>(
 		async ({track, cleanup}) => {
-			track(session, "details");
+			track(() => session.details);
 
 			if (!session.details?.item?.id) return Promise.resolve({}); // return empty promise if no item id is sent
 
@@ -64,8 +65,8 @@ export const ItemDetails = component$(
 		});
 
 		//timers to reset states back to "ready"
-		useWatch$(({track, cleanup}) => {
-			track(store, "onPurchase");
+		useTask$(({track}) => {
+			track(() => store.onPurchase);
 			if (store.onPurchase !== "done" && store.onPurchase !== "error") return;
 			const timer = setTimeout(() => {
 				store.onPurchase = "ready";
@@ -82,8 +83,8 @@ export const ItemDetails = component$(
 			};
 		});
 
-		useWatch$(({track, cleanup}) => {
-			track(store, "onDelete");
+		useTask$(({track}) => {
+			track(() => store.onDelete);
 			// console.log({"store.onDelete": store.onDelete});
 			if (store.onDelete !== "done" && store.onDelete !== "error") return;
 			const timer = setTimeout(() => {
@@ -103,15 +104,19 @@ export const ItemDetails = component$(
 
 		const onPurchaseWrapper = $(async () => {
 			store.onPurchase = "loading";
-			let notification = {message: "Purchase successful!", type: 0, time: 5000};
+			let notification: {
+				message: string;
+				type: NotificationTypes;
+				timeout: number;
+			} = {message: "Purchase successful!", type: "success", timeout: 5000};
 			const response = await sellItem(itemData);
 
 			if (response.error) {
 				store.onPurchase = "error";
 				notification = {
 					message: `Purchase error: ${response.error.message}`,
-					type: 2,
-					time: 10000,
+					type: "error",
+					timeout: 10000,
 				};
 			} else if (response.success === true) {
 				store.onPurchase = "done";
@@ -120,13 +125,8 @@ export const ItemDetails = component$(
 				session,
 				notification.message,
 				notification.type,
-				notification.time
+				notification.timeout,
 			);
-			// session.items = {
-			// 	...session.items,
-			// 	stale: true,
-			// 	refetch: true,
-			// };
 
 			session.items.refetch = true;
 			session.items.stale = true;
@@ -134,15 +134,19 @@ export const ItemDetails = component$(
 
 		const onDeleteWrapper = $(async () => {
 			store.onDelete = "loading";
-			let notification = {message: "Delete successful!", type: 0, time: 5000};
+			let notification: {
+				message: string;
+				type: NotificationTypes;
+				timeout: number;
+			} = {message: "Delete successful!", type: "success", timeout: 5000};
 			const response = await deleteItem(itemData);
 
 			if (response.error) {
 				store.onDelete = "error";
 				notification = {
 					message: `Delete error: ${response.error.message}`,
-					type: 2,
-					time: 10000,
+					type: "error",
+					timeout: 10000,
 				};
 			} else if (response.success === true) {
 				store.onDelete = "done";
@@ -151,7 +155,7 @@ export const ItemDetails = component$(
 				session,
 				notification.message,
 				notification.type,
-				notification.time
+				notification.timeout
 			);
 			// session.items = {
 			// 	...session.items,
@@ -270,7 +274,16 @@ export const BUTTON_DATA = {
 	},
 };
 
-export const Button = component$((props) => {
+interface Button {
+	type: "purchase" | "delete";
+	show: boolean;
+	classes: string;
+	clickHandler: PropFunction;
+	state: any;
+	address: string;
+}
+
+export const Button = component$((props: Button) => {
 	const {type, show, classes, clickHandler, state, address} = props;
 
 	const {text, colors} = BUTTON_DATA[type];

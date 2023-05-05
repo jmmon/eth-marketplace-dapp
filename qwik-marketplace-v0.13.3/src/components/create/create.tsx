@@ -2,34 +2,29 @@ declare var window: any;
 import {
 	$,
 	component$,
-	useClientEffect$,
+	useVisibleTask$,
 	useContext,
-	useRef,
-	useServerMount$,
+	useSignal,
 	useStore,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 
-import {
-	addItemToMarket,
-	convertPriceFromWei,
-	connect,
-	convertPriceToWei,
-} from "~/libs/ethUtils";
+import {addItemToMarket, convertPriceToWei, formatError} from "~/libs/ethUtils";
 import {addNotification} from "~/components/notifications/notifications";
 
 import {ipfsClient as ipfs} from "~/libs/ipfs";
 
 export default component$(() => {
 	const session = useContext(SessionContext);
-	const photoInputRef = useRef<HTMLInputElement>();
+	const photoInputRef = useSignal<HTMLInputElement>();
 	const formState = useStore<ICreateFormState>({
 		imageString: "",
 		dataString: "",
+		price: "",
 	});
 
 	// import polyfill, adds window.buffer.Buffer() method
-	useClientEffect$(() => {
+	useVisibleTask$(() => {
 		import("~/libs/wzrdin_buffer_polyfill.js");
 	});
 
@@ -51,7 +46,7 @@ export default component$(() => {
 					const formData = new FormData(target);
 					// fill in data (except file input for photo)
 					[...formData.entries()]
-						.filter(([key, value]) => key !== "photo")
+						.filter(([key]) => key !== "photo")
 						.forEach(([key, value]) => (formattedFormData[key] = value));
 					// console.log({formattedFormData});
 
@@ -59,7 +54,7 @@ export default component$(() => {
 					// i.e. 'eth', 0.249 => 249_000_000_000_000_000 wei
 					formattedFormData.price = convertPriceToWei(
 						formattedFormData.units,
-						formattedFormData.price
+						String(formattedFormData.price)
 					);
 
 					// add imageString from image upload step
@@ -69,7 +64,7 @@ export default component$(() => {
 						formDataObject: ICreateFormDataObject
 					): boolean | string[] => {
 						// check each entries to make sure there is a value
-						let errors = [];
+						let errors: string[] = [];
 						const entries = Object.entries(formDataObject);
 						entries.forEach(([key, value]) => {
 							if (value === undefined) {
@@ -88,7 +83,7 @@ export default component$(() => {
 
 					const result = validateForm(formattedFormData);
 					console.log({validate: result});
-					if (result !== true) {
+					if (typeof result !== 'boolean') {
 						throw new Error(result.join(",\n"));
 					}
 
@@ -109,12 +104,13 @@ export default component$(() => {
 
 					formState.dataString = cid.toString();
 				} catch (err) {
+          const message = formatError(err);
 					session.create.note.class = "bg-red-200";
-					session.create.note.message = `Error uploading data to IPFS: ${err.message}`;
+					session.create.note.message = `Error uploading data to IPFS: ${message}`;
 					addNotification(
 						session,
-						`Error uploading item data to IPFS: ${err.message}`,
-						2
+						`Error uploading item data to IPFS: ${message}`,
+						"error"
 					);
 				}
 				// }
@@ -126,10 +122,9 @@ export default component$(() => {
 
 					console.log("fn addItemToMarket:", {formState, formattedFormData});
 
-					const {data, error} = await addItemToMarket(
+					const {error} = await addItemToMarket(
 						formState,
 						formattedFormData,
-						session
 					);
 
 					if (error) {
@@ -139,7 +134,7 @@ export default component$(() => {
 						addNotification(
 							session,
 							`Error adding item to marketplace: ${error.message}`,
-							2
+							"error"
 						);
 						return;
 					}
@@ -150,7 +145,7 @@ export default component$(() => {
 					addNotification(
 						session,
 						`Item has been added to the market!`,
-						0,
+						"success",
 						6000
 					);
 
@@ -169,16 +164,17 @@ export default component$(() => {
 				addToMarket();
 			};
 		} catch (error) {
+      const message = formatError(error);
 			session.create.note.class = "bg-red-200";
-			session.create.note.message = `Error uploading data: ${error.message}`;
-			addNotification(session, `Error uploading data: ${error.message}`, 2);
+			session.create.note.message = `Error uploading data: ${message}`;
+			addNotification(session, `Error uploading data: ${message}`, "error");
 		}
 
 		//step 1
 		//the image upload
 		const handleUploadPhoto = async () => {
-			if (!photoInputRef?.current?.files?.[0]) {
-				return addNotification(session, "Invalid photo chosen", 2, 5000);
+			if (!photoInputRef.value?.files?.[0]) {
+				return addNotification(session, "Invalid photo chosen", "error", 5000);
 			}
 			session.create.note.class = "bg-lime-200";
 			session.create.note.message = "Uploading image to IPFS...";
@@ -195,13 +191,14 @@ export default component$(() => {
 
 					// trigger the next step
 					handleSubmitData();
-				} catch (err) {
+				} catch (error) {
+          const message = formatError(error);
 					session.create.note.class = "bg-red-200";
-					session.create.note.message = `Error uploading image to IPFS: ${err.message}`;
+					session.create.note.message = `Error uploading image to IPFS: ${message}`;
 					addNotification(
 						session,
-						`Error uploading image to IPFS: ${err.message}`,
-						2
+						`Error uploading image to IPFS: ${message}`,
+						"error"
 					);
 				}
 			};
@@ -211,6 +208,7 @@ export default component$(() => {
 		// connect();
 		handleUploadPhoto();
 	});
+
 	return (
 		<form
 			class="flex h-[calc(100%-150px)] w-full flex-col items-stretch gap-2 px-[6px] pt-2"
@@ -278,9 +276,8 @@ export default component$(() => {
 						id="photo"
 						ref={photoInputRef}
 						required
-					>
-						Choose A File
-					</input>
+            placeholder="Choose A File"
+					/>
 				</label>
 			</fieldset>
 			<button class=" mx-auto w-full max-w-[600px] rounded border bg-gray-100 py-4 text-gray-700  shadow-md hover:border-gray-300 hover:bg-gray-200 hover:shadow">

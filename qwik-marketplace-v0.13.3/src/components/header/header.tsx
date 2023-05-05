@@ -1,15 +1,12 @@
 import {
 	component$,
-	useClientEffect$,
+	useVisibleTask$,
 	useContext,
 	useStore,
-	useStyles$,
 } from "@builder.io/qwik";
 
 import {SessionContext} from "~/libs/context";
 import {closeAll, shortAddress} from "~/libs/utils";
-
-import {QwikLogo} from "../icons/qwik";
 import {Link, useLocation} from "@builder.io/qwik-city";
 import {EthLogo} from "../icons/eth";
 
@@ -17,13 +14,13 @@ export default component$(() => {
 	const loc = useLocation();
 	const session = useContext(SessionContext);
 	const state = useStore({fullAddress: false, inFront: false});
-	// console.log({loc});
+  //console.log('header component:', {loc});
 
-	//
-	useClientEffect$(({track}) => {
-		track(session, "address");
+	useVisibleTask$(({track}) => {
+		track(() => session.address);
 
 		if (session.address === "") return;
+
 		const timer = setTimeout(() => {
 			state.inFront = true;
 		}, 200);
@@ -48,7 +45,7 @@ export default component$(() => {
 					<div class="h-[60px]">
 						<EthLogo />
 					</div>
-					{loc.pathname === "/" ? (
+					{loc.url.pathname === "/" ? (
 						<h1
 							// class="font-bold text-white cursor-pointer transition-all duration-100 rounded bg-white bg-opacity-0 hover:bg-opacity-30 hover:backdrop-blur px-1 my-[-4px] md:my-0"
 							class="cursor-pointer pt-1 font-bold text-white"

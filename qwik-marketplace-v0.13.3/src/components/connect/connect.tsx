@@ -1,6 +1,6 @@
 import {component$, useContext} from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
-import {connectMetamask, metamaskConnect, metamaskInit} from "~/libs/ethUtils";
+import {connectMetamask} from "~/libs/ethUtils";
 
 export default component$(() => {
 	const session = useContext(SessionContext);

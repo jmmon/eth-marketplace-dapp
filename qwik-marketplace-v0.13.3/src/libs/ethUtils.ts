@@ -4,25 +4,31 @@ import { ethers } from "ethers";
 import { CONTRACT, ETH_CONVERSION_RATIOS } from "./constants";
 import { IPFS_FETCH_URL } from "./ipfs";
 
-export const convertPriceFromWei = (
-  units: String,
-  price: String,
-): string => {
-  const result = String(+price / ETH_CONVERSION_RATIOS[units])
-//   console.log('convertPriceFromWei:', {units, price, result});
+export const convertPriceFromWei = (units: string, price: string): string => {
+  const result = String(Number(price) / ETH_CONVERSION_RATIOS[units]);
+  //   console.log('convertPriceFromWei:', {units, price, result});
   return result;
 };
 
 // e.g. eth, 0.249 => 249 000 000 000 000 000
-export const convertPriceToWei = (
-  units: String,
-  price: String,
-): string => {
+export const convertPriceToWei = (units: string, price: string): string => {
   // 0.249 * (10 ** 18) == 249 000 000 000 000 000
   const result = String(+price * ETH_CONVERSION_RATIOS[units]);
-//   console.log('convertPriceToWei:', {units, price, result});
+  //   console.log('convertPriceToWei:', {units, price, result});
   return result;
-}
+};
+
+export const formatError = (error: unknown) => {
+  let message: string = "";
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === "string") {
+    message = error;
+  } else {
+    message = error as string;
+  }
+  return message;
+};
 
 export const connect = async () => {
   let provider;
@@ -37,7 +43,8 @@ export const connect = async () => {
     console.log('connect ethUtils: sending "eth_requestAccounts"');
     address = (await provider.send("eth_requestAccounts", []))[0];
   } catch (error) {
-    console.log("Error connecting to Metamask:", error.message);
+    let message = formatError(error);
+    console.log("Error connecting to Metamask:", message);
     return Promise.reject(error);
   }
 
@@ -53,7 +60,8 @@ export const getContract = async (withSigner: boolean = false) => {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     contract = new ethers.Contract(CONTRACT.address, CONTRACT.abi, provider);
   } catch (error) {
-    console.log("Error getting provider:", error.message);
+    let message = formatError(error);
+    console.log("Error getting provider:", message);
     return null;
   }
 
@@ -64,7 +72,8 @@ export const getContract = async (withSigner: boolean = false) => {
   try {
     contract = await contract.connect(await provider.getSigner());
   } catch (error) {
-    console.log("getContract signing error:", error);
+    let message = formatError(error);
+    console.log("getContract signing error:", message);
   }
   return contract;
 };
@@ -72,7 +81,7 @@ export const getContract = async (withSigner: boolean = false) => {
 // format bigInt to number
 export const formatItem = (item: Array<any>): IContractItem => {
   const bigNum = item[2];
-//   console.log({item});
+  //   console.log({item});
 
   return {
     owner: item[0],
@@ -90,23 +99,22 @@ export const getItems = async (): Promise<{
 
   try {
     contract = await getContract();
-
   } catch (error) {
     console.log("error getting contract:", error);
-    return { items: Promise.resolve([]), error };
+    return Promise.resolve({ items: [], error });
   }
 
   try {
-    const items = (await contract.getAllItems()) as Array<any>;
+    const items = (await contract?.getAllItems()) as Array<any>;
 
     const formattedItems = items?.map((item) => formatItem(item));
-	console.log('getItems:', {formattedItems});
+    console.log("getItems:", { formattedItems });
 
     return { items: formattedItems, error: null };
-
   } catch (error) {
-    console.log("error running getAllItems method on contract:", error);
-    return { items: Promise.resolve([]), error };
+    let message = formatError(error);
+    console.log("error running getAllItems method on contract:", message);
+    return Promise.resolve({ items: [], error: { message } });
   }
 };
 
@@ -147,12 +155,13 @@ export const sellItem = async (
     const contract = await getContract(true);
     const options = { value: `${itemData.price}` };
 
-    const response = await contract.sell(itemData.id, options);
+    const response = await contract?.sell(itemData.id, options);
     console.log("response from purchase:", { response });
     return { success: true, error: null };
   } catch (error) {
-    console.log("error from purchase:", error.message);
-    return { success: false, error };
+    let message = formatError(error);
+    console.log("error from purchase:", message);
+    return { success: false, error: { message } };
   }
 };
 
@@ -162,12 +171,13 @@ export const deleteItem = async (
   try {
     const contract = await getContract(true);
 
-    const response = await contract.deleteItem(itemData.id);
+    const response = await contract?.deleteItem(itemData.id);
     console.log("response from purchase:", { response });
     return { success: true, error: null };
   } catch (error) {
-    console.log("error from delete:", error.message);
-    return { success: false, error };
+    let message = formatError(error);
+    console.log("error from delete:", message);
+    return { success: false, error: { message } };
   }
 };
 
@@ -204,21 +214,21 @@ export const connectMetamask = async (session: ISessionContext) => {
 
     // maintainSameAddress(session);
   } catch (error) {
-    console.log("Error connecting metamask:", error.message);
-    return error;
+    let message = formatError(error);
+    console.log("Error connecting metamask:", message);
+    return { message };
   }
 };
 
 export const addItemToMarket = async (
   state: ICreateFormState,
-  formDataObject: ICreateFormDataObject,
-  session: ISessionContext
+  formDataObject: ICreateFormDataObject
 ) => {
   // interact with contract
   try {
     const contract = await getContract(true);
 
-    const receipt = await contract.addItem(
+    const receipt = await contract?.addItem(
       state.dataString,
       formDataObject.price
     );
@@ -227,7 +237,8 @@ export const addItemToMarket = async (
     const jsonTx = JSON.stringify(receipt);
     return { data: jsonTx, error: null };
   } catch (error) {
-    return { data: null, error };
+    let message = formatError(error);
+    return { data: null, error: { message } };
   }
 };
 
@@ -235,46 +246,50 @@ export const addItemToMarket = async (
 // useClientEffect:
 
 export const metamaskInit = async (session: ISessionContext) => {
-  const provider = await detectEthereumProvider();
-  console.log({ provider });
+  try {
+    const provider = await detectEthereumProvider();
+    console.log({ provider });
 
-  if (provider) {
-    /************************************************ */
-    /* detect chainID, handle change chainId          */
-    /************************************************ */
-    let chainId = await ethereum.request({ method: "eth_chainId" });
-    console.log("Connected to chainId:", chainId);
+    if (provider) {
+      /************************************************ */
+      /* detect chainID, handle change chainId          */
+      /************************************************ */
+      let chainId = await window.ethereum.request({ method: "eth_chainId" });
+      console.log("Connected to chainId:", chainId);
 
-    ethereum.on("chainChanged", function (networkId) {
-      console.log(
-        "Metamask network has changed! Old network:",
-        chainId,
-        "\nNew network ID:",
-        networkId
-      );
-      chainId = networkId;
-      session.items.stale = true; // refetch in case
-    });
-
-    /************************************************ */
-    /* handle change accounts                         */
-    /************************************************ */
-
-    console.log("checking if unlocked from connectMetamask");
-
-    ethereum.on("accountsChanged", function (accounts) {
-      if (accounts.length === 0) {
-        session.address = "";
-        console.log("Please connect metamask");
-      } else if (accounts[0] !== session.address) {
-        console.log("switching accounts to ", accounts[0] + "...");
-        session.address = accounts[0];
+      window.ethereum.on("chainChanged", function (networkId: any) {
+        console.log(
+          "Metamask network has changed! Old network:",
+          chainId,
+          "\nNew network ID:",
+          networkId
+        );
+        chainId = networkId;
         session.items.stale = true; // refetch in case
-      }
-    });
-  } else {
-    // could connect to fallback network;
-    console.warn("No web3 detected, please install Metamask!");
-    return new Error("Error detecting Metamask: Please install Metamask!");
+      });
+
+      /************************************************ */
+      /* handle change accounts                         */
+      /************************************************ */
+
+      console.log("checking if unlocked from connectMetamask");
+
+      window.ethereum.on("accountsChanged", function (accounts: any[]) {
+        if (accounts.length === 0) {
+          session.address = "";
+          console.log("Please connect metamask");
+        } else if (accounts[0] !== session.address) {
+          console.log("switching accounts to ", accounts[0] + "...");
+          session.address = accounts[0];
+          session.items.stale = true; // refetch in case
+        }
+      });
+    } else {
+      // could connect to fallback network;
+      console.warn("No web3 detected, please install Metamask!");
+      return new Error("Error detecting Metamask: Please install Metamask!");
+    }
+  } catch (e) {
+    console.log({ e });
   }
 };

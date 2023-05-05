@@ -1,5 +1,5 @@
-import { createContext } from "@builder.io/qwik";
+import { createContextId } from "@builder.io/qwik";
 
-export const SessionContext = createContext<ISessionContext>(
+export const SessionContext = createContextId<ISessionContext>(
   "metamask-session-context"
 );

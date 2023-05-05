@@ -1,9 +1,7 @@
 import {
 	component$,
-	mutable,
-	useClientEffect$,
+	useVisibleTask$,
 	useContext,
-	useStyles$,
 	useStylesScoped$,
 } from "@builder.io/qwik";
 import type {DocumentHead} from "@builder.io/qwik-city";
@@ -15,17 +13,16 @@ import {addNotification} from "~/components/notifications/notifications";
 import Store from "~/components/store/store";
 import {SessionContext} from "~/libs/context";
 import {getItems} from "~/libs/ethUtils";
-import Styles from "./index.css?inline";
 
 export default component$(() => {
 	const session = useContext(SessionContext); // our connected/logged in state
 
 	// so: this tracks stale and fetches items when stale turns true
 	// I also want to note the size of the fetched items and if it comes up the same as last time, I want to fetch again. (Could mark stale true again.)
-	useClientEffect$(async ({track}) => {
+	useVisibleTask$(async ({track}) => {
 		// track(session.items, "stale");
 		track(() => session.items.stale);
-		let timer;
+		let timer: NodeJS.Timeout;
 		// console.log("session.items.stale changed:", session.items.stale);
 		console.log("fetching items:", {
 			stale: session.items.stale,
@@ -71,7 +68,7 @@ export default component$(() => {
 			// if no need to refetch just change the items
 		session.items.all = items;
 
-		const keepIfHasAllData = (item) =>
+		const keepIfHasAllData = (item: IContractItem) =>
 			item.owner &&
 			item.owner !== "" &&
 			item.ipfsHash &&

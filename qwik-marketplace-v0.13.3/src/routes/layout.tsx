@@ -1,17 +1,16 @@
-declare var window: any;
-import {component$, Slot, useClientEffect$, useContextProvider, useStore} from "@builder.io/qwik";
+import {component$, Slot, useVisibleTask$, useContextProvider, useStore} from "@builder.io/qwik";
 import Header from "../components/header/header";
 import {SessionContext} from "~/libs/context";
 import Overlay from "~/components/overlay/overlay";
-import {Link} from "@builder.io/qwik-city";
 import Footer from "~/components/footer/footer";
 import { metamaskInit } from "~/libs/ethUtils";
 
 export default component$(() => {
-	const session = useStore(
+	const session = useStore<ISessionContext>(
 		{
       // address of the connected wallet
 			address: "", 
+      // create item state
 			create: {
 				show: false,
 				note: {
@@ -19,6 +18,7 @@ export default component$(() => {
 					class: "",
 				},
 			},
+      // storing the items
 			items: {
 				all: [],
 				filtered: [],
@@ -26,6 +26,7 @@ export default component$(() => {
 				showMissing: false,
 				refetch: false,
 			},
+      // details modal
 			details: {
 				show: false,
 				item: null,
@@ -41,14 +42,19 @@ export default component$(() => {
 				each: [],
 				nextIndex: 0,
 			},
-		} as ISessionContext,
-		{recursive: true}
+		},
+    {deep: true}
 	);
 
 	useContextProvider(SessionContext, session);
 
-	useClientEffect$(() => {
-		metamaskInit(session);
+	useVisibleTask$(async () => {
+    try {
+      await metamaskInit(session);
+      console.log('success initing metamask');
+    } catch(e) {
+      console.log({e});
+    }
 	})
 
 	return (

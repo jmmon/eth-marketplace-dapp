@@ -1,49 +1,44 @@
 import {
-	$,
 	component$,
 	Slot,
-	useStore,
+	useSignal,
 	useStylesScoped$,
+	type Signal,
 } from "@builder.io/qwik";
-import {SessionContext} from "~/libs/context";
 import Styles from "./modal.css?inline";
 import TabStyles from "./tabStyles.css?inline";
 
-export const Modal = component$((props: {modal: any; tab?: boolean}) => {
+interface Modal {
+	modal: any;
+	tab?: boolean;
+}
+export const Modal = component$(({modal, tab}: Modal) => {
 	useStylesScoped$(Styles);
-	const click = useStore({inside: false});
-
-	const handleClose = $(() => {
-		props.modal.show = false;
-	});
+	const click = useSignal(false);
 
 	return (
 		<aside
 			class={`modal ${
-				props.modal.show
+				modal.show
 					? "showing bg-black bg-opacity-10 backdrop-blur"
 					: "bg-transparent backdrop-blur-0"
-			} ${!props.tab ? "noTab" : ""}`}
+			} ${!tab ? "noTab" : ""}`}
 			onClick$={() => {
-				if (click.inside) click.inside = false;
-				else handleClose();
+				if (click.value) click.value = false;
+				else modal.show = false;
 			}}
 		>
-			{props.tab ? (
-				<TabHandle modal={props.modal} click={click} />
-			) : (
-				<div></div>
-			)}
+			{tab ? <TabHandle modal={modal} click={click} /> : <div></div>}
 			<div
-				class={`body ${props.modal.show ? "opacity-100" : "opacity-0"}`}
+				class={`body ${modal.show ? "opacity-100" : "opacity-0"}`}
 				onClick$={() => {
-					click.inside = true;
+					click.value = true;
 				}}
 			>
 				<div class="header-container overflow-x-hidden">
 					<button
 						onClick$={() => {
-							handleClose();
+							modal.show = false;
 						}}
 						class="close bg-blue-200 hover:bg-blue-300"
 					>
@@ -57,23 +52,21 @@ export const Modal = component$((props: {modal: any; tab?: boolean}) => {
 	);
 });
 
-export const TabHandle = component$((props) => {
+interface TabHandle {
+	modal: any;
+	click: Signal<boolean>;
+}
+export const TabHandle = component$(({modal, click}: TabHandle) => {
 	useStylesScoped$(TabStyles);
-
-	const handleToggle = $(() => {
-		props.modal.show = !props.modal.show;
-	});
 
 	return (
 		<div
 			class={`spacer tab bg-gray-100 bg-opacity-60 backdrop-blur ${
-				props.modal.show
-					? "show bg-opacity-100 opacity-0"
-					: "hover:bg-opacity-90"
+				modal.show ? "show bg-opacity-100 opacity-0" : "hover:bg-opacity-90"
 			}`}
 			onClick$={() => {
-				props.click.inside = true; // for preventing bubbling
-				handleToggle();
+				click.value = true; // for preventing bubbling
+				modal.show = !modal.show;
 			}}
 		>
 			<div class="tab-text">Add An Item</div>

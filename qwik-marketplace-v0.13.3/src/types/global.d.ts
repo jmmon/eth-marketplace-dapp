@@ -19,7 +19,7 @@ declare interface IItemData {
 }
 
 
-type NotificationTypes = Readonly<["success", "warning", "error", "other"]> | number | undefined
+type NotificationTypes = "success"| "warning"| "error"| "info"
 
 declare interface INotificationsEach {
 	message: string;
