@@ -1,7 +1,7 @@
 import {
 	$,
 	component$,
-	useVisibleTask$,
+	useTask$,
 	useContext,
 	useStore,
 } from "@builder.io/qwik";
@@ -95,12 +95,11 @@ export const Notification = component$(
       color,
 		});
 
-		useVisibleTask$(() => {
-			if (notification.timeout === 0 || !notification.timeout) return;
+		useTask$(() => {
+			if (notification.timeout === 0) return;
 
 			const timer = setTimeout(() => {
 				remove$();
-				console.log("removing notification");
 			}, notification.timeout);
 
 			return () => clearTimeout(timer);
@@ -134,7 +133,7 @@ export default component$(() => {
         <Notification
           key={thisNotification.id}
           thisNotification={thisNotification}
-          remove$={() => removeNotification(session, thisNotification.id)}
+          remove$={() => (console.log('removing notification'),removeNotification(session, thisNotification.id))}
         />
 			))}
 		</div>
