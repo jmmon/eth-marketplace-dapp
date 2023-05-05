@@ -10,7 +10,8 @@ import { metamaskInit } from "~/libs/ethUtils";
 export default component$(() => {
 	const session = useStore(
 		{
-			address: "", // address of the connected wallet
+      // address of the connected wallet
+			address: "", 
 			create: {
 				show: false,
 				note: {
@@ -29,13 +30,14 @@ export default component$(() => {
 				show: false,
 				item: null,
 			},
-			store: { // a particular address's items
+      // a particular address's items
+			store: { 
 				show: false,
 				address: "",
 				items: [],
 			},
+      // notifications for various actions
 			notifications: {
-				// notifications for various actions
 				each: [],
 				nextIndex: 0,
 			},
