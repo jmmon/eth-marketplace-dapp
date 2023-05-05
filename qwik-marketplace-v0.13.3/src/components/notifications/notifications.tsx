@@ -11,7 +11,7 @@ const NOTIFICATION_COLORS: {
   [key: string]: string;
 } = {
   success: "green",
-  warning: "yellow",
+  warning: "amber",
   error: "red",
   info: "blue",
 }
