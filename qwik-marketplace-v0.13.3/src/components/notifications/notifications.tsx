@@ -3,17 +3,50 @@ import {
 	component$,
 	useTask$,
 	useContext,
-	useStore,
+	useSignal,
 } from "@builder.io/qwik";
 import {SessionContext} from "~/libs/context";
 
 const NOTIFICATION_COLORS: {
-  [key: string]: string;
+  [key: string]: {
+    color: string;
+    bg: string;
+    border: string;
+    text: string;
+    hover: string;
+  };
 } = {
-  success: "green",
-  warning: "amber",
-  error: "red",
-  info: "blue",
+	success: {
+      color: "green",
+      bg: '100',
+      border: '200',
+      text: '700',
+      hover: '50',
+    },
+	warning: {
+      color: "amber",
+      bg: '100',
+      border: '200',
+      text: '700',
+      hover: '50',
+    },
+	error: {
+      color: "red",
+      bg: '200',
+      border: '300',
+      text: '700',
+      hover: '100',
+    },
+	info: {
+      color: "blue",
+      bg: '100',
+      border: '200',
+      text: '800',
+      hover: '50',
+    },
+};
+const getColor = (type: NotificationTypes, location: 'bg' | 'border' | 'text', hover: boolean = false) => {
+  return `${hover ? 'hover:' : ''}${location}-${NOTIFICATION_COLORS[type].color}-${NOTIFICATION_COLORS[type][hover ? "hover" : location]}`
 }
 // generating notifications
 const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_COLORS);
@@ -21,7 +54,6 @@ export const LOREM_SPLIT =
 	"Lorem, ipsum dolor sit amet consectetur adipisicing elit. Labore voluptatum, magni, eius error accusantium aliquid voluptatibus commodi at adipisci culpa consectetur vel perferendis cupiditate ullam! Id debitis sint voluptate a repellendus nihil, consectetur quas unde accusantium perspiciatis explicabo ratione reprehenderit dolores blanditiis dignissimos totam, enim praesentium quos obcaecati aliquam aliquid labore laudantium illum! Autem porro impedit cum, laborum qui quibusdam aliquid, praesentium vel at velit molestiae officiis vero quos debitis. Ducimus cum voluptatum similique quasi quia. Aliquid dignissimos vel, corporis ullam distinctio adipisci? Temporibus aut maiores, ea placeat voluptatibus laboriosam quos neque asperiores illum vel laborum dolor perferendis corrupti atque!".split(
 		" "
 	);
-
 
 const capitalizeFirstLetter = (s: string) =>
 	s[0].toUpperCase().concat(s.slice(1));
@@ -32,7 +64,7 @@ export const addNotification = $(
 		session: ISessionContext,
 		message: string,
 		type: NotificationTypes = "info",
-		timeout: number = 0,
+		timeout: number = 0
 	) => {
 		const thisNotification: INotificationsEach = {
 			message,
@@ -48,17 +80,16 @@ export const addNotification = $(
 );
 
 export const removeNotification = $((session: ISessionContext, id: number) => {
-	const remaining =
-		session.notifications.each.filter((n) => n.id !== id) ?? [];
+	const remaining = session.notifications.each.filter((n) => n.id !== id) ?? [];
 
 	if (remaining.length > 0) {
-    session.notifications.each = remaining;
+		session.notifications.each = remaining;
 		return;
 	}
 
-  // if none left, reset our store and currentIndex
-  session.notifications.each = [];
-  session.notifications.nextIndex = 0;
+	// if none left, reset our store and currentIndex
+	session.notifications.each = [];
+	session.notifications.nextIndex = 0;
 });
 
 export const generateNotification = $((session: ISessionContext) => {
@@ -66,20 +97,17 @@ export const generateNotification = $((session: ISessionContext) => {
 	const loremNum = Math.ceil(Math.random() * 4) ** 3;
 	const durationNum = typeNum < 3 ? Math.floor(Math.random() * 10) * 1000 : 0;
 
-  const type = NOTIFICATION_TYPES[typeNum] as NotificationTypes;
+	const type = NOTIFICATION_TYPES[typeNum] as NotificationTypes;
 
-	console.log(
-		`{dur: ${durationNum}, type: ${type}, lorem: ${loremNum}}`
-	);
+	console.log(`{dur: ${durationNum}, type: ${type}, lorem: ${loremNum}}`);
 
 	addNotification(
 		session,
 		LOREM_SPLIT.slice(0, loremNum).join(" "),
-    type,
-		durationNum,
+		type,
+		durationNum
 	);
 });
-
 
 interface NotificationProps {
 	thisNotification: INotificationsEach;
@@ -87,30 +115,38 @@ interface NotificationProps {
 }
 export const Notification = component$(
 	({thisNotification, remove$}: NotificationProps) => {
-		const type = thisNotification.type;
-    const color = NOTIFICATION_COLORS[type];
-    console.log({color});
-		const notification = useStore({
-			...thisNotification,
-      color,
+		const notification = useSignal({
+      //type: thisNotification.type,
+      //message: thisNotification.message,
+      //timeout: thisNotification.timeout,
+      ...thisNotification,
+      colors: {
+        bg: getColor(thisNotification.type, 'bg'),
+        bgHover: getColor(thisNotification.type, 'bg', true) ?? '',
+        border: getColor(thisNotification.type, 'border'),
+        text: getColor(thisNotification.type, 'text'),
+      }
 		});
+		console.log("Notification render:", {colors: notification.value.colors});
 
 		useTask$(() => {
-			if (notification.timeout === 0) return;
+			if (notification.value.timeout === 0) return;
 
 			const timer = setTimeout(() => {
 				remove$();
-			}, notification.timeout);
+			}, notification.value.timeout);
 
 			return () => clearTimeout(timer);
 		});
 
 		return (
 			<div
-        class={`p-2 rounded bg-${notification.color}-100 hover:bg-${notification.color}-50 border-solid border-2 border-${notification.color}-200 flex flex-wrap bg-opacity-70 backdrop-blur pt-1 shrink-1`}
+				class={`p-2 rounded ${notification.value.colors.bg}  border-solid border-2 ${notification.value.colors.border} flex flex-wrap bg-opacity-60 hover:bg-opacity-90 backdrop-blur pt-1 shrink-1`}
 			>
-				<h3 class={`text-${notification.color}-700 text-lg flex-grow drop-shadow-xl`}>
-					{capitalizeFirstLetter(type)}
+				<h3
+					class={`${notification.value.colors.text} text-lg flex-grow drop-shadow-xl`}
+				>
+					{capitalizeFirstLetter(notification.value.type)}
 				</h3>
 				<button
 					onClick$={remove$}
@@ -118,7 +154,7 @@ export const Notification = component$(
 				>
 					X
 				</button>
-				<p class="w-full break-all self-start">{notification.message}</p>
+				<p class="w-full break-all self-start">{notification.value.message}</p>
 			</div>
 		);
 	}
@@ -129,12 +165,15 @@ export default component$(() => {
 	const session = useContext(SessionContext);
 	return (
 		<div class="flex flex-col gap-1 items-end w-full max-w-[600px]">
-			{session.notifications.each?.map((thisNotification) => (
-        <Notification
-          key={thisNotification.id}
-          thisNotification={thisNotification}
-          remove$={() => (console.log('removing notification'),removeNotification(session, thisNotification.id))}
-        />
+			{session.notifications.each.map((thisNotification) => (
+				<Notification
+					key={thisNotification.id}
+					thisNotification={thisNotification}
+					remove$={() => {
+						console.log("removing notification");
+						removeNotification(session, thisNotification.id);
+					}}
+				/>
 			))}
 		</div>
 	);

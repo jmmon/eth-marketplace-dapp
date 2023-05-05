@@ -5,9 +5,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        green: colors.emerald,
-        yellow: colors.amber,
-        purple: colors.violet,
         qwikBlue: {
           light: "#24abff", // 10% more lightness?
           DEFAULT: "#0093ee",
